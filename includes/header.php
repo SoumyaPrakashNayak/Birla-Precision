@@ -156,7 +156,7 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
               <circle cx="20" cy="21" r="1"></circle>
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
             </svg>
-            <span class="nav-cart-badge" id="navCartBadge">0</span>
+            <span class="nav-cart-badge" id="navCartBadge" style="display:none;">0</span>
           </button>
 
           <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php#enquiry" class="quick-enquiry-link" title="Quick Enquiry">

@@ -489,13 +489,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // 9b. Commercial Cart Stepper & Add to Cart Handlers
+  // 9b. Commercial Cart Stepper & Add to Cart Handlers (multiples of 10 pcs as per catalogue)
   if (cartQtyMinus) {
     cartQtyMinus.addEventListener('click', function () {
       var row = getCurrentSizeRow();
       var moq = row ? (parseInt(row.moq, 10) || 100) : 100;
+      var step = 10;
       var curVal = cartQtyInput ? (parseInt(cartQtyInput.value, 10) || moq) : moq;
-      var newVal = curVal - moq;
+      var newVal = curVal - step;
       if (newVal < moq) newVal = moq;
       if (cartQtyInput) cartQtyInput.value = newVal;
       updateCartSubtotal(row);
@@ -506,8 +507,9 @@ document.addEventListener('DOMContentLoaded', function () {
     cartQtyPlus.addEventListener('click', function () {
       var row = getCurrentSizeRow();
       var moq = row ? (parseInt(row.moq, 10) || 100) : 100;
+      var step = 10;
       var curVal = cartQtyInput ? (parseInt(cartQtyInput.value, 10) || moq) : moq;
-      var newVal = curVal + moq;
+      var newVal = curVal + step;
       if (cartQtyInput) cartQtyInput.value = newVal;
       updateCartSubtotal(row);
     });
@@ -521,9 +523,9 @@ document.addEventListener('DOMContentLoaded', function () {
       if (isNaN(val) || val < moq) {
         val = moq;
       } else {
-        var rem = val % moq;
+        var rem = val % 10;
         if (rem !== 0) {
-          val = Math.ceil(val / moq) * moq;
+          val = Math.ceil(val / 10) * 10;
         }
       }
       this.value = val;

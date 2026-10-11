@@ -204,6 +204,20 @@ document.addEventListener('DOMContentLoaded', function () {
   var successPoNumber = document.getElementById('successPoNumber');
   var checkoutDoneBtn = document.getElementById('checkoutDoneBtn');
 
+  // Coupon Accordion Elements
+  var cartCouponAccordion = document.getElementById('cartCouponAccordion');
+  var couponToggleBtn = document.getElementById('couponToggleBtn');
+  var couponAccordionBody = document.getElementById('couponAccordionBody');
+  var couponCodeInput = document.getElementById('couponCodeInput');
+  var couponApplyBtn = document.getElementById('couponApplyBtn');
+  var couponFeedback = document.getElementById('couponFeedback');
+  var appliedCoupon = null; // { code: 'BIRLA10', percent: 10 }
+
+  // Check URL parameter to easily reset cart if requested: ?clearcart=1
+  if (window.location.search.indexOf('clearcart=1') !== -1) {
+    try { localStorage.removeItem('birla_cart'); } catch(e) {}
+  }
+
   function getCart() {
     try {
       var data = localStorage.getItem('birla_cart');
@@ -258,15 +272,16 @@ document.addEventListener('DOMContentLoaded', function () {
       totalAmount += (parseFloat(item.total) || 0);
     });
 
-    // Update navbar badge dynamically!
+    // Update navbar badge: STRICTLY hide when empty / initial load!
     if (navCartBadge) {
-      navCartBadge.textContent = totalPieces;
-      navCartBadge.setAttribute('title', totalLineItems + ' product(s) • ' + totalPieces + ' total pieces');
       if (totalPieces > 0) {
+        navCartBadge.textContent = totalPieces;
+        navCartBadge.setAttribute('title', totalLineItems + ' product(s) • ' + totalPieces + ' total pieces');
         navCartBadge.classList.add('has-items');
         navCartBadge.style.display = 'inline-flex';
       } else {
         navCartBadge.classList.remove('has-items');
+        navCartBadge.style.display = 'none';
         navCartBadge.textContent = '0';
       }
     }
@@ -275,52 +290,112 @@ document.addEventListener('DOMContentLoaded', function () {
       cartDrawerCount.textContent = totalLineItems + (totalLineItems === 1 ? ' Product' : ' Products') + ' (' + totalPieces + ' pcs)';
     }
 
-    // Render Drawer contents
+    // Render Drawer contents matching Image 2 Reference Design
     if (cartItemsList && cartEmptyState && cartDrawerFooter) {
       if (cart.length === 0) {
         cartEmptyState.style.display = 'block';
         cartItemsList.style.display = 'none';
         cartItemsList.innerHTML = '';
+        if (cartCouponAccordion) cartCouponAccordion.style.display = 'none';
         cartDrawerFooter.style.display = 'none';
+        appliedCoupon = null;
       } else {
         cartEmptyState.style.display = 'none';
         cartItemsList.style.display = 'flex';
+        if (cartCouponAccordion) cartCouponAccordion.style.display = 'block';
         cartDrawerFooter.style.display = 'block';
 
+        // Calculate total with coupon discount if applied
+        var finalTotal = totalAmount;
+        if (appliedCoupon && appliedCoupon.percent) {
+          var discountAmt = (totalAmount * appliedCoupon.percent) / 100.0;
+          finalTotal = Math.max(0, totalAmount - discountAmt);
+        }
+
         if (cartDrawerTotal) {
-          cartDrawerTotal.textContent = formatPriceINR(totalAmount);
+          cartDrawerTotal.textContent = formatPriceINR(finalTotal);
         }
 
         cartItemsList.innerHTML = '';
         cart.forEach(function (item, index) {
-          var step = item.moq || 10;
-          var row = document.createElement('div');
-          row.className = 'cart-item-row';
-          row.innerHTML =
-            '<img src="' + resolveAssetUrl(item.img) + '" alt="' + escapeHtml(item.title) + '" class="cart-item-img" onerror="this.onerror=null;this.src=\'' + resolveAssetUrl('assets/images/products/gallery_thumb_1.jpg') + '\';">' +
-            '<div class="cart-item-info">' +
-              '<div class="cart-item-header-row">' +
-                '<div class="cart-item-title">' + escapeHtml(item.title) + '</div>' +
-                '<button type="button" class="cart-item-remove-btn" data-index="' + index + '" aria-label="Remove item" title="Remove">&times;</button>' +
+          var moq = parseInt(item.moq, 10) || 100;
+          var card = document.createElement('div');
+          card.className = 'cart-item-card';
+          card.innerHTML =
+            '<div class="cart-card-top">' +
+              '<div class="cart-card-thumb-wrap">' +
+                '<img src="' + resolveAssetUrl(item.img) + '" alt="' + escapeHtml(item.title) + '" class="cart-card-thumb-img" onerror="this.onerror=null;this.src=\'' + resolveAssetUrl('assets/images/products/gallery_thumb_1.jpg') + '\';">' +
               '</div>' +
-              '<div class="cart-item-meta">' + escapeHtml(item.variantName) + ' &bull; ' + escapeHtml(item.diaText) + '</div>' +
-              '<div class="cart-item-unit-rate">Rate: ' + formatPriceINR(item.unitPrice) + ' / pc</div>' +
-              '<div class="cart-item-stepper-row">' +
-                '<div class="drawer-qty-stepper">' +
-                  '<button type="button" class="drawer-step-btn drawer-step-minus" data-index="' + index + '" aria-label="Decrease quantity">&minus;</button>' +
-                  '<input type="number" class="drawer-step-input" data-index="' + index + '" value="' + item.qty + '" min="' + step + '" step="' + step + '">' +
-                  '<button type="button" class="drawer-step-btn drawer-step-plus" data-index="' + index + '" aria-label="Increase quantity">&plus;</button>' +
+              '<div class="cart-card-details">' +
+                '<div class="cart-card-header-row">' +
+                  '<h4 class="cart-card-title">' + escapeHtml(item.title) + '</h4>' +
+                  '<button type="button" class="cart-item-trash-btn" data-index="' + index + '" aria-label="Remove item" title="Remove item">' +
+                    '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+                      '<polyline points="3 6 5 6 21 6"></polyline>' +
+                      '<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>' +
+                    '</svg>' +
+                  '</button>' +
                 '</div>' +
-                '<span class="drawer-step-units">pcs</span>' +
-                '<div class="cart-item-line-total">' + formatPriceINR(item.total) + '</div>' +
+                '<div class="cart-card-subtitle">' + escapeHtml(item.variantName) + ' &bull; ' + escapeHtml(item.diaText) + '</div>' +
+                '<div class="cart-card-badges">' +
+                  '<span class="cart-badge-dagger">DAGGER BRAND</span>' +
+                  '<span class="cart-badge-gray">IS : 5101</span>' +
+                  '<span class="cart-badge-gray">HSN 8207</span>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="cart-card-pricing-grid">' +
+              '<div class="pricing-col">' +
+                '<span class="pricing-label">Rate (per piece)</span>' +
+                '<span class="pricing-rate-val">' + formatPriceINR(item.unitPrice) + ' / pc</span>' +
+              '</div>' +
+              '<div class="pricing-col">' +
+                '<span class="pricing-label">Quantity (pcs)</span>' +
+                '<div class="cart-stepper-box">' +
+                  '<button type="button" class="cart-step-btn cart-step-minus" data-index="' + index + '" aria-label="Decrease quantity">&minus;</button>' +
+                  '<input type="text" class="cart-step-input" data-index="' + index + '" value="' + item.qty + '">' +
+                  '<button type="button" class="cart-step-btn cart-step-plus" data-index="' + index + '" aria-label="Increase quantity">&plus;</button>' +
+                '</div>' +
+              '</div>' +
+              '<div class="pricing-col pricing-col-total">' +
+                '<span class="pricing-label">Total</span>' +
+                '<span class="pricing-total-val">' + formatPriceINR(item.total) + '</span>' +
+              '</div>' +
+            '</div>' +
+            '<div class="cart-order-info-section">' +
+              '<div class="order-info-title-row">' +
+                '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                  '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>' +
+                  '<polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>' +
+                  '<line x1="12" y1="22.08" x2="12" y2="12"></line>' +
+                '</svg>' +
+                '<span>Order Information</span>' +
+              '</div>' +
+              '<div class="order-info-grid">' +
+                '<div class="order-info-col">' +
+                  '<span class="info-label">Minimum Order Quantity (MOQ)</span>' +
+                  '<span class="info-val">' + moq + ' pcs</span>' +
+                '</div>' +
+                '<div class="order-info-col">' +
+                  '<span class="info-label">Order Multiple</span>' +
+                  '<span class="info-val">10 pcs only</span>' +
+                '</div>' +
+              '</div>' +
+              '<div class="order-info-alert-banner">' +
+                '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">' +
+                  '<circle cx="12" cy="12" r="10"></circle>' +
+                  '<line x1="12" y1="16" x2="12" y2="12"></line>' +
+                  '<line x1="12" y1="8" x2="12.01" y2="8"></line>' +
+                '</svg>' +
+                '<span>Orders must be in multiples of 10 pieces as per catalogue.</span>' +
               '</div>' +
             '</div>';
-          cartItemsList.appendChild(row);
+          cartItemsList.appendChild(card);
         });
 
-        // Add interactive handlers for item removal
-        var removeBtns = cartItemsList.querySelectorAll('.cart-item-remove-btn');
-        removeBtns.forEach(function (btn) {
+        // Add interactive handlers for trash item removal
+        var trashBtns = cartItemsList.querySelectorAll('.cart-item-trash-btn');
+        trashBtns.forEach(function (btn) {
           btn.addEventListener('click', function () {
             var idx = parseInt(btn.getAttribute('data-index'), 10);
             var currentCart = getCart();
@@ -329,21 +404,16 @@ document.addEventListener('DOMContentLoaded', function () {
           });
         });
 
-        // Add interactive handlers for - and + steppers inside cart
-        var minusBtns = cartItemsList.querySelectorAll('.drawer-step-minus');
+        // Add interactive handlers for - and + steppers inside cart (multiples of 10)
+        var minusBtns = cartItemsList.querySelectorAll('.cart-step-minus');
         minusBtns.forEach(function (btn) {
           btn.addEventListener('click', function () {
             var idx = parseInt(btn.getAttribute('data-index'), 10);
             var currentCart = getCart();
             if (!currentCart[idx]) return;
-            var step = currentCart[idx].moq || 10;
-            var newQty = currentCart[idx].qty - step;
-            if (newQty < step) {
-              if (confirm('Remove ' + currentCart[idx].title + ' from your cart?')) {
-                currentCart.splice(idx, 1);
-              } else {
-                return;
-              }
+            var newQty = currentCart[idx].qty - 10;
+            if (newQty <= 0) {
+              currentCart.splice(idx, 1);
             } else {
               currentCart[idx].qty = newQty;
               currentCart[idx].total = (currentCart[idx].unitPrice || 0) * newQty;
@@ -352,28 +422,29 @@ document.addEventListener('DOMContentLoaded', function () {
           });
         });
 
-        var plusBtns = cartItemsList.querySelectorAll('.drawer-step-plus');
+        var plusBtns = cartItemsList.querySelectorAll('.cart-step-plus');
         plusBtns.forEach(function (btn) {
           btn.addEventListener('click', function () {
             var idx = parseInt(btn.getAttribute('data-index'), 10);
             var currentCart = getCart();
             if (!currentCart[idx]) return;
-            var step = currentCart[idx].moq || 10;
-            currentCart[idx].qty += step;
-            currentCart[idx].total = (currentCart[idx].unitPrice || 0) * currentCart[idx].qty;
+            var newQty = currentCart[idx].qty + 10;
+            currentCart[idx].qty = newQty;
+            currentCart[idx].total = (currentCart[idx].unitPrice || 0) * newQty;
             saveCart(currentCart);
           });
         });
 
-        var qtyInputs = cartItemsList.querySelectorAll('.drawer-step-input');
+        var qtyInputs = cartItemsList.querySelectorAll('.cart-step-input');
         qtyInputs.forEach(function (input) {
           input.addEventListener('change', function () {
             var idx = parseInt(this.getAttribute('data-index'), 10);
             var currentCart = getCart();
             if (!currentCart[idx]) return;
-            var step = currentCart[idx].moq || 10;
             var val = parseInt(this.value, 10);
-            if (isNaN(val) || val < step) val = step;
+            if (isNaN(val) || val <= 0) val = 10;
+            var rem = val % 10;
+            if (rem !== 0) val = Math.ceil(val / 10) * 10;
             currentCart[idx].qty = val;
             currentCart[idx].total = (currentCart[idx].unitPrice || 0) * val;
             saveCart(currentCart);
@@ -382,6 +453,52 @@ document.addEventListener('DOMContentLoaded', function () {
 
       }
     }
+  }
+
+  // Coupon Accordion Toggle & Apply Event Listeners
+  if (couponToggleBtn && cartCouponAccordion && couponAccordionBody) {
+    couponToggleBtn.addEventListener('click', function () {
+      var isOpen = cartCouponAccordion.classList.contains('is-open');
+      if (isOpen) {
+        cartCouponAccordion.classList.remove('is-open');
+        couponAccordionBody.style.display = 'none';
+      } else {
+        cartCouponAccordion.classList.add('is-open');
+        couponAccordionBody.style.display = 'block';
+        if (couponCodeInput) couponCodeInput.focus();
+      }
+    });
+  }
+
+  if (couponApplyBtn && couponCodeInput && couponFeedback) {
+    couponApplyBtn.addEventListener('click', function () {
+      var code = (couponCodeInput.value || '').trim().toUpperCase();
+      if (!code) {
+        couponFeedback.textContent = 'Please enter a coupon code.';
+        couponFeedback.className = 'coupon-feedback-msg is-error';
+        couponFeedback.style.display = 'block';
+        return;
+      }
+      if (code === 'BIRLA10' || code === 'BPTL10' || code === 'PRECISION10') {
+        appliedCoupon = { code: code, percent: 10 };
+        couponFeedback.textContent = 'Coupon ' + code + ' applied! 10% Commercial Discount.';
+        couponFeedback.className = 'coupon-feedback-msg is-success';
+        couponFeedback.style.display = 'block';
+        updateCartUI();
+      } else if (code === 'WELCOME5') {
+        appliedCoupon = { code: code, percent: 5 };
+        couponFeedback.textContent = 'Coupon WELCOME5 applied! 5% Commercial Discount.';
+        couponFeedback.className = 'coupon-feedback-msg is-success';
+        couponFeedback.style.display = 'block';
+        updateCartUI();
+      } else {
+        appliedCoupon = null;
+        couponFeedback.textContent = 'Invalid coupon. Try BIRLA10 for 10% discount.';
+        couponFeedback.className = 'coupon-feedback-msg is-error';
+        couponFeedback.style.display = 'block';
+        updateCartUI();
+      }
+    });
   }
 
   function openCartDrawer() {
@@ -418,9 +535,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (cartClearBtn) {
     cartClearBtn.addEventListener('click', function () {
-      if (confirm('Clear all items from your commercial cart?')) {
-        saveCart([]);
-      }
+      appliedCoupon = null;
+      if (couponFeedback) couponFeedback.style.display = 'none';
+      if (couponCodeInput) couponCodeInput.value = '';
+      saveCart([]);
     });
   }
 

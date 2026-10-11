@@ -117,23 +117,33 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
 
   <!-- Slide-out Cart Drawer -->
   <div class="cart-drawer-overlay" id="cartDrawerOverlay"></div>
+  <!-- Commercial Cart Slide-out Drawer (Matching Image 2 Reference Design) -->
   <aside class="cart-slide-drawer" id="cartSlideDrawer" aria-label="Shopping Cart">
+    
+    <!-- Drawer Header matching Image 2 Reference (Dark Header with drill graphic & red cart) -->
     <div class="cart-drawer-header">
-      <div class="cart-header-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="9" cy="21" r="1"></circle>
-          <circle cx="20" cy="21" r="1"></circle>
-          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-        </svg>
-        <span>Commercial Cart</span>
-        <span class="cart-items-counter-tag" id="cartDrawerCount">0 Items</span>
+      <div class="cart-header-left-col">
+        <div class="cart-header-icon-box">
+          <svg viewBox="0 0 24 24" class="cart-red-icon" fill="currentColor">
+            <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/>
+          </svg>
+        </div>
+        <div class="cart-header-title-wrap">
+          <h3 class="cart-drawer-main-title">Commercial Cart</h3>
+          <span class="cart-drawer-subtitle" id="cartDrawerCount">0 Products (0 pcs)</span>
+        </div>
       </div>
-      <button type="button" class="cart-drawer-close" id="cartDrawerClose" aria-label="Close Cart">&times;</button>
+      <div class="cart-header-right-col">
+        <span class="cart-header-tagline">PRECISION TOOLS<br>FOR INDUSTRY</span>
+        <button type="button" class="cart-drawer-close" id="cartDrawerClose" aria-label="Close Cart">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
     </div>
 
     <!-- Cart Body (Scrollable items list) -->
     <div class="cart-drawer-body" id="cartDrawerBody">
-      <!-- Empty state / Rendered dynamically via JS -->
+      <!-- Empty state -->
       <div class="cart-empty-state" id="cartEmptyState">
         <div class="cart-empty-icon-box">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -149,30 +159,107 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
         </a>
       </div>
 
+      <!-- Rendered Items List -->
       <div class="cart-items-list" id="cartItemsList" style="display:none;"></div>
+
+      <!-- Apply Coupon Accordion (matching Image 2 Reference) -->
+      <div class="cart-coupon-accordion" id="cartCouponAccordion" style="display:none;">
+        <button type="button" class="coupon-accordion-header" id="couponToggleBtn">
+          <div class="coupon-header-left">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="coupon-tag-icon">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+              <line x1="7" y1="7" x2="7.01" y2="7"></line>
+            </svg>
+            <span class="coupon-accordion-title">Apply Coupon <span class="coupon-opt-tag">(Optional)</span></span>
+          </div>
+          <svg viewBox="0 0 24 24" width="16" height="16" class="coupon-chevron" id="couponChevron" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <div class="coupon-accordion-body" id="couponAccordionBody" style="display:none;">
+          <div class="coupon-input-group">
+            <input type="text" id="couponCodeInput" class="coupon-code-input" placeholder="Enter coupon code (e.g. BIRLA10)">
+            <button type="button" class="coupon-apply-action-btn" id="couponApplyBtn">Apply</button>
+          </div>
+          <div class="coupon-feedback-msg" id="couponFeedback" style="display:none;"></div>
+        </div>
+      </div>
     </div>
 
-    <!-- Cart Drawer Footer -->
+    <!-- Cart Drawer Footer (matching Image 2 Reference) -->
     <div class="cart-drawer-footer" id="cartDrawerFooter" style="display:none;">
-      <div class="cart-summary-subtotal-row">
-        <span>Estimated Total</span>
-        <strong class="cart-total-price" id="cartDrawerTotal">₹ 0.00</strong>
+      
+      <!-- Estimated Total Row -->
+      <div class="cart-summary-total-box">
+        <div class="cart-estimated-total-row">
+          <span class="estimated-total-label">Estimated Total</span>
+          <strong class="estimated-total-value" id="cartDrawerTotal">₹ 0.00</strong>
+        </div>
+        <p class="cart-tax-notice">Taxes and freight extra as applicable. Commercial pricing based on April 2026 Price List.</p>
       </div>
-      <p class="cart-tax-notice">Taxes and freight extra as applicable. Commercial pricing based on April 2026 Price List.</p>
+
+      <!-- Action Buttons Row (Matching Image 2) -->
       <div class="cart-actions-column">
+        <!-- 1. Primary Red Buy Now Button with cart icon & right arrow -->
         <button type="button" class="btn-cart-buy-now" id="cartBuyNowBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="buy-btn-icon">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="buy-btn-icon">
             <circle cx="9" cy="21" r="1"></circle>
             <circle cx="20" cy="21" r="1"></circle>
             <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
           </svg>
           <span>Proceed to Buy / Instant Checkout</span>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="buy-btn-arrow">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
         </button>
+
+        <!-- 2. Secondary Request Official PO Quotation Button -->
         <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php#enquiry" class="btn-checkout-quote" id="cartCheckoutQuoteBtn">
-          Request Official PO Quotation &rarr;
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="quote-btn-icon">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+          <span>Request Official PO Quotation</span>
         </a>
-        <button type="button" class="btn-clear-cart" id="cartClearBtn">Clear Cart</button>
+
+        <!-- 3. Tertiary Clear Cart Button with Trash Can icon -->
+        <button type="button" class="btn-clear-cart" id="cartClearBtn">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          <span>Clear Cart</span>
+        </button>
       </div>
+
+      <!-- Footer Trust Badges Strip (3 items from Image 2) -->
+      <div class="cart-trust-badges-strip">
+        <div class="cart-trust-item">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            <polyline points="9 12 11 14 15 10"></polyline>
+          </svg>
+          <span>Secure &amp; Reliable</span>
+        </div>
+        <div class="cart-trust-item">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="1" y="3" width="15" height="13"></rect>
+            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+            <circle cx="5.5" cy="18.5" r="2.5"></circle>
+            <circle cx="18.5" cy="18.5" r="2.5"></circle>
+          </svg>
+          <span>Pan India Delivery</span>
+        </div>
+        <div class="cart-trust-item">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          <span>Bulk &amp; Institutional Orders</span>
+        </div>
+      </div>
+
     </div>
   </aside>
 
