@@ -103,7 +103,7 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
           </p>
         </div>
         <div>
-          <button type="button" class="back-to-top-btn" id="backToTopBtn" aria-label="Back to Top">
+          <button type="button" class="footer-back-to-top" id="footerBackToTopBtn" aria-label="Back to Top">
             Back to Top
             <svg viewBox="0 0 24 24">
               <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
@@ -852,27 +852,18 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
     </div>
   </div>
 
-  <!-- Floating WhatsApp & Customer Support Widget (Matching iBELL screenshots) -->
-  <div class="floating-chat-widget" id="floatingChatWidget">
-    <div class="chat-pill" id="chatPill">
-      <a href="https://wa.me/912532352315?text=Hello%20Birla%20Precision,%20I%20am%20inquiring%20about%20Dagger%20Brand%20HSS%20Jobber%20Drills" target="_blank" rel="noopener" class="chat-pill-text">
-        Chat with us
-      </a>
-      <button type="button" class="chat-pill-close" id="chatPillClose" aria-label="Dismiss chat pill">&times;</button>
-    </div>
-    <a href="https://wa.me/912532352315?text=Hello%20Birla%20Precision,%20I%20am%20inquiring%20about%20Dagger%20Brand%20HSS%20Jobber%20Drills" target="_blank" rel="noopener" class="floating-wa-btn" aria-label="Open WhatsApp Chat">
+  <!-- Floating WhatsApp Widget (Bottom-Left) -->
+  <div class="floating-whatsapp-widget" id="floatingWhatsappWidget">
+    <a href="https://wa.me/912532352315?text=Hello%20Birla%20Precision,%20I%20am%20inquiring%20about%20Dagger%20Brand%20HSS%20Jobber%20Drills" target="_blank" rel="noopener" class="floating-wa-btn" aria-label="Chat with us on WhatsApp" title="Chat on WhatsApp">
       <svg viewBox="0 0 24 24" class="wa-icon">
         <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19.01L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M9.53 7.35C9.36 7.35 9.09 7.41 8.85 7.67C8.62 7.94 7.96 8.56 7.96 9.83C7.96 11.1 8.88 12.33 9.01 12.5C9.14 12.67 10.79 15.22 13.33 16.32C15.44 17.23 15.87 17.05 16.33 17.01C16.8 16.96 17.83 16.39 18.05 15.77C18.26 15.15 18.26 14.62 18.2 14.51C18.14 14.4 17.98 14.34 17.74 14.22C17.5 14.1 16.33 13.52 16.11 13.44C15.89 13.36 15.73 13.32 15.57 13.56C15.41 13.8 14.94 14.34 14.8 14.51C14.66 14.67 14.52 14.69 14.28 14.57C14.04 14.45 13.28 14.2 12.37 13.39C11.66 12.76 11.19 11.98 11.05 11.74C10.91 11.5 11.04 11.37 11.16 11.25C11.26 11.15 11.39 10.98 11.51 10.84C11.63 10.7 11.67 10.6 11.75 10.44C11.83 10.28 11.79 10.14 11.73 10.02C11.67 9.9 11.21 8.76 11.01 8.29C10.83 7.83 10.64 7.89 10.49 7.88C10.35 7.88 10.18 7.87 10.02 7.87C9.85 7.87 9.58 7.93 9.53 7.35Z"/>
       </svg>
     </a>
   </div>
 
-  <!-- Floating Move to Top Arrow Button -->
-  <button type="button" class="back-to-top-btn" id="backToTopBtn" aria-label="Move to top" title="Move to top">
-    <svg viewBox="0 0 24 24" class="back-to-top-arrow" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="12" y1="19" x2="12" y2="5"></line>
-      <polyline points="5 12 12 5 19 12"></polyline>
-    </svg>
+  <!-- Floating Move to Top Arrow Button (Bottom-Right, matching Reference Design) -->
+  <button type="button" class="floating-top-arrow-btn" id="floatingTopArrowBtn" aria-label="Move to top" title="Move to top">
+    <img src="<?php echo $base_url; ?>assets/images/icons/move_to_top_arrow.png" alt="Move to top" class="floating-top-arrow-img">
   </button>
 
   <!-- Global JavaScript -->

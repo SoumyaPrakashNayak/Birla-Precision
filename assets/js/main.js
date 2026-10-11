@@ -95,10 +95,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // 4. Back to Top Button
-  var backToTopBtn = document.getElementById('backToTopBtn');
-  if (backToTopBtn) {
-    backToTopBtn.addEventListener('click', function () {
+  // 4. In-Footer Static Back to Top Button
+  var footerBackToTopBtn = document.getElementById('footerBackToTopBtn');
+  if (footerBackToTopBtn) {
+    footerBackToTopBtn.addEventListener('click', function () {
       window.scrollTo({
         top: 0,
         behavior: 'smooth'
@@ -170,22 +170,22 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // 7b. Move To Top Floating Arrow
-  var backToTopBtn = document.getElementById('backToTopBtn');
-  if (backToTopBtn) {
-    function toggleBackToTop() {
+  // 7b. Floating Move To Top Arrow Button (Bottom-Right, Reference Design)
+  var floatingTopArrowBtn = document.getElementById('floatingTopArrowBtn');
+  if (floatingTopArrowBtn) {
+    function toggleFloatingTopArrow() {
       var scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-      if (scrollY > 300) {
-        backToTopBtn.classList.add('is-visible');
+      if (scrollY > 250) {
+        floatingTopArrowBtn.classList.add('is-visible');
       } else {
-        backToTopBtn.classList.remove('is-visible');
+        floatingTopArrowBtn.classList.remove('is-visible');
       }
     }
 
-    window.addEventListener('scroll', toggleBackToTop, { passive: true });
-    toggleBackToTop();
+    window.addEventListener('scroll', toggleFloatingTopArrow, { passive: true });
+    toggleFloatingTopArrow();
 
-    backToTopBtn.addEventListener('click', function (e) {
+    floatingTopArrowBtn.addEventListener('click', function (e) {
       e.preventDefault();
       window.scrollTo({
         top: 0,
