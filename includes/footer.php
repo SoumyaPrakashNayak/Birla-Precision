@@ -867,11 +867,11 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
   </button>
 
   <!-- Global JavaScript -->
-  <script src="<?php echo $base_url; ?>assets/js/main.js"></script>
+  <script src="<?php echo $base_url; ?>assets/js/main.js?v=<?php echo file_exists(__DIR__ . '/../assets/js/main.js') ? filemtime(__DIR__ . '/../assets/js/main.js') : '1.0'; ?>"></script>
   <?php if ($current_page === 'home'): ?>
-    <script src="<?php echo $base_url; ?>assets/js/home.js"></script>
+    <script src="<?php echo $base_url; ?>assets/js/home.js?v=<?php echo file_exists(__DIR__ . '/../assets/js/home.js') ? filemtime(__DIR__ . '/../assets/js/home.js') : '1.0'; ?>"></script>
   <?php elseif ($current_page === 'product'): ?>
-    <script src="<?php echo $base_url; ?>assets/js/product.js"></script>
+    <script src="<?php echo $base_url; ?>assets/js/product.js?v=<?php echo file_exists(__DIR__ . '/../assets/js/product.js') ? filemtime(__DIR__ . '/../assets/js/product.js') : '1.0'; ?>"></script>
   <?php endif; ?>
 
 </body>
