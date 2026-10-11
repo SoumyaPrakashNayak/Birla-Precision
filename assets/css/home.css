@@ -648,12 +648,13 @@
   width: 100%;
   max-height: 360px;
   object-fit: contain;
-  transition: opacity 0.22s ease-in-out, transform 0.35s ease;
+  transition: opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1), transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
   filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.15));
 }
 
 .sol-main-image.is-loading {
-  opacity: 0.35;
+  opacity: 0.2;
+  transform: scale(0.97);
 }
 
 /* 4 Vertical Feature Icons */
@@ -770,6 +771,8 @@
 
 .sol-thumb-item.is-active {
   border: 2px solid var(--color-primary); /* Red outline matching design */
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.25);
+  transform: scale(1.05);
 }
 
 .sol-thumb-item img {

@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   var currentIndex = 0;
   var autoplayTimer = null;
-  var autoplayInterval = 7500;
+  var autoplayInterval = 4000; // 4.0 seconds automatic slideshow
   var isPaused = false;
   var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // Pause on hover or focus
+  // Pause on hover or focus, resume on leave
   carouselSection.addEventListener('mouseenter', function () {
     isPaused = true;
   });
@@ -152,20 +152,23 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
-  // Initialize
+  // Initialize Hero Carousel Autoplay
   showSlide(0);
   startAutoplay();
 
   // --------------------------------------------------------------------------
-  // Precision Drilling Solutions Card — Interactive Carousel & Scroll-Scale
+  // Precision Drilling Solutions Card — Automatic Slideshow & Interactive Gallery
   // --------------------------------------------------------------------------
   var solCard = document.getElementById('precisionSolutionsCard');
-  var solMainImg = document.getElementById('solMainImg');
+  var solMainImg = document.getElementById('solMainImage') || document.getElementById('solMainImg');
   var solThumbBtns = document.querySelectorAll('.sol-thumb-item');
   var solPrevBtn = document.getElementById('solThumbPrev');
   var solNextBtn = document.getElementById('solThumbNext');
 
   var currentSolIndex = 0;
+  var solAutoplayTimer = null;
+  var solAutoplayInterval = 3500; // 3.5 seconds automatic progression
+  var isSolPaused = false;
 
   function switchSolImage(index) {
     if (!solThumbBtns || solThumbBtns.length === 0) return;
@@ -187,6 +190,12 @@ document.addEventListener('DOMContentLoaded', function () {
       var imgPreload = new Image();
       imgPreload.onload = function () {
         solMainImg.src = fullSrc;
+        setTimeout(function () {
+          solMainImg.classList.remove('is-loading');
+        }, 60);
+      };
+      imgPreload.onerror = function () {
+        solMainImg.src = fullSrc;
         solMainImg.classList.remove('is-loading');
       };
       imgPreload.src = fullSrc;
@@ -194,23 +203,54 @@ document.addEventListener('DOMContentLoaded', function () {
     currentSolIndex = index;
   }
 
+  function startSolAutoplay() {
+    stopSolAutoplay();
+    solAutoplayTimer = setInterval(function () {
+      if (!isSolPaused) {
+        switchSolImage(currentSolIndex + 1);
+      }
+    }, solAutoplayInterval);
+  }
+
+  function stopSolAutoplay() {
+    if (solAutoplayTimer) {
+      clearInterval(solAutoplayTimer);
+      solAutoplayTimer = null;
+    }
+  }
+
   solThumbBtns.forEach(function (btn, idx) {
     btn.addEventListener('click', function () {
       switchSolImage(idx);
+      startSolAutoplay();
     });
   });
 
   if (solPrevBtn) {
     solPrevBtn.addEventListener('click', function () {
       switchSolImage(currentSolIndex - 1);
+      startSolAutoplay();
     });
   }
 
   if (solNextBtn) {
     solNextBtn.addEventListener('click', function () {
       switchSolImage(currentSolIndex + 1);
+      startSolAutoplay();
     });
   }
+
+  if (solCard) {
+    solCard.addEventListener('mouseenter', function () {
+      isSolPaused = true;
+    });
+    solCard.addEventListener('mouseleave', function () {
+      isSolPaused = false;
+    });
+  }
+
+  // Start automatic slideshow for Solutions Gallery
+  startSolAutoplay();
 
   // Smooth Scroll-Scaling:
   // As user scrolls down the webpage, causes the entire section card to scale down or up smoothly
