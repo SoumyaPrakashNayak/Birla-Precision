@@ -170,8 +170,30 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // --------------------------------------------------------------------------
-  // 8. Global Shopping Cart State & Slide Drawer (Image 2 Reference)
+  // 7b. Move To Top Floating Arrow
+  var backToTopBtn = document.getElementById('backToTopBtn');
+  if (backToTopBtn) {
+    function toggleBackToTop() {
+      var scrollY = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+      if (scrollY > 300) {
+        backToTopBtn.classList.add('is-visible');
+      } else {
+        backToTopBtn.classList.remove('is-visible');
+      }
+    }
+
+    window.addEventListener('scroll', toggleBackToTop, { passive: true });
+    toggleBackToTop();
+
+    backToTopBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+  }
+
   // --------------------------------------------------------------------------
   // 8. Global Shopping Cart State & Slide Drawer (Image 2 Reference)
   // --------------------------------------------------------------------------

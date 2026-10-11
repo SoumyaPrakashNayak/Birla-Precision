@@ -867,6 +867,14 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
     </a>
   </div>
 
+  <!-- Floating Move to Top Arrow Button -->
+  <button type="button" class="back-to-top-btn" id="backToTopBtn" aria-label="Move to top" title="Move to top">
+    <svg viewBox="0 0 24 24" class="back-to-top-arrow" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="19" x2="12" y2="5"></line>
+      <polyline points="5 12 12 5 19 12"></polyline>
+    </svg>
+  </button>
+
   <!-- Global JavaScript -->
   <script src="<?php echo $base_url; ?>assets/js/main.js"></script>
   <?php if ($current_page === 'home'): ?>
