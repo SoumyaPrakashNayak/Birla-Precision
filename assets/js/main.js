@@ -543,8 +543,37 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // --------------------------------------------------------------------------
-  // 8b. Commercial Checkout & Buy Now Feature
+  // 8b. Commercial Checkout & Buy Now Feature (Matching Image 2 Reference)
   // --------------------------------------------------------------------------
+  var checkoutEditCartBtn = document.getElementById('checkoutEditCartBtn');
+  var coEditCartText = document.getElementById('coEditCartText');
+  var coDeliveryAddress = document.getElementById('coDeliveryAddress');
+  var addressCharCount = document.getElementById('addressCharCount');
+
+  if (checkoutEditCartBtn) {
+    checkoutEditCartBtn.addEventListener('click', function () {
+      closeCheckoutModal();
+      openCartDrawer();
+    });
+  }
+
+  if (coDeliveryAddress && addressCharCount) {
+    coDeliveryAddress.addEventListener('input', function () {
+      addressCharCount.textContent = this.value.length;
+    });
+  }
+
+  // Payment radio option card selection
+  var payOptionCards = document.querySelectorAll('.co-pay-option-card');
+  payOptionCards.forEach(function (card) {
+    card.addEventListener('click', function () {
+      payOptionCards.forEach(function (c) { c.classList.remove('is-active'); });
+      card.classList.add('is-active');
+      var radio = card.querySelector('.co-radio-input');
+      if (radio) radio.checked = true;
+    });
+  });
+
   function openCheckoutModal() {
     var cart = getCart();
     if (cart.length === 0) {
@@ -554,22 +583,49 @@ document.addEventListener('DOMContentLoaded', function () {
 
     closeCartDrawer();
 
+    if (coEditCartText) {
+      coEditCartText.textContent = 'Edit Cart (' + cart.length + ' item' + (cart.length > 1 ? 's' : '') + ')';
+    }
+
     if (checkoutItemsPreview && checkoutSubtotal && checkoutGst && checkoutGrandTotal) {
       var sub = 0;
       checkoutItemsPreview.innerHTML = '';
       cart.forEach(function (item) {
         sub += (item.total || 0);
         var previewRow = document.createElement('div');
-        previewRow.className = 'checkout-preview-item';
+        previewRow.className = 'co-item-row';
         previewRow.innerHTML =
-          '<span>' + escapeHtml(item.title) + ' (' + item.qty + ' pcs &bull; ' + escapeHtml(item.diaText) + ')</span>' +
-          '<strong>' + formatPriceINR(item.total) + '</strong>';
+          '<div class="co-item-thumb-box">' +
+            '<img src="' + resolveAssetUrl(item.img) + '" alt="' + escapeHtml(item.title) + '" class="co-item-thumb-img" onerror="this.onerror=null;this.src=\'' + resolveAssetUrl('assets/images/products/gallery_thumb_1.jpg') + '\';">' +
+          '</div>' +
+          '<div class="co-item-info">' +
+            '<div class="co-item-title-row">' +
+              '<strong>' + escapeHtml(item.title) + '</strong>' +
+              '<span class="co-item-qty">' + item.qty + ' pcs</span>' +
+            '</div>' +
+            '<div class="co-item-meta-row">' +
+              '<span>' + escapeHtml(item.variantName || 'ITM STD.') + (item.diaText ? ' - ' + escapeHtml(item.diaText) : '') + '</span>' +
+              '<span class="co-item-price">' + formatPriceINR(item.total) + '</span>' +
+            '</div>' +
+            '<div class="co-item-badges">' +
+              '<span class="cart-badge-dagger">DAGGER BRAND</span>' +
+              '<span class="cart-badge-gray">IS : 5101</span>' +
+              '<span class="cart-badge-gray">HSN 8207</span>' +
+            '</div>' +
+          '</div>';
         checkoutItemsPreview.appendChild(previewRow);
       });
 
-      var gst = sub * 0.18;
-      var grand = sub + gst;
-      checkoutSubtotal.textContent = formatPriceINR(sub);
+      var finalSub = sub;
+      if (appliedCoupon && appliedCoupon.percent) {
+        var discount = (sub * appliedCoupon.percent) / 100.0;
+        finalSub = Math.max(0, sub - discount);
+      }
+
+      var gst = Math.round((finalSub * 0.18) * 100) / 100;
+      var grand = Math.round((finalSub + gst) * 100) / 100;
+
+      checkoutSubtotal.textContent = formatPriceINR(finalSub);
       checkoutGst.textContent = formatPriceINR(gst);
       checkoutGrandTotal.textContent = formatPriceINR(grand);
     }
@@ -609,15 +665,6 @@ document.addEventListener('DOMContentLoaded', function () {
     checkoutModalOverlay.addEventListener('click', closeCheckoutModal);
   }
 
-  // Payment radio option click handler
-  var payOptions = document.querySelectorAll('.payment-option');
-  payOptions.forEach(function (opt) {
-    opt.addEventListener('click', function () {
-      payOptions.forEach(function (o) { o.classList.remove('is-active'); });
-      opt.classList.add('is-active');
-    });
-  });
-
   if (checkoutForm) {
     checkoutForm.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -652,18 +699,24 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // --------------------------------------------------------------------------
-  // 9. Customer / Distributor Login Modal (Image 2 Reference)
+  // 9. Customer / Distributor Login Modal (Image 1 Reference)
   // --------------------------------------------------------------------------
   var navLoginBtn = document.getElementById('navLoginBtn');
   var loginModal = document.getElementById('loginModal');
   var loginModalOverlay = document.getElementById('loginModalOverlay');
   var loginModalClose = document.getElementById('loginModalClose');
+  var loginForm = document.getElementById('loginForm');
+  var loginEmail = document.getElementById('loginEmail');
+  var loginPassword = document.getElementById('loginPassword');
+  var loginSubmitBtn = document.getElementById('loginSubmitBtn');
+  var forgotPwLink = document.getElementById('forgotPwLink');
 
   function openLoginModal() {
     if (loginModal && loginModalOverlay) {
       loginModal.classList.add('is-open');
       loginModalOverlay.classList.add('is-open');
       document.body.style.overflow = 'hidden';
+      if (loginEmail) setTimeout(function () { loginEmail.focus(); }, 150);
     }
   }
 
@@ -688,6 +741,36 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (loginModalOverlay) {
     loginModalOverlay.addEventListener('click', closeLoginModal);
+  }
+
+  if (loginForm) {
+    loginForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var emailVal = (loginEmail ? loginEmail.value : '').trim();
+      if (!emailVal) return;
+
+      if (loginSubmitBtn) {
+        loginSubmitBtn.disabled = true;
+        loginSubmitBtn.innerHTML = '<span>Signing In...</span>';
+      }
+
+      setTimeout(function () {
+        if (loginSubmitBtn) {
+          loginSubmitBtn.disabled = false;
+          loginSubmitBtn.innerHTML = '<span>Sign In to Portal</span><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.5" class="btn-arrow-icon"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>';
+        }
+        closeLoginModal();
+        alert('Welcome back! Signed in to Birla Precision Distributor Portal as ' + emailVal);
+      }, 700);
+    });
+  }
+
+  if (forgotPwLink) {
+    forgotPwLink.addEventListener('click', function (e) {
+      e.preventDefault();
+      var emailVal = (loginEmail && loginEmail.value) ? loginEmail.value.trim() : 'your commercial email';
+      alert('Password reset link has been dispatched to ' + emailVal + '. Please check your inbox.');
+    });
   }
 
   // Global keydown for closing drawer/modals

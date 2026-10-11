@@ -263,109 +263,402 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
     </div>
   </aside>
 
-  <!-- Instant Checkout / Commercial Order Modal -->
+  <!-- Instant Checkout / Commercial Order Modal (Image 2 Reference) -->
   <div class="checkout-modal-overlay" id="checkoutModalOverlay"></div>
   <div class="checkout-modal" id="checkoutModal" role="dialog" aria-modal="true" aria-labelledby="checkoutModalTitle">
-    <button type="button" class="checkout-modal-close" id="checkoutModalClose" aria-label="Close Checkout">&times;</button>
-    <div class="checkout-modal-header">
-      <div class="checkout-badge-row">
-        <span class="checkout-secure-badge">
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-          Birla Precision Direct Factory Checkout
-        </span>
+    
+    <!-- Top Header Banner with Workshop Background, Logo, Badges & Stepper -->
+    <div class="checkout-modal-header-banner">
+      <button type="button" class="checkout-modal-close" id="checkoutModalClose" aria-label="Close Checkout">&times;</button>
+      
+      <div class="checkout-banner-content">
+        <div class="checkout-banner-top-row">
+          <div class="checkout-brand-group">
+            <img src="<?php echo $base_url; ?>assets/images/brand/birla_precision_logo.png" alt="Birla Precision Technologies" class="checkout-brand-logo">
+            <span class="checkout-factory-badge">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              Direct Factory Checkout
+            </span>
+          </div>
+          <div class="checkout-dagger-tag">
+            <span class="dagger-tag-title">DAGGER BRAND</span>
+            <span class="dagger-tag-sub">SINCE 1937</span>
+            <div class="dagger-tag-accent"></div>
+          </div>
+        </div>
+
+        <div class="checkout-banner-title-wrap">
+          <h3 id="checkoutModalTitle" class="checkout-banner-heading">Commercial Purchase Order Checkout</h3>
+          <p class="checkout-banner-subtitle">
+            Place your order with official tax invoice, dispatch tracking, and authentic IS:5101 certified products.
+          </p>
+        </div>
+
+        <!-- 3-Step Progress Indicator -->
+        <div class="checkout-stepper-progress">
+          <div class="step-indicator-item is-active">
+            <div class="step-indicator-num">1</div>
+            <span class="step-indicator-label">Order Details</span>
+          </div>
+          <div class="step-indicator-divider is-active"></div>
+          <div class="step-indicator-item">
+            <div class="step-indicator-num">2</div>
+            <span class="step-indicator-label">Buyer Information</span>
+          </div>
+          <div class="step-indicator-divider"></div>
+          <div class="step-indicator-item">
+            <div class="step-indicator-num">3</div>
+            <span class="step-indicator-label">Payment &amp; Confirm</span>
+          </div>
+        </div>
       </div>
-      <h3 id="checkoutModalTitle">Commercial Purchase Order Checkout</h3>
-      <p>Direct factory procurement with official tax invoice, dispatch tracking, and authentic IS:5101 certification.</p>
     </div>
 
+    <!-- 2-Column Body Content -->
     <div class="checkout-modal-body" id="checkoutModalBody">
-      <!-- Order Summary Card -->
-      <div class="checkout-order-summary">
-        <h4 class="checkout-subhead">Order Summary</h4>
-        <div class="checkout-items-preview" id="checkoutItemsPreview"></div>
-        <div class="checkout-totals-box">
-          <div class="checkout-row">
-            <span>Catalogue Subtotal</span>
-            <strong id="checkoutSubtotal">₹ 0.00</strong>
+      <div class="checkout-grid-container">
+        
+        <!-- Left Column: Order Summary, Commercial Buyer Details & Payment Terms -->
+        <div class="checkout-col-main">
+          <form id="checkoutForm">
+            
+            <!-- 1. Order Summary Card -->
+            <div class="co-section-card">
+              <div class="co-section-header">
+                <div class="co-header-title">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" class="co-red-icon">
+                    <circle cx="9" cy="21" r="1"></circle>
+                    <circle cx="20" cy="21" r="1"></circle>
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                  </svg>
+                  <h4>Order Summary</h4>
+                </div>
+                <button type="button" class="co-edit-cart-link" id="checkoutEditCartBtn">
+                  <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                  <span id="coEditCartText">Edit Cart (1 item)</span>
+                </button>
+              </div>
+
+              <!-- Dynamic Product Items Container -->
+              <div class="co-items-list" id="checkoutItemsPreview"></div>
+
+              <!-- Summary Totals Table -->
+              <div class="co-totals-breakdown">
+                <div class="co-total-line">
+                  <span>Catalogue Subtotal</span>
+                  <strong id="checkoutSubtotal">₹ 0.00</strong>
+                </div>
+                <div class="co-total-line">
+                  <span>Applicable GST (18%)</span>
+                  <strong id="checkoutGst">₹ 0.00</strong>
+                </div>
+                <div class="co-total-line">
+                  <span class="line-label-with-tooltip">
+                    Freight &amp; Insurance
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                  </span>
+                  <span class="co-text-for">F.O.R. Included</span>
+                </div>
+                <div class="co-total-line co-grand-payable-row">
+                  <span class="co-payable-label">Total Payable Amount</span>
+                  <strong class="co-payable-amount" id="checkoutGrandTotal">₹ 0.00</strong>
+                </div>
+              </div>
+
+              <!-- Blue Callout Notice -->
+              <div class="co-tax-alert-callout">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <span>Final tax invoice will be issued with applicable GST and dispatch details.</span>
+              </div>
+            </div>
+
+            <!-- 2. Commercial Buyer Details Card -->
+            <div class="co-section-card">
+              <div class="co-section-header">
+                <div class="co-header-title">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" class="co-red-icon">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                  <h4>Commercial Buyer Details</h4>
+                </div>
+                <span class="co-required-badge">All fields are required *</span>
+              </div>
+
+              <div class="co-form-grid">
+                <div class="co-form-row co-row-2col">
+                  <div class="form-group">
+                    <label class="form-label" for="coCompanyName">Company / Firm Name *</label>
+                    <div class="input-with-icon">
+                      <svg viewBox="0 0 24 24" class="input-prefix-icon" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 21h18M9 8h1m-1 4h1m-1 4h1m4-8h1m-1 4h1m-1 4h1M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path>
+                      </svg>
+                      <input type="text" id="coCompanyName" class="portal-input" placeholder="e.g. Apex Industrial Solutions Pvt. Ltd." required>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="coGstin">GSTIN Number *</label>
+                    <div class="input-with-icon">
+                      <svg viewBox="0 0 24 24" class="input-prefix-icon" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                      </svg>
+                      <input type="text" id="coGstin" class="portal-input" placeholder="e.g. 27AAACB1234F1Z5" required>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="co-form-row co-row-2col">
+                  <div class="form-group">
+                    <label class="form-label" for="coContactName">Contact Person *</label>
+                    <div class="input-with-icon">
+                      <svg viewBox="0 0 24 24" class="input-prefix-icon" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                      </svg>
+                      <input type="text" id="coContactName" class="portal-input" placeholder="e.g. Rajesh Sharma" required>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="coPhone">Phone / Mobile *</label>
+                    <div class="input-with-icon">
+                      <svg viewBox="0 0 24 24" class="input-prefix-icon" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                      </svg>
+                      <input type="tel" id="coPhone" class="portal-input" placeholder="e.g. +91 98765 43210" required>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="co-form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="coEmail">Commercial Email *</label>
+                    <div class="input-with-icon">
+                      <svg viewBox="0 0 24 24" class="input-prefix-icon" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                      </svg>
+                      <input type="email" id="coEmail" class="portal-input" placeholder="e.g. procurement@company.com" required>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="co-form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="coDeliveryAddress">Delivery Plant Address &amp; Pincode *</label>
+                    <div class="input-with-icon textarea-icon-wrapper">
+                      <svg viewBox="0 0 24 24" class="input-prefix-icon textarea-prefix-icon" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                      </svg>
+                      <textarea id="coDeliveryAddress" class="portal-input portal-textarea" rows="2" maxlength="250" placeholder="Plant / Warehouse address for freight and delivery coordination" required></textarea>
+                    </div>
+                    <div class="textarea-char-count"><span id="addressCharCount">0</span>/250</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Payment / Credit Terms Card -->
+            <div class="co-section-card">
+              <div class="co-section-header">
+                <div class="co-header-title">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" class="co-red-icon">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                    <line x1="1" y1="10" x2="23" y2="10"></line>
+                  </svg>
+                  <h4>Payment / Credit Terms</h4>
+                </div>
+                <span class="co-required-badge">Choose the most convenient option</span>
+              </div>
+
+              <div class="co-payment-options-grid">
+                <!-- Option 1: Bank Wire -->
+                <label class="co-pay-option-card is-active">
+                  <input type="radio" name="payMethod" value="neft" checked class="co-radio-input">
+                  <div class="co-radio-bullet"></div>
+                  <div class="co-pay-icon-box">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="4" y1="21" x2="20" y2="21"></line>
+                      <line x1="2" y1="10" x2="22" y2="10"></line>
+                      <polygon points="12 2 2 7 22 7"></polygon>
+                      <line x1="6" y1="10" x2="6" y2="21"></line>
+                      <line x1="10" y1="10" x2="10" y2="21"></line>
+                      <line x1="14" y1="10" x2="14" y2="21"></line>
+                      <line x1="18" y1="10" x2="18" y2="21"></line>
+                    </svg>
+                  </div>
+                  <div class="co-pay-text">
+                    <strong>Bank Wire (RTGS / NEFT)</strong>
+                    <span>Immediate dispatch upon wire confirmation</span>
+                  </div>
+                </label>
+
+                <!-- Option 2: Commercial Credit Line -->
+                <label class="co-pay-option-card">
+                  <input type="radio" name="payMethod" value="credit" class="co-radio-input">
+                  <div class="co-radio-bullet"></div>
+                  <div class="co-pay-icon-box">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="16" y1="2" x2="16" y2="6"></line>
+                      <line x1="8" y1="2" x2="8" y2="6"></line>
+                      <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                  </div>
+                  <div class="co-pay-text">
+                    <strong>Commercial Credit Line (30 Days)</strong>
+                    <span>Approved BPTL distributor / OEM corporate accounts</span>
+                  </div>
+                </label>
+
+                <!-- Option 3: Instant Online / UPI Gateway -->
+                <label class="co-pay-option-card">
+                  <input type="radio" name="payMethod" value="online" class="co-radio-input">
+                  <div class="co-radio-bullet"></div>
+                  <div class="co-pay-icon-box">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                      <line x1="1" y1="10" x2="23" y2="10"></line>
+                    </svg>
+                  </div>
+                  <div class="co-pay-text">
+                    <strong>Instant Online / UPI Gateway</strong>
+                    <span>Corporate Credit Card / NetBanking / UPI</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Terms Checkbox & Primary Submit Button -->
+            <div class="co-submit-section">
+              <label class="custom-checkbox-label">
+                <input type="checkbox" id="checkoutAgreeTerms" checked required class="custom-checkbox-input">
+                <span class="custom-checkbox-box"></span>
+                <span class="checkbox-text">
+                  I agree to the <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php#enquiry" target="_blank" class="text-red">Terms &amp; Conditions</a> and confirm that the above information is correct.
+                </span>
+              </label>
+
+              <button type="submit" class="btn-checkout-confirm" id="checkoutSubmitBtn">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <span class="btn-submit-text">Confirm &amp; Place Commercial Order</span>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" class="btn-arrow-icon">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+                <span class="btn-submit-spinner" id="checkoutSpinner" style="display:none;"></span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Right Column: Sidebar (Why Order Direct?, Need Assistance?, Large Order?) -->
+        <div class="checkout-col-sidebar">
+          
+          <!-- Card 1: Why Order Direct? -->
+          <div class="co-sidebar-card">
+            <div class="sidebar-card-title">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#DC2626" stroke-width="2.5">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                <polyline points="9 12 11 14 15 10"></polyline>
+              </svg>
+              <h5>Why Order Direct?</h5>
+            </div>
+            <ul class="co-benefits-list">
+              <li>
+                <div class="benefit-icon-box">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                </div>
+                <div class="benefit-text">
+                  <strong>Official Tax Invoice</strong>
+                  <span>with GST compliance</span>
+                </div>
+              </li>
+              <li>
+                <div class="benefit-icon-box">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
+                </div>
+                <div class="benefit-text">
+                  <strong>Authentic IS:5101</strong>
+                  <span>certified products</span>
+                </div>
+              </li>
+              <li>
+                <div class="benefit-icon-box">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                </div>
+                <div class="benefit-text">
+                  <strong>Real-time Dispatch</strong>
+                  <span>Tracking</span>
+                </div>
+              </li>
+              <li>
+                <div class="benefit-icon-box">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                </div>
+                <div class="benefit-text">
+                  <strong>Dedicated Support</strong>
+                  <span>for commercial orders</span>
+                </div>
+              </li>
+            </ul>
           </div>
-          <div class="checkout-row">
-            <span>Applicable GST (18%)</span>
-            <span id="checkoutGst">₹ 0.00</span>
+
+          <!-- Card 2: Need Assistance? -->
+          <div class="co-sidebar-card">
+            <div class="sidebar-card-title">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#DC2626" stroke-width="2">
+                <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+                <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+              </svg>
+              <h5>Need Assistance?</h5>
+            </div>
+            <p class="sidebar-help-desc">Our team is here to help with pricing, payment terms, and delivery timelines.</p>
+            <div class="sidebar-contact-links">
+              <a href="tel:+912532352315" class="sidebar-contact-item">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#DC2626" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                <span>+91 253 2352315</span>
+              </a>
+              <a href="mailto:sales@birlaprecision.com" class="sidebar-contact-item">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#DC2626" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                <span>sales@birlaprecision.com</span>
+              </a>
+            </div>
           </div>
-          <div class="checkout-row">
-            <span>Freight &amp; Insurance</span>
-            <span class="text-free-shipping">F.O.R. Included</span>
+
+          <!-- Card 3: Large Order or Custom Requirement? -->
+          <div class="co-sidebar-card co-sidebar-custom-card">
+            <div class="custom-card-icon-title">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#DC2626" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+              <h5>Large Order or Custom Requirement?</h5>
+            </div>
+            <p class="custom-card-desc">Contact our sales team for special pricing and customized solutions.</p>
+            <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php#enquiry" class="btn-custom-quote">
+              <span>Request &amp; Quotation</span>
+              <span class="btn-arrow">&rarr;</span>
+            </a>
           </div>
-          <div class="checkout-row checkout-grand-total">
-            <span>Total Payable Amount</span>
-            <strong id="checkoutGrandTotal">₹ 0.00</strong>
-          </div>
+
         </div>
       </div>
-
-      <!-- Commercial Buyer Details Form -->
-      <form class="checkout-form" id="checkoutForm">
-        <h4 class="checkout-subhead">Commercial Buyer Details</h4>
-        <div class="form-row-2col">
-          <div class="form-group">
-            <label class="form-label" for="coCompanyName">Company / Firm Name *</label>
-            <input type="text" id="coCompanyName" class="form-control" placeholder="e.g. Apex Industrial Solutions Pvt Ltd" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="coGstin">GSTIN Number *</label>
-            <input type="text" id="coGstin" class="form-control" placeholder="e.g. 27AAACB1234F1Z5" required>
-          </div>
-        </div>
-        <div class="form-row-2col">
-          <div class="form-group">
-            <label class="form-label" for="coContactName">Contact Person *</label>
-            <input type="text" id="coContactName" class="form-control" placeholder="e.g. Rajesh Sharma" required>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="coPhone">Phone / Mobile *</label>
-            <input type="tel" id="coPhone" class="form-control" placeholder="e.g. +91 98765 43210" required>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="coEmail">Commercial Email *</label>
-          <input type="email" id="coEmail" class="form-control" placeholder="e.g. procurement@company.com" required>
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="coDeliveryAddress">Delivery Plant Address &amp; Pincode *</label>
-          <textarea id="coDeliveryAddress" class="form-control" rows="2" placeholder="Plant / Warehouse address for freight dispatch" required></textarea>
-        </div>
-
-        <!-- Payment Method Selection -->
-        <h4 class="checkout-subhead" style="margin-top:16px;">Payment / Credit Terms</h4>
-        <div class="checkout-payment-methods">
-          <label class="payment-option is-active">
-            <input type="radio" name="payMethod" value="neft" checked>
-            <div class="pay-option-content">
-              <strong>Bank Wire (RTGS / NEFT)</strong>
-              <span>Immediate dispatch upon wire confirmation</span>
-            </div>
-          </label>
-          <label class="payment-option">
-            <input type="radio" name="payMethod" value="credit">
-            <div class="pay-option-content">
-              <strong>Commercial Credit Line (30 Days)</strong>
-              <span>Approved BPTL distributor / OEM corporate accounts</span>
-            </div>
-          </label>
-          <label class="payment-option">
-            <input type="radio" name="payMethod" value="online">
-            <div class="pay-option-content">
-              <strong>Instant Online / UPI Gateway</strong>
-              <span>Corporate Credit Card / NetBanking / UPI</span>
-            </div>
-          </label>
-        </div>
-
-        <button type="submit" class="btn-confirm-order" id="checkoutSubmitBtn">
-          <span class="btn-submit-text">Confirm &amp; Place Commercial Order</span>
-          <span class="btn-submit-spinner" id="checkoutSpinner" style="display:none;"></span>
-        </button>
-      </form>
     </div>
 
     <!-- Success Confirmation State (shown after placing order) -->
@@ -379,43 +672,184 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
         Thank you for choosing Birla Precision Technologies. An official proforma tax invoice and dispatch tracking timeline have been sent to your commercial email.
       </p>
       <div class="success-actions">
-        <button type="button" class="btn btn-primary" id="checkoutDoneBtn">Done / Continue Browsing</button>
+        <button type="button" class="btn-checkout-confirm" id="checkoutDoneBtn" style="max-width:280px; margin: 0 auto;">Done / Continue Browsing</button>
       </div>
     </div>
   </div>
 
-  <!-- Customer & Distributor Login Modal -->
+  <!-- Customer & Distributor Login Modal (Image 1 Reference) -->
   <div class="login-modal-overlay" id="loginModalOverlay"></div>
   <div class="login-modal" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
     <button type="button" class="login-modal-close" id="loginModalClose" aria-label="Close Login">&times;</button>
-    <div class="login-modal-header">
-      <img src="<?php echo $base_url; ?>assets/images/brand/birla_precision_logo.png" alt="Birla Precision" class="login-modal-logo">
-      <h3 id="loginModalTitle">Customer &amp; Distributor Portal</h3>
-      <p>Sign in to access distributor pricing tiers, real-time dispatch tracking, and commercial orders.</p>
+    
+    <div class="login-modal-grid">
+      <!-- Left Column: Branding, Features & Precision Drill Imagery -->
+      <div class="login-grid-left">
+        <div class="login-left-content">
+          <div class="login-brand-header">
+            <img src="<?php echo $base_url; ?>assets/images/brand/birla_precision_logo.png" alt="Birla Precision Technologies" class="login-brand-logo">
+          </div>
+          
+          <div class="login-hero-titles">
+            <h2 class="portal-main-heading">Customer &amp;<br>Distributor <span class="text-red">Portal</span></h2>
+            <div class="portal-heading-accent"></div>
+            <p class="portal-desc">
+              Access distributor pricing tiers, real-time dispatch tracking, and manage your commercial orders &mdash; all in one place.
+            </p>
+          </div>
+
+          <!-- 4 Feature Cards -->
+          <div class="portal-features-list">
+            <div class="portal-feature-item">
+              <div class="feature-icon-pill">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                  <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                </svg>
+              </div>
+              <div class="feature-text">
+                <strong>Exclusive Pricing</strong>
+                <span>View distributor pricing tiers and offers.</span>
+              </div>
+            </div>
+
+            <div class="portal-feature-item">
+              <div class="feature-icon-pill">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+              </div>
+              <div class="feature-text">
+                <strong>Order Management</strong>
+                <span>Place and track commercial orders.</span>
+              </div>
+            </div>
+
+            <div class="portal-feature-item">
+              <div class="feature-icon-pill">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="1" y="3" width="15" height="13"></rect>
+                  <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                  <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                  <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                </svg>
+              </div>
+              <div class="feature-text">
+                <strong>Real-Time Dispatch</strong>
+                <span>Track shipments and delivery status.</span>
+              </div>
+            </div>
+
+            <div class="portal-feature-item">
+              <div class="feature-icon-pill">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+              </div>
+              <div class="feature-text">
+                <strong>Sales Support</strong>
+                <span>Access catalogues, technical data and support.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right overlay graphic with precision drill bits -->
+        <div class="login-drills-graphic">
+          <img src="<?php echo $base_url; ?>assets/images/products/hss_jobber_drills_showcase.png" alt="Precision Drills" class="login-drills-img">
+        </div>
+      </div>
+
+      <!-- Right Column: Sign In Form -->
+      <div class="login-grid-right">
+        <div class="login-form-wrapper">
+          <div class="login-right-heading">
+            <h3 id="loginModalTitle" class="login-title">Welcome Back</h3>
+            <p class="login-subtitle">Sign in to access your distributor account.</p>
+          </div>
+
+          <form class="login-portal-form" id="loginForm">
+            <div class="form-group">
+              <label class="form-label" for="loginEmail">Email / Account Code</label>
+              <div class="input-with-icon">
+                <svg viewBox="0 0 24 24" class="input-prefix-icon" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+                <input type="text" id="loginEmail" class="portal-input" placeholder="e.g. distributor@birlaprecision.com" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="password-label-row">
+                <label class="form-label" for="loginPassword">Password</label>
+                <a href="#forgot" class="link-forgot-pw" id="forgotPwLink">Forgot Password?</a>
+              </div>
+              <div class="input-with-icon">
+                <svg viewBox="0 0 24 24" class="input-prefix-icon" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <input type="password" id="loginPassword" class="portal-input" placeholder="••••••••••••" required>
+              </div>
+            </div>
+
+            <div class="login-remember-row">
+              <label class="custom-checkbox-label">
+                <input type="checkbox" id="loginRememberCheck" checked class="custom-checkbox-input">
+                <span class="custom-checkbox-box"></span>
+                <span class="checkbox-text">Remember me on this device</span>
+              </label>
+            </div>
+
+            <button type="submit" class="btn-portal-submit" id="loginSubmitBtn">
+              <span>Sign In to Portal</span>
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.5" class="btn-arrow-icon">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+
+            <div class="portal-divider-row">
+              <span>OR</span>
+            </div>
+
+            <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php#enquiry" class="btn-dealership-apply">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 21h18M9 8h1m-1 4h1m-1 4h1m4-8h1m-1 4h1m-1 4h1M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path>
+              </svg>
+              <span>Apply for Dealership</span>
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </a>
+
+            <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php#enquiry" class="portal-partner-banner">
+              <div class="partner-banner-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                  <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                </svg>
+              </div>
+              <div class="partner-banner-info">
+                <strong>New industrial partner?</strong>
+                <p>Apply for dealership to access exclusive pricing and partner benefits.</p>
+              </div>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" class="partner-arrow">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </a>
+          </form>
+        </div>
+      </div>
     </div>
-    <form class="login-modal-form" id="loginForm" onsubmit="event.preventDefault(); alert('Demo: Authenticated to Birla Precision Customer Portal!'); document.getElementById('loginModal').classList.remove('is-open'); document.getElementById('loginModalOverlay').classList.remove('is-open');">
-      <div class="form-group">
-        <label class="form-label" for="loginEmail">Email / Account Code</label>
-        <input type="text" id="loginEmail" class="form-control" placeholder="e.g. distributor@birlaprecision.com" required>
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="loginPassword">Password</label>
-        <input type="password" id="loginPassword" class="form-control" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" required>
-      </div>
-      <div class="login-form-options">
-        <label class="login-remember-me">
-          <input type="checkbox" checked> Remember me
-        </label>
-        <a href="#" class="login-forgot-link" onclick="alert('Please contact your Birla Precision sales representative or email info@birlaprecision.com to reset distributor credentials.'); return false;">Forgot Password?</a>
-      </div>
-      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:14px;">
-        Sign In to Portal
-      </button>
-      <div class="distributor-register-note">
-        <span>New industrial partner?</span>
-        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php#enquiry">Apply for Dealership &rarr;</a>
-      </div>
-    </form>
   </div>
 
   <!-- Floating WhatsApp & Customer Support Widget (Matching iBELL screenshots) -->
