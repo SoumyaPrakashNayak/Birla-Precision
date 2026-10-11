@@ -249,4 +249,63 @@ document.addEventListener('DOMContentLoaded', function () {
     updateCardScaleOnScroll();
   }
 
+  // --------------------------------------------------------------------------
+  // Foundation in Numbers — Rolling Counter Animation (Image 1 Reference)
+  // --------------------------------------------------------------------------
+  var foundationSection = document.getElementById('about');
+  var statRollNumbers = document.querySelectorAll('.stat-roll-number');
+
+  if (foundationSection && statRollNumbers.length > 0) {
+    var hasCountersAnimated = false;
+
+    function runRollAnimation() {
+      if (hasCountersAnimated) return;
+      hasCountersAnimated = true;
+
+      statRollNumbers.forEach(function (numEl) {
+        var targetVal = parseInt(numEl.getAttribute('data-target'), 10) || 0;
+        var duration = 2000; // 2 seconds
+        var startTime = null;
+
+        function animateNumber(now) {
+          if (!startTime) startTime = now;
+          var elapsed = now - startTime;
+          var progress = Math.min(elapsed / duration, 1);
+
+          // Smooth exponential ease-out
+          var ease = (progress === 1) ? 1 : (1 - Math.pow(2, -10 * progress));
+          var current = Math.floor(ease * targetVal);
+
+          numEl.textContent = current.toLocaleString('en-US');
+
+          if (progress < 1) {
+            window.requestAnimationFrame(animateNumber);
+          } else {
+            numEl.textContent = targetVal.toLocaleString('en-US');
+          }
+        }
+
+        window.requestAnimationFrame(animateNumber);
+      });
+    }
+
+    if ('IntersectionObserver' in window) {
+      var counterObserver = new IntersectionObserver(function (entries, observer) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            runRollAnimation();
+            observer.unobserve(entry.target);
+          }
+        });
+      }, {
+        threshold: 0.2,
+        rootMargin: '0px 0px -40px 0px'
+      });
+
+      counterObserver.observe(foundationSection);
+    } else {
+      runRollAnimation();
+    }
+  }
+
 });

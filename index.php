@@ -79,15 +79,15 @@ include __DIR__ . '/includes/header.php';
 
   </div>
 
-  <!-- Carousel Navigation Controls — Single Arrow without Circle/Hover Effect -->
+  <!-- Carousel Navigation Controls — Larger Single Arrow without Circle/Hover Effect (Image 3) -->
   <button class="carousel-btn carousel-btn-prev" aria-label="Previous Slide">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="15 5 8 12 15 19"></polyline>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="16 3 7 12 16 21"></polyline>
     </svg>
   </button>
   <button class="carousel-btn carousel-btn-next" aria-label="Next Slide">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="9 5 16 12 9 19"></polyline>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="8 3 17 12 8 21"></polyline>
     </svg>
   </button>
 
@@ -557,35 +557,140 @@ include __DIR__ . '/includes/header.php';
 </section>
 
 <!-- ==========================================================================
-     HERITAGE & MANUFACTURING STRENGTHS
+     OUR FOUNDATION IN NUMBERS / PIONEERING SECTION (Matching Image 1 Reference)
      ========================================================================== -->
-<section class="heritage-section" id="about" aria-label="Company Heritage">
-  <div class="container">
-    
-    <div class="heritage-grid">
+<section class="foundation-numbers-section" id="about" aria-label="Our Foundation in Numbers">
+  
+  <!-- Left Side Drill Flute Backdrop Image with Smooth Fade -->
+  <div class="foundation-bg-flute" aria-hidden="true">
+    <img src="assets/images/hero/hero_twist_drills_precision.jpg" alt="" class="foundation-flute-img">
+    <div class="foundation-flute-overlay"></div>
+  </div>
+
+  <!-- Right Side World Globe Graphic with Dotted Trade Connections -->
+  <div class="foundation-bg-globe" aria-hidden="true">
+    <svg viewBox="0 0 460 460" fill="none" class="foundation-globe-svg" xmlns="http://www.w3.org/2000/svg">
+      <!-- Latitude / Longitude Grids -->
+      <circle cx="230" cy="230" r="190" stroke="#E5E7EB" stroke-width="1.5" stroke-dasharray="4 4"/>
+      <ellipse cx="230" cy="230" rx="190" ry="120" stroke="#E5E7EB" stroke-width="1.2" stroke-dasharray="3 3"/>
+      <ellipse cx="230" cy="230" rx="190" ry="60" stroke="#E5E7EB" stroke-width="1.2" stroke-dasharray="3 3"/>
+      <line x1="40" y1="230" x2="420" y2="230" stroke="#E5E7EB" stroke-width="1.2"/>
+      <ellipse cx="230" cy="230" rx="120" ry="190" stroke="#E5E7EB" stroke-width="1.2" stroke-dasharray="3 3"/>
+      <ellipse cx="230" cy="230" rx="60" ry="190" stroke="#E5E7EB" stroke-width="1.2" stroke-dasharray="3 3"/>
+      <line x1="230" y1="40" x2="230" y2="420" stroke="#E5E7EB" stroke-width="1.2"/>
       
-      <div class="heritage-stat-card" data-aos="fade-up" data-aos-delay="100">
-        <div class="stat-number">1937</div>
-        <div class="stat-title">Pioneering Legacy</div>
-        <p class="stat-desc">First company in India to manufacture High-Speed Steel cutting tools and precision toolholders.</p>
+      <!-- Stylized Continent Dot Patterns / Shapes -->
+      <path d="M160 120c15-5 35 10 50 5s25-25 45-20 30 20 25 35-15 25-5 40 30 15 25 30-20 25-35 15-25 10-35-5-15-30-30-25-35-10-40-35 5-30 0-40z" fill="#D1D5DB" fill-opacity="0.35"/>
+      <path d="M220 230c10-5 25 5 35 15s15 30 10 45-20 25-15 40-15 20-30 15-20-15-25-30 5-35 10-50 5-30 15-35z" fill="#D1D5DB" fill-opacity="0.3"/>
+      <path d="M100 130c12-8 28 5 35 18s5 25 0 35-18 15-25 28-20 5-25-10 2-28 5-40 0-25 10-31z" fill="#D1D5DB" fill-opacity="0.25"/>
+      
+      <!-- Arcs Connecting Global Manufacturing Hubs -->
+      <path d="M220 185 Q 280 120 360 160" stroke="#D92D30" stroke-width="1.8" stroke-dasharray="4 3" stroke-linecap="round"/>
+      <path d="M220 185 Q 260 90 180 100" stroke="#D92D30" stroke-width="1.8" stroke-dasharray="4 3" stroke-linecap="round"/>
+      <path d="M220 185 Q 250 270 340 290" stroke="#D92D30" stroke-width="1.5" stroke-dasharray="4 3" stroke-linecap="round"/>
+      <path d="M220 185 Q 150 140 100 160" stroke="#D92D30" stroke-width="1.5" stroke-dasharray="4 3" stroke-linecap="round"/>
+      
+      <!-- Hub Nodes / Red Anchor Dots -->
+      <circle cx="220" cy="185" r="4.5" fill="#D92D30"/>
+      <circle cx="220" cy="185" r="8" stroke="#D92D30" stroke-width="1.2" stroke-opacity="0.4"/>
+      <circle cx="360" cy="160" r="3.5" fill="#D92D30"/>
+      <circle cx="180" cy="100" r="3.5" fill="#D92D30"/>
+      <circle cx="340" cy="290" r="3.5" fill="#D92D30"/>
+      <circle cx="100" cy="160" r="3.5" fill="#D92D30"/>
+    </svg>
+  </div>
+
+  <div class="container foundation-container">
+    
+    <!-- Header: Eyebrow + Heading + Subtitle -->
+    <div class="foundation-header-box" data-aos="fade-up">
+      <div class="foundation-eyebrow">
+        <span class="foundation-eyebrow-line"></span>
+        <span class="foundation-eyebrow-text">OUR FOUNDATION IN NUMBERS</span>
+        <span class="foundation-eyebrow-line"></span>
+      </div>
+      <h2 class="foundation-main-title">
+        Trusted by <span class="highlight-red">Industries Worldwide</span>
+      </h2>
+      <p class="foundation-lead-desc">
+        Decades of expertise, advanced manufacturing, and a global presence driving precision in every cut.
+      </p>
+    </div>
+
+    <!-- 4 Stats Columns Grid with Vertical Dividers & Rolling Numbers -->
+    <div class="foundation-stats-grid" id="foundationStatsGrid">
+      
+      <!-- 1. 1937 - Pioneering Legacy -->
+      <div class="foundation-stat-col" data-aos="fade-up" data-aos-delay="100">
+        <div class="stat-icon-badge">
+          <!-- Industrial Factory icon -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 20h20M4 20V8l4 3V8l4 3V4l8 4v12H4z"></path>
+          </svg>
+        </div>
+        <div class="foundation-stat-num-box">
+          <span class="stat-roll-number" data-target="1937">0</span>
+        </div>
+        <h4 class="foundation-stat-heading">Pioneering Legacy</h4>
+        <p class="foundation-stat-summary">
+          First company in India to manufacture High-Speed Steel cutting tools and precision toolholders.
+        </p>
       </div>
 
-      <div class="heritage-stat-card" data-aos="fade-up" data-aos-delay="200">
-        <div class="stat-number">3</div>
-        <div class="stat-title">Advanced Plants</div>
-        <p class="stat-desc">State-of-the-art production facilities at Nashik, Aurangabad, and Chalisgaon with CNC grinding lines.</p>
+      <!-- 2. 3 - Advanced Plants -->
+      <div class="foundation-stat-col" data-aos="fade-up" data-aos-delay="200">
+        <div class="stat-icon-badge">
+          <!-- Plant / Manufacturing facility icon -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 21h18M5 21V10l4 2.5V10l4 2.5V7l6 3v11H5z"></path>
+          </svg>
+        </div>
+        <div class="foundation-stat-num-box">
+          <span class="stat-roll-number" data-target="3">0</span>
+        </div>
+        <h4 class="foundation-stat-heading">Advanced Plants</h4>
+        <p class="foundation-stat-summary">
+          State-of-the-art production facilities at Nashik, Aurangabad, and Chalisgaon with CNC grinding lines.
+        </p>
       </div>
 
-      <div class="heritage-stat-card" data-aos="fade-up" data-aos-delay="300">
-        <div class="stat-number">50+</div>
-        <div class="stat-title">Countries Served</div>
-        <p class="stat-desc">Global footprint delivering dependable industrial tooling solutions to international manufacturing hubs.</p>
+      <!-- 3. 50+ - Countries Served -->
+      <div class="foundation-stat-col" data-aos="fade-up" data-aos-delay="300">
+        <div class="stat-icon-badge">
+          <!-- Globe icon -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+        </div>
+        <div class="foundation-stat-num-box">
+          <span class="stat-roll-number" data-target="50" data-suffix="+">0</span><span class="stat-plus-sign">+</span>
+        </div>
+        <h4 class="foundation-stat-heading">Countries Served</h4>
+        <p class="foundation-stat-summary">
+          Global footprint delivering dependable industrial tooling solutions to international manufacturing hubs.
+        </p>
       </div>
 
-      <div class="heritage-stat-card" data-aos="fade-up" data-aos-delay="400">
-        <div class="stat-number">262</div>
-        <div class="stat-title">Jobber Diameters</div>
-        <p class="stat-desc">Comprehensive size availability from 0.30 mm micro-drills to 22.22 mm (7/8") heavy duty jobbers.</p>
+      <!-- 4. 262 - Jobber Diameters -->
+      <div class="foundation-stat-col" data-aos="fade-up" data-aos-delay="400">
+        <div class="stat-icon-badge">
+          <!-- Twist drill flutes / tool icon -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="8" y="2" width="8" height="20" rx="3"></rect>
+            <line x1="8" y1="7" x2="16" y2="10"></line>
+            <line x1="8" y1="12" x2="16" y2="15"></line>
+            <line x1="8" y1="17" x2="16" y2="20"></line>
+          </svg>
+        </div>
+        <div class="foundation-stat-num-box">
+          <span class="stat-roll-number" data-target="262">0</span>
+        </div>
+        <h4 class="foundation-stat-heading">Jobber Diameters</h4>
+        <p class="foundation-stat-summary">
+          Comprehensive size availability from 0.30 mm micro-drills to 22.22 mm (7/8") heavy duty jobbers.
+        </p>
       </div>
 
     </div>
