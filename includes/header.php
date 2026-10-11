@@ -30,12 +30,12 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
 
   <!-- CSS Stylesheets -->
-  <link rel="stylesheet" href="<?php echo $base_url; ?>assets/css/main.css">
+  <link rel="stylesheet" href="<?php echo $base_url; ?>assets/css/main.css?v=<?php echo file_exists(__DIR__ . '/../assets/css/main.css') ? filemtime(__DIR__ . '/../assets/css/main.css') : '1.0'; ?>">
   <link rel="stylesheet" href="<?php echo $base_url; ?>assets/css/aos.css">
   <?php if ($current_page === 'home'): ?>
-    <link rel="stylesheet" href="<?php echo $base_url; ?>assets/css/home.css">
+    <link rel="stylesheet" href="<?php echo $base_url; ?>assets/css/home.css?v=<?php echo file_exists(__DIR__ . '/../assets/css/home.css') ? filemtime(__DIR__ . '/../assets/css/home.css') : '1.0'; ?>">
   <?php elseif ($current_page === 'product'): ?>
-    <link rel="stylesheet" href="<?php echo $base_url; ?>assets/css/product.css">
+    <link rel="stylesheet" href="<?php echo $base_url; ?>assets/css/product.css?v=<?php echo file_exists(__DIR__ . '/../assets/css/product.css') ? filemtime(__DIR__ . '/../assets/css/product.css') : '1.0'; ?>">
   <?php endif; ?>
 </head>
 <body>
@@ -148,6 +148,52 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
             </svg>
             <span class="nav-login-label">LOGIN</span>
           </a>
+
+          <!-- User Profile Pill after Login (Matching User Reference: [S] Hi, Soumya v) -->
+          <div class="nav-user-dropdown-wrap" id="navUserDropdownWrap" style="display:none;">
+            <button type="button" class="nav-user-pill-btn" id="navUserPillBtn" aria-label="User Account Menu" aria-haspopup="true" aria-expanded="false">
+              <span class="user-pill-avatar" id="userPillAvatar">S</span>
+              <span class="user-pill-name" id="userPillName">Hi, Soumya</span>
+              <svg class="user-pill-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            
+            <!-- User Dropdown Menu -->
+            <div class="nav-user-dropdown-menu" id="navUserDropdownMenu">
+              <div class="dropdown-user-header">
+                <div class="dropdown-user-avatar" id="dropdownUserAvatar">S</div>
+                <div class="dropdown-user-meta">
+                  <strong class="dropdown-user-fullname" id="dropdownUserFullName">Soumya</strong>
+                  <span class="dropdown-user-role" id="dropdownUserRole">Distributor Account</span>
+                </div>
+              </div>
+              <div class="dropdown-menu-divider"></div>
+              <a href="#cart" class="dropdown-menu-item" id="dropdownCartAction">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                </svg>
+                <span>Commercial Cart & Orders</span>
+              </a>
+              <a href="<?php echo $base_url; ?>index.php#catalogue" class="dropdown-menu-item">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                </svg>
+                <span>2026 Price List & Catalogue</span>
+              </a>
+              <div class="dropdown-menu-divider"></div>
+              <button type="button" class="dropdown-menu-item dropdown-logout-btn" id="navLogoutBtn">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                  <polyline points="16 17 21 12 16 7"></polyline>
+                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
 
           <!-- Shopping Cart Icon with Badge Counter matching Image 2 reference design -->
           <button type="button" class="nav-cart-btn" id="navCartBtn" aria-label="View Shopping Cart" title="Shopping Cart">

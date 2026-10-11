@@ -426,6 +426,211 @@ ul, ol {
   font-weight: 800;
 }
 
+/* ==========================================================================
+   User Profile Pill after Login (Matching User Reference: [S] Hi, Soumya v)
+   ========================================================================== */
+.nav-user-dropdown-wrap {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.nav-user-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  background-color: #FFF5F5;
+  border: 1px solid rgba(235, 104, 104, 0.28);
+  border-radius: 9999px;
+  padding: 4px 14px 4px 5px;
+  cursor: pointer;
+  outline: none;
+  font-family: var(--font-main);
+  box-shadow: 0 1px 3px rgba(235, 104, 104, 0.08);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.nav-user-pill-btn:hover,
+.nav-user-pill-btn:focus-visible {
+  background-color: #FEEAEA;
+  border-color: rgba(235, 104, 104, 0.5);
+  box-shadow: 0 3px 8px rgba(235, 104, 104, 0.16);
+  transform: translateY(-1px);
+}
+
+.user-pill-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #EB6B6B;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+  box-shadow: inset 0 -1px 2px rgba(0, 0, 0, 0.12);
+  text-transform: uppercase;
+}
+
+.user-pill-name {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #1A202C;
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: -0.15px;
+}
+
+.user-pill-chevron {
+  width: 14px;
+  height: 14px;
+  stroke: #2D3748;
+  stroke-width: 2.5;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.nav-user-dropdown-wrap .nav-user-dropdown-menu.is-open ~ .nav-user-pill-btn .user-pill-chevron,
+.nav-user-pill-btn[aria-expanded="true"] .user-pill-chevron {
+  transform: rotate(180deg);
+}
+
+/* User Dropdown Menu */
+.nav-user-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 240px;
+  background: #FFFFFF;
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08);
+  padding: 8px;
+  z-index: 1050;
+  display: none;
+  animation: userDropdownSlide 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.nav-user-dropdown-menu.is-open {
+  display: block;
+}
+
+@keyframes userDropdownSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-user-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #F8FAFC;
+  border-radius: 8px;
+}
+
+.dropdown-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #EB6B6B;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.dropdown-user-meta {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dropdown-user-fullname {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #111827;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.dropdown-user-role {
+  font-size: 11.5px;
+  color: #6B7280;
+  font-weight: 500;
+}
+
+.dropdown-menu-divider {
+  height: 1px;
+  background: #F3F4F6;
+  margin: 6px 0;
+}
+
+.dropdown-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #374151;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-main);
+}
+
+.dropdown-menu-item:hover {
+  background-color: #F3F4F6;
+  color: #111827;
+}
+
+.dropdown-menu-item svg {
+  flex-shrink: 0;
+  color: #6B7280;
+}
+
+.dropdown-menu-item:hover svg {
+  color: var(--color-primary);
+}
+
+.dropdown-logout-btn {
+  color: #DC2626;
+}
+
+.dropdown-logout-btn svg {
+  color: #DC2626;
+}
+
+.dropdown-logout-btn:hover {
+  background-color: #FEE2E2;
+  color: #B91C1C;
+}
+
+.dropdown-logout-btn:hover svg {
+  color: #B91C1C;
+}
+
 /* Shopping Cart Button (Image 2 Reference) */
 .nav-cart-btn {
   display: flex;

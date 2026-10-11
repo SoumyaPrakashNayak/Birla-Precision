@@ -776,13 +776,13 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
 
           <form class="login-portal-form" id="loginForm">
             <div class="form-group">
-              <label class="form-label" for="loginEmail">Email / Account Code</label>
+              <label class="form-label" for="loginEmail">Email / Username / Account Code</label>
               <div class="input-with-icon">
                 <svg viewBox="0 0 24 24" class="input-prefix-icon" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                   <polyline points="22,6 12,13 2,6"></polyline>
                 </svg>
-                <input type="text" id="loginEmail" class="portal-input" placeholder="e.g. distributor@birlaprecision.com" required>
+                <input type="text" id="loginEmail" class="portal-input" placeholder="e.g. Soumya or distributor@birlaprecision.com" value="Soumya" required>
               </div>
             </div>
 
@@ -796,7 +796,7 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                   <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
-                <input type="password" id="loginPassword" class="portal-input" placeholder="••••••••••••" required>
+                <input type="password" id="loginPassword" class="portal-input" placeholder="••••••••••••" value="password123" required>
               </div>
             </div>
 

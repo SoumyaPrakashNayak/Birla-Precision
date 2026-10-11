@@ -721,9 +721,20 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // --------------------------------------------------------------------------
-  // 9. Customer / Distributor Login Modal (Image 1 Reference)
+  // 9. Customer / Distributor Login Modal & Dynamic User State (Reference Pill)
   // --------------------------------------------------------------------------
   var navLoginBtn = document.getElementById('navLoginBtn');
+  var navUserDropdownWrap = document.getElementById('navUserDropdownWrap');
+  var navUserPillBtn = document.getElementById('navUserPillBtn');
+  var navUserDropdownMenu = document.getElementById('navUserDropdownMenu');
+  var userPillAvatar = document.getElementById('userPillAvatar');
+  var userPillName = document.getElementById('userPillName');
+  var dropdownUserAvatar = document.getElementById('dropdownUserAvatar');
+  var dropdownUserFullName = document.getElementById('dropdownUserFullName');
+  var dropdownUserRole = document.getElementById('dropdownUserRole');
+  var navLogoutBtn = document.getElementById('navLogoutBtn');
+  var dropdownCartAction = document.getElementById('dropdownCartAction');
+
   var loginModal = document.getElementById('loginModal');
   var loginModalOverlay = document.getElementById('loginModalOverlay');
   var loginModalClose = document.getElementById('loginModalClose');
@@ -733,12 +744,132 @@ document.addEventListener('DOMContentLoaded', function () {
   var loginSubmitBtn = document.getElementById('loginSubmitBtn');
   var forgotPwLink = document.getElementById('forgotPwLink');
 
+  function getAuthUser() {
+    try {
+      var raw = localStorage.getItem('birla_user');
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && parsed.loggedIn) return parsed;
+      }
+    } catch (e) {
+      console.warn('Error reading birla_user', e);
+    }
+    return null;
+  }
+
+  function setAuthUser(userData) {
+    try {
+      localStorage.setItem('birla_user', JSON.stringify(userData));
+    } catch (e) {
+      console.warn('Error saving birla_user', e);
+    }
+    updateAuthUI();
+  }
+
+  function clearAuthUser() {
+    try {
+      localStorage.removeItem('birla_user');
+    } catch (e) {
+      console.warn('Error clearing birla_user', e);
+    }
+    updateAuthUI();
+  }
+
+  function formatDisplayName(input) {
+    if (!input) return 'Soumya';
+    var trimmed = String(input).trim();
+    if (!trimmed) return 'Soumya';
+
+    if (trimmed.indexOf('@') !== -1) {
+      var beforeAt = trimmed.split('@')[0];
+      var seg = beforeAt.split(/[._-]/)[0];
+      if (seg) {
+        return seg.charAt(0).toUpperCase() + seg.slice(1).toLowerCase();
+      }
+    }
+
+    var words = trimmed.split(/\s+/);
+    if (words.length > 0 && words[0]) {
+      return words[0].charAt(0).toUpperCase() + words[0].slice(1);
+    }
+    return 'Soumya';
+  }
+
+  function updateAuthUI() {
+    var user = getAuthUser();
+    if (user && user.loggedIn) {
+      // User is logged in: show the [S] Hi, Soumya pill, hide LOGIN link
+      if (navLoginBtn) navLoginBtn.style.display = 'none';
+      if (navUserDropdownWrap) navUserDropdownWrap.style.display = 'inline-block';
+
+      var displayName = user.name || 'Soumya';
+      var initial = (user.initial || displayName.charAt(0) || 'S').toUpperCase();
+
+      if (userPillAvatar) userPillAvatar.textContent = initial;
+      if (userPillName) userPillName.textContent = 'Hi, ' + displayName;
+      if (dropdownUserAvatar) dropdownUserAvatar.textContent = initial;
+      if (dropdownUserFullName) dropdownUserFullName.textContent = user.fullName || displayName;
+      if (dropdownUserRole) dropdownUserRole.textContent = user.role || 'Distributor Account';
+    } else {
+      // Logged out: show LOGIN link, hide pill button
+      if (navLoginBtn) navLoginBtn.style.display = 'flex';
+      if (navUserDropdownWrap) {
+        navUserDropdownWrap.style.display = 'none';
+        if (navUserDropdownMenu) navUserDropdownMenu.classList.remove('is-open');
+        if (navUserPillBtn) navUserPillBtn.setAttribute('aria-expanded', 'false');
+      }
+    }
+  }
+
+  // Toggle User Account Dropdown
+  if (navUserPillBtn && navUserDropdownMenu) {
+    navUserPillBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var isOpen = navUserDropdownMenu.classList.contains('is-open');
+      if (isOpen) {
+        navUserDropdownMenu.classList.remove('is-open');
+        navUserPillBtn.setAttribute('aria-expanded', 'false');
+      } else {
+        navUserDropdownMenu.classList.add('is-open');
+        navUserPillBtn.setAttribute('aria-expanded', 'true');
+      }
+    });
+
+    document.addEventListener('click', function (e) {
+      if (navUserDropdownWrap && !navUserDropdownWrap.contains(e.target)) {
+        navUserDropdownMenu.classList.remove('is-open');
+        navUserPillBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  if (navLogoutBtn) {
+    navLogoutBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      clearAuthUser();
+    });
+  }
+
+  if (dropdownCartAction) {
+    dropdownCartAction.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (navUserDropdownMenu) navUserDropdownMenu.classList.remove('is-open');
+      openCartDrawer();
+    });
+  }
+
   function openLoginModal() {
     if (loginModal && loginModalOverlay) {
       loginModal.classList.add('is-open');
       loginModalOverlay.classList.add('is-open');
       document.body.style.overflow = 'hidden';
-      if (loginEmail) setTimeout(function () { loginEmail.focus(); }, 150);
+      if (loginEmail) {
+        setTimeout(function () {
+          loginEmail.focus();
+          if (loginEmail.select) loginEmail.select();
+        }, 150);
+      }
     }
   }
 
@@ -768,8 +899,8 @@ document.addEventListener('DOMContentLoaded', function () {
   if (loginForm) {
     loginForm.addEventListener('submit', function (e) {
       e.preventDefault();
-      var emailVal = (loginEmail ? loginEmail.value : '').trim();
-      if (!emailVal) return;
+      var rawVal = (loginEmail ? loginEmail.value : '').trim();
+      if (!rawVal) rawVal = 'Soumya';
 
       if (loginSubmitBtn) {
         loginSubmitBtn.disabled = true;
@@ -781,9 +912,20 @@ document.addEventListener('DOMContentLoaded', function () {
           loginSubmitBtn.disabled = false;
           loginSubmitBtn.innerHTML = '<span>Sign In to Portal</span><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.5" class="btn-arrow-icon"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>';
         }
+
+        var firstName = formatDisplayName(rawVal);
+        var userData = {
+          name: firstName,
+          fullName: rawVal,
+          initial: firstName.charAt(0).toUpperCase(),
+          role: 'Distributor Account',
+          loggedIn: true,
+          timestamp: new Date().toISOString()
+        };
+
+        setAuthUser(userData);
         closeLoginModal();
-        alert('Welcome back! Signed in to Birla Precision Distributor Portal as ' + emailVal);
-      }, 700);
+      }, 350);
     });
   }
 
@@ -794,6 +936,26 @@ document.addEventListener('DOMContentLoaded', function () {
       alert('Password reset link has been dispatched to ' + emailVal + '. Please check your inbox.');
     });
   }
+
+  // Initialize Auth state on load
+  updateAuthUI();
+
+  // Expose BirlaAuth API globally
+  window.BirlaAuth = {
+    get: getAuthUser,
+    login: function (name) {
+      var displayName = formatDisplayName(name || 'Soumya');
+      setAuthUser({
+        name: displayName,
+        fullName: name || 'Soumya',
+        initial: displayName.charAt(0).toUpperCase(),
+        role: 'Distributor Account',
+        loggedIn: true
+      });
+    },
+    logout: clearAuthUser,
+    update: updateAuthUI
+  };
 
   // Global keydown for closing drawer/modals
   document.addEventListener('keydown', function (e) {
