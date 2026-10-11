@@ -3,9 +3,15 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Temporary scratch folder
+# Temporary & dump folders
 scratch/
+extracted_assets/
+rendered_pages/
 
 # OS generated files
 .DS_Store
 Thumbs.db
+ehthumbs.db
+
+# Log files
+*.log
