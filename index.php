@@ -79,15 +79,15 @@ include __DIR__ . '/includes/header.php';
 
   </div>
 
-  <!-- Carousel Navigation Controls -->
+  <!-- Carousel Navigation Controls — Single Arrow without Circle/Hover Effect -->
   <button class="carousel-btn carousel-btn-prev" aria-label="Previous Slide">
-    <svg viewBox="0 0 24 24">
-      <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="15 5 8 12 15 19"></polyline>
     </svg>
   </button>
   <button class="carousel-btn carousel-btn-next" aria-label="Next Slide">
-    <svg viewBox="0 0 24 24">
-      <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="9 5 16 12 9 19"></polyline>
     </svg>
   </button>
 

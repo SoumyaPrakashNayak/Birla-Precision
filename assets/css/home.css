@@ -193,45 +193,65 @@
   border-radius: 8px;
 }
 
-/* Carousel Side Navigation Arrows */
+/* Carousel Side Navigation Arrows — Single Arrow without Circle/Hover Effect */
 .carousel-btn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  color: #111111;
+  width: 50px;
+  height: 80px;
+  padding: 0;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  color: #FFFFFF !important;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10;
-  transition: all var(--transition-fast);
   cursor: pointer;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
+  transition: none !important;
 }
 
-.carousel-btn:hover {
-  background-color: var(--color-primary);
-  color: #FFFFFF;
-  border-color: var(--color-primary);
-  transform: translateY(-50%) scale(1.08);
+.carousel-btn:hover,
+.carousel-btn:focus,
+.carousel-btn:active {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  color: #FFFFFF !important;
+  transform: translateY(-50%) !important;
+  box-shadow: none !important;
+  outline: none !important;
+  opacity: 1 !important;
 }
 
 .carousel-btn svg {
-  width: 20px;
-  height: 20px;
-  fill: currentColor;
+  width: 32px;
+  height: 44px;
+  stroke: #FFFFFF !important;
+  fill: none !important;
+  display: block;
+  transition: none !important;
+}
+
+.carousel-btn:hover svg,
+.carousel-btn:focus svg,
+.carousel-btn:active svg {
+  stroke: #FFFFFF !important;
+  fill: none !important;
+  transform: none !important;
 }
 
 .carousel-btn-prev {
-  left: 20px;
+  left: 28px;
 }
 
 .carousel-btn-next {
-  right: 20px;
+  right: 28px;
 }
 
 /* 5 Carousel Indicators at Bottom Center matching iBELL */
