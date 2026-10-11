@@ -28,6 +28,13 @@ document.addEventListener('DOMContentLoaded', function () {
   var diaChangeBtn = document.getElementById('diaChangeBtn');
   var commPriceDisplay = document.getElementById('commPriceDisplay');
   var commMoqDisplay = document.getElementById('commMoqDisplay');
+  var cartQtyInput = document.getElementById('cartQtyInput');
+  var cartQtyMinus = document.getElementById('cartQtyMinus');
+  var cartQtyPlus = document.getElementById('cartQtyPlus');
+  var cartMoqPill = document.getElementById('cartMoqPill');
+  var cartSubtotalDisplay = document.getElementById('cartSubtotalDisplay');
+  var addToCartBtn = document.getElementById('addToCartBtn');
+  var cartBtnText = document.getElementById('cartBtnText');
   var catalogueTableBody = document.getElementById('catalogueTableBody');
   var tableSearchInput = document.getElementById('tableSearchInput');
   var tableRowsCount = document.getElementById('tableRowsCount');
@@ -429,6 +436,21 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
 
+    // Update Cart Quantity & MOQ pill
+    var currentMoq = parseInt(sizeRow.moq, 10) || 100;
+    if (cartMoqPill) {
+      cartMoqPill.textContent = 'MOQ: ' + currentMoq + ' pcs';
+    }
+    if (cartQtyInput) {
+      cartQtyInput.min = currentMoq;
+      cartQtyInput.step = currentMoq;
+      var curVal = parseInt(cartQtyInput.value, 10);
+      if (isNaN(curVal) || curVal < currentMoq) {
+        cartQtyInput.value = currentMoq;
+      }
+    }
+    updateCartSubtotal(sizeRow);
+
     // Highlight row in full table
     var rows = catalogueTableBody ? catalogueTableBody.querySelectorAll('tr') : [];
     rows.forEach(function (tr) {
@@ -436,6 +458,121 @@ document.addEventListener('DOMContentLoaded', function () {
         tr.classList.add('is-selected-row');
       } else {
         tr.classList.remove('is-selected-row');
+      }
+    });
+  }
+
+  // Helper to get currently active size row object
+  function getCurrentSizeRow() {
+    var sizeRow = allSizesData.find(function (r) {
+      return parseFloat(r.mm) === parseFloat(currentDiameter);
+    });
+    return sizeRow || (allSizesData.length > 0 ? allSizesData[0] : null);
+  }
+
+  // Update Cart Subtotal display
+  function updateCartSubtotal(row) {
+    if (!cartSubtotalDisplay) return;
+    var size = row || getCurrentSizeRow();
+    if (!size) return;
+    var moq = parseInt(size.moq, 10) || 100;
+    var qty = cartQtyInput ? (parseInt(cartQtyInput.value, 10) || moq) : moq;
+    if (qty < moq) qty = moq;
+
+    var currentPrice = size[currentVariant];
+    if (currentPrice !== null && currentPrice !== undefined && !isNaN(parseFloat(currentPrice))) {
+      var unitPrice = parseFloat(currentPrice) / 10.0;
+      var subtotal = unitPrice * qty;
+      cartSubtotalDisplay.textContent = '₹ ' + formatINR(subtotal);
+    } else {
+      cartSubtotalDisplay.textContent = 'Quote Required';
+    }
+  }
+
+  // 9b. Commercial Cart Stepper & Add to Cart Handlers
+  if (cartQtyMinus) {
+    cartQtyMinus.addEventListener('click', function () {
+      var row = getCurrentSizeRow();
+      var moq = row ? (parseInt(row.moq, 10) || 100) : 100;
+      var curVal = cartQtyInput ? (parseInt(cartQtyInput.value, 10) || moq) : moq;
+      var newVal = curVal - moq;
+      if (newVal < moq) newVal = moq;
+      if (cartQtyInput) cartQtyInput.value = newVal;
+      updateCartSubtotal(row);
+    });
+  }
+
+  if (cartQtyPlus) {
+    cartQtyPlus.addEventListener('click', function () {
+      var row = getCurrentSizeRow();
+      var moq = row ? (parseInt(row.moq, 10) || 100) : 100;
+      var curVal = cartQtyInput ? (parseInt(cartQtyInput.value, 10) || moq) : moq;
+      var newVal = curVal + moq;
+      if (cartQtyInput) cartQtyInput.value = newVal;
+      updateCartSubtotal(row);
+    });
+  }
+
+  if (cartQtyInput) {
+    cartQtyInput.addEventListener('change', function () {
+      var row = getCurrentSizeRow();
+      var moq = row ? (parseInt(row.moq, 10) || 100) : 100;
+      var val = parseInt(this.value, 10);
+      if (isNaN(val) || val < moq) {
+        val = moq;
+      } else {
+        var rem = val % moq;
+        if (rem !== 0) {
+          val = Math.ceil(val / moq) * moq;
+        }
+      }
+      this.value = val;
+      updateCartSubtotal(row);
+    });
+
+    cartQtyInput.addEventListener('input', function () {
+      var row = getCurrentSizeRow();
+      updateCartSubtotal(row);
+    });
+  }
+
+  if (addToCartBtn) {
+    addToCartBtn.addEventListener('click', function () {
+      var row = getCurrentSizeRow();
+      if (!row) return;
+      var moq = parseInt(row.moq, 10) || 100;
+      var qty = cartQtyInput ? (parseInt(cartQtyInput.value, 10) || moq) : moq;
+      if (qty < moq) qty = moq;
+
+      var currentPrice = row[currentVariant];
+      var unitPrice = (currentPrice !== null && currentPrice !== undefined && !isNaN(parseFloat(currentPrice))) ? (parseFloat(currentPrice) / 10.0) : 0;
+      var total = unitPrice * qty;
+      var variantInfo = allVariantsMap[currentVariant] || { name: currentVariant.toUpperCase() };
+
+      var cartItem = {
+        dia: row.mm,
+        variant: currentVariant,
+        title: 'HSS Jobber Series Twist Drill',
+        variantName: variantInfo.name || currentVariant.toUpperCase(),
+        diaText: row.mm + ' mm' + (row.inch ? ' (' + row.inch + '")' : ''),
+        qty: qty,
+        unitPrice: unitPrice,
+        total: total,
+        img: 'assets/images/products/gallery_thumb_1.jpg'
+      };
+
+      if (window.BirlaCart && typeof window.BirlaCart.add === 'function') {
+        window.BirlaCart.add(cartItem);
+      }
+
+      if (cartBtnText) {
+        var originalText = cartBtnText.textContent;
+        cartBtnText.textContent = 'Added to Cart ✓';
+        addToCartBtn.classList.add('is-added');
+        setTimeout(function () {
+          cartBtnText.textContent = originalText;
+          addToCartBtn.classList.remove('is-added');
+        }, 1600);
       }
     });
   }

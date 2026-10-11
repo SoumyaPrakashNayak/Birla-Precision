@@ -542,147 +542,420 @@
   line-height: 1.6;
 }
 
-.product-hero-card {
+/* --------------------------------------------------------------------------
+   REDESIGNED PRECISION DRILLING SOLUTIONS CARD (Design Reference Match)
+   -------------------------------------------------------------------------- */
+
+.precision-solutions-card {
   background-color: #FFFFFF;
-  border-radius: 8px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-  border: 1px solid var(--color-border);
-  overflow: hidden;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+  border: 1px solid #E5E7EB;
   display: grid;
-  grid-template-columns: 1fr 1.2fr;
-  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  grid-template-columns: 460px 1fr;
+  gap: 36px;
+  padding: 24px;
+  margin: 0 auto;
+  max-width: 1200px;
+  /* Scroll-scaling effect: scales smoothly up or down as page scrolls */
+  transform: scale(var(--sol-scroll-scale, 1));
+  transform-origin: center center;
+  transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease;
+  will-change: transform;
 }
 
-.product-hero-card:hover {
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+.precision-solutions-card:hover {
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.1);
 }
 
-.product-media-column {
-  background: radial-gradient(circle at center, #FFF4E6 0%, #F5EAE0 50%, #ECE1D7 100%);
+/* --- Left Column: Visual Showcase --- */
+.sol-visual-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.sol-showcase-box {
+  background-color: #FAF6F0; /* Soft warm travertine/stone background */
+  border-radius: 14px;
+  border: 1px solid #EFE8DE;
+  display: grid;
+  grid-template-columns: 1fr 115px;
+  overflow: hidden;
+  min-height: 390px;
+  position: relative;
+}
+
+.sol-main-image-wrap {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 30px;
-  position: relative;
+  padding: 16px 12px;
   overflow: hidden;
 }
 
-.product-showcase-img {
-  max-height: 480px;
-  width: auto;
-  object-fit: contain;
-  transition: transform 0.4s ease;
-  filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.18));
-}
-
-.product-hero-card:hover .product-showcase-img {
-  transform: translateY(-6px) scale(1.02);
-}
-
-.product-authentic-badge {
+.sol-floating-badges {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  background-color: rgba(17, 17, 17, 0.85);
-  backdrop-filter: blur(4px);
-  color: #FFFFFF;
-  font-family: var(--font-heading);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  padding: 6px 12px;
-  border-radius: 3px;
-  border-left: 3px solid var(--color-primary);
+  top: 14px;
+  left: 14px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
-.product-info-column {
-  padding: 48px 44px;
+.sol-badge-pill-tag {
+  font-family: var(--font-main);
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 9px;
+  border-radius: 4px;
+  color: #FFFFFF;
+}
+
+.sol-badge-red {
+  background-color: var(--color-primary); /* Brand Red #D92D30 */
+}
+
+.sol-badge-charcoal {
+  background-color: var(--color-surface-charcoal); /* Charcoal #25292D */
+}
+
+.sol-main-image {
+  width: 100%;
+  max-height: 360px;
+  object-fit: contain;
+  transition: opacity 0.22s ease-in-out, transform 0.35s ease;
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.15));
+}
+
+.sol-main-image.is-loading {
+  opacity: 0.35;
+}
+
+/* 4 Vertical Feature Icons */
+.sol-features-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 16px 10px;
+  border-left: 1px solid rgba(0, 0, 0, 0.06);
+  background-color: rgba(255, 255, 255, 0.55);
+}
+
+.sol-feature-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 5px;
+}
+
+.sol-feature-icon-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #25292D;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.sol-feature-item:hover .sol-feature-icon-circle {
+  transform: scale(1.1);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.sol-feature-icon-circle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.sol-feature-label {
+  font-family: var(--font-main);
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #4B5563;
+  line-height: 1.25;
+  max-width: 95px;
+}
+
+/* Lower Carousel Thumbnails Row */
+.sol-carousel-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.sol-arrow-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background-color: #FFFFFF;
+  border: 1.5px solid #D1D5DB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #374151;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.sol-arrow-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background-color: #FFF5F5;
+  transform: scale(1.06);
+}
+
+.sol-arrow-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.sol-thumbs-strip {
+  display: flex;
+  gap: 8px;
+}
+
+.sol-thumb-item {
+  width: 58px;
+  height: 58px;
+  border-radius: 8px;
+  border: 1.5px solid #E5E7EB;
+  background-color: #FFFFFF;
+  padding: 2px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+  display: block;
+}
+
+.sol-thumb-item:hover {
+  border-color: #9CA3AF;
+  transform: scale(1.04);
+}
+
+.sol-thumb-item.is-active {
+  border: 2px solid var(--color-primary); /* Red outline matching design */
+}
+
+.sol-thumb-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+/* --- Right Column: Content, Specs & Actions --- */
+.sol-content-col {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  padding: 8px 10px 8px 0;
 }
 
-.product-brand-tags {
+.sol-pill-tags-row {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
   margin-bottom: 14px;
 }
 
-.tag-dagger {
-  background-color: var(--color-primary-soft);
-  color: var(--color-primary);
-  font-size: 0.76rem;
+.sol-pill-badge {
+  font-family: var(--font-main);
+  font-size: 11.5px;
   font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.sol-pill-brand {
+  background-color: #FEE2E2;
+  color: #DC2626;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
-  padding: 4px 10px;
-  border-radius: 3px;
 }
 
-.tag-spec {
-  background-color: #F1F3F5;
-  color: #495057;
-  font-size: 0.76rem;
+.sol-pill-gray {
+  background-color: #F3F4F6;
+  color: #4B5563;
   font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 3px;
 }
 
-.product-title {
+.sol-main-title {
   font-family: var(--font-heading);
   font-size: 1.85rem;
   font-weight: 800;
-  color: #111418;
+  color: #111827;
   line-height: 1.25;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
-.product-description {
-  font-size: 0.95rem;
-  color: var(--color-text-muted);
-  line-height: 1.65;
-  margin-bottom: 24px;
+.sol-main-description {
+  font-family: var(--font-main);
+  font-size: 13.5px;
+  color: #4B5563;
+  line-height: 1.62;
+  margin-bottom: 22px;
 }
 
-.product-specs-grid {
+/* 6-Card Specifications Grid (2 cols x 3 rows) */
+.sol-specs-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
-  margin-bottom: 32px;
-  background-color: #F8F9FA;
-  padding: 18px 20px;
-  border-radius: 6px;
-  border: 1px solid #ECEFF1;
+  gap: 12px 14px;
+  margin-bottom: 26px;
 }
 
-.spec-item {
+.sol-spec-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  background-color: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.sol-spec-box:hover {
+  border-color: #CBD5E1;
+  background-color: #FFFFFF;
+}
+
+.sol-spec-icon-box {
+  width: 26px;
+  height: 26px;
+  color: #1F2937;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sol-spec-icon-box svg {
+  width: 22px;
+  height: 22px;
+}
+
+.sol-spec-text-box {
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
-.spec-label {
-  font-size: 0.74rem;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: #8C96A0;
-  font-weight: 600;
-}
-
-.spec-value {
-  font-family: var(--font-heading);
-  font-size: 0.92rem;
+.sol-spec-subtitle {
+  font-family: var(--font-main);
+  font-size: 10px;
   font-weight: 700;
-  color: #212529;
-  margin-top: 2px;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
 }
 
-.product-cta-group {
+.sol-spec-value {
+  font-family: var(--font-main);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Action Buttons */
+.sol-cta-row {
   display: flex;
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
+}
+
+.sol-btn-primary {
+  background-color: var(--color-primary); /* Brand Red #D92D30 */
+  color: #FFFFFF;
+  font-family: var(--font-main);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 13px 26px;
+  border-radius: 8px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 8px rgba(217, 45, 48, 0.25);
+  white-space: nowrap;
+}
+
+.sol-btn-primary:hover {
+  background-color: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(217, 45, 48, 0.35);
+  color: #FFFFFF;
+}
+
+.sol-btn-primary .sol-btn-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.sol-btn-arrow {
+  font-size: 16px;
+  transition: transform 0.15s ease;
+}
+
+.sol-btn-primary:hover .sol-btn-arrow {
+  transform: translateX(3px);
+}
+
+.sol-btn-secondary {
+  background-color: #FFFFFF;
+  color: #111827;
+  font-family: var(--font-main);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  border: 1.5px solid #D1D5DB;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.sol-btn-secondary:hover {
+  border-color: #9CA3AF;
+  background-color: #F9FAFB;
+  color: #111827;
+}
+
+.sol-btn-secondary .sol-btn-icon {
+  width: 18px;
+  height: 18px;
+}
+
+@media (max-width: 992px) {
+  .precision-solutions-card {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 18px;
+  }
+  .sol-specs-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* --------------------------------------------------------------------------

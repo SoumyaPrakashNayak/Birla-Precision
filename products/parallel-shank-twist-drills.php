@@ -386,6 +386,53 @@ include __DIR__ . '/../includes/header.php';
 
           </div>
 
+          <!-- Interactive Order Quantity & Add to Cart based on MOQ -->
+          <div class="commercial-cart-section">
+            
+            <div class="cart-quantity-group">
+              <label for="cartQtyInput" class="cart-qty-label">
+                <span>Order Quantity</span>
+                <span class="cart-moq-pill" id="cartMoqPill">MOQ: <?php echo (int)($initial_row['moq'] ?? 100); ?> pcs</span>
+              </label>
+              
+              <div class="cart-qty-stepper">
+                <button type="button" class="qty-btn qty-minus" id="cartQtyMinus" aria-label="Decrease quantity by MOQ">&minus;</button>
+                <input 
+                  type="number" 
+                  id="cartQtyInput" 
+                  class="cart-qty-input" 
+                  value="<?php echo (int)($initial_row['moq'] ?? 100); ?>" 
+                  min="<?php echo (int)($initial_row['moq'] ?? 100); ?>" 
+                  step="<?php echo (int)($initial_row['moq'] ?? 100); ?>" 
+                  aria-label="Order Quantity in Pieces"
+                >
+                <button type="button" class="qty-btn qty-plus" id="cartQtyPlus" aria-label="Increase quantity by MOQ">&plus;</button>
+              </div>
+              <span class="cart-qty-unit-label">pieces</span>
+            </div>
+
+            <div class="cart-subtotal-group">
+              <span class="cart-subtotal-label">Estimated Total:</span>
+              <div class="cart-subtotal-amount" id="cartSubtotalDisplay"><?php 
+                $moq = (int)($initial_row['moq'] ?? 100);
+                $p = (float)($initial_row[$initial_variant] ?? 0);
+                $tot = ($p > 0) ? ($p / 10.0) * $moq : 0;
+                echo ($tot > 0) ? '₹ ' . number_format($tot, 2) : 'Quote Required';
+              ?></div>
+              <span class="cart-subtotal-hint">(Excl. taxes)</span>
+            </div>
+
+            <button type="button" class="btn-add-to-cart" id="addToCartBtn">
+              <svg class="cart-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="21" r="1"></circle>
+                <circle cx="20" cy="21" r="1"></circle>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+              </svg>
+              <span class="cart-btn-text" id="cartBtnText">Add to Cart</span>
+            </button>
+
+          </div>
+
           <!-- Bottom Button Action Bar -->
           <div class="commercial-actions-bar">
             <a href="#enquiry" class="btn-quote-red" id="requestQuotationBtn">

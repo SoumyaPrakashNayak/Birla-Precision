@@ -170,4 +170,230 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  // --------------------------------------------------------------------------
+  // 8. Global Shopping Cart State & Slide Drawer (Image 2 Reference)
+  // --------------------------------------------------------------------------
+  var navCartBtn = document.getElementById('navCartBtn');
+  var navCartBadge = document.getElementById('navCartBadge');
+  var cartSlideDrawer = document.getElementById('cartSlideDrawer');
+  var cartDrawerOverlay = document.getElementById('cartDrawerOverlay');
+  var cartDrawerClose = document.getElementById('cartDrawerClose');
+  var cartEmptyState = document.getElementById('cartEmptyState');
+  var cartItemsList = document.getElementById('cartItemsList');
+  var cartDrawerFooter = document.getElementById('cartDrawerFooter');
+  var cartDrawerTotal = document.getElementById('cartDrawerTotal');
+  var cartDrawerCount = document.getElementById('cartDrawerCount');
+  var cartClearBtn = document.getElementById('cartClearBtn');
+
+  function getCart() {
+    try {
+      var data = localStorage.getItem('birla_cart');
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveCart(cart) {
+    try {
+      localStorage.setItem('birla_cart', JSON.stringify(cart));
+    } catch (e) {}
+    updateCartUI();
+  }
+
+  function formatPriceINR(num) {
+    return '₹ ' + parseFloat(num).toLocaleString('en-IN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  function updateCartUI() {
+    var cart = getCart();
+    var totalCount = 0;
+    var totalAmount = 0;
+
+    cart.forEach(function (item) {
+      totalCount += (item.qty || 0);
+      totalAmount += (item.total || 0);
+    });
+
+    // Update navbar badge
+    if (navCartBadge) {
+      navCartBadge.textContent = totalCount;
+      if (totalCount > 0) {
+        navCartBadge.classList.add('has-items');
+      } else {
+        navCartBadge.classList.remove('has-items');
+      }
+    }
+
+    if (cartDrawerCount) {
+      cartDrawerCount.textContent = totalCount + (totalCount === 1 ? ' Item' : ' Items');
+    }
+
+    // Render Drawer contents
+    if (cartItemsList && cartEmptyState && cartDrawerFooter) {
+      if (cart.length === 0) {
+        cartEmptyState.style.display = 'block';
+        cartItemsList.style.display = 'none';
+        cartItemsList.innerHTML = '';
+        cartDrawerFooter.style.display = 'none';
+      } else {
+        cartEmptyState.style.display = 'none';
+        cartItemsList.style.display = 'flex';
+        cartDrawerFooter.style.display = 'block';
+
+        if (cartDrawerTotal) {
+          cartDrawerTotal.textContent = formatPriceINR(totalAmount);
+        }
+
+        cartItemsList.innerHTML = '';
+        cart.forEach(function (item, index) {
+          var row = document.createElement('div');
+          row.className = 'cart-item-row';
+          row.innerHTML =
+            '<img src="' + (item.img || 'assets/images/products/gallery_thumb_1.jpg') + '" alt="' + item.title + '" class="cart-item-img">' +
+            '<div class="cart-item-info">' +
+              '<div class="cart-item-title">' + item.title + '</div>' +
+              '<div class="cart-item-meta">' + item.variantName + ' &bull; ' + item.diaText + '</div>' +
+              '<div class="cart-item-price">' + item.qty + ' pcs &times; ' + formatPriceINR(item.unitPrice) + ' = ' + formatPriceINR(item.total) + '</div>' +
+            '</div>' +
+            '<div class="cart-item-actions">' +
+              '<button type="button" class="cart-item-remove-btn" data-index="' + index + '" aria-label="Remove item" title="Remove">&times;</button>' +
+            '</div>';
+          cartItemsList.appendChild(row);
+        });
+
+        // Add remove handlers
+        var removeBtns = cartItemsList.querySelectorAll('.cart-item-remove-btn');
+        removeBtns.forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var idx = parseInt(btn.getAttribute('data-index'), 10);
+            var currentCart = getCart();
+            currentCart.splice(idx, 1);
+            saveCart(currentCart);
+          });
+        });
+      }
+    }
+  }
+
+  function openCartDrawer() {
+    updateCartUI();
+    if (cartSlideDrawer && cartDrawerOverlay) {
+      cartSlideDrawer.classList.add('is-open');
+      cartDrawerOverlay.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeCartDrawer() {
+    if (cartSlideDrawer && cartDrawerOverlay) {
+      cartSlideDrawer.classList.remove('is-open');
+      cartDrawerOverlay.classList.remove('is-open');
+      document.body.style.overflow = '';
+    }
+  }
+
+  if (navCartBtn) {
+    navCartBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      openCartDrawer();
+    });
+  }
+
+  if (cartDrawerClose) {
+    cartDrawerClose.addEventListener('click', closeCartDrawer);
+  }
+
+  if (cartDrawerOverlay) {
+    cartDrawerOverlay.addEventListener('click', closeCartDrawer);
+  }
+
+  if (cartClearBtn) {
+    cartClearBtn.addEventListener('click', function () {
+      if (confirm('Clear all items from your commercial cart?')) {
+        saveCart([]);
+      }
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // 9. Customer / Distributor Login Modal (Image 2 Reference)
+  // --------------------------------------------------------------------------
+  var navLoginBtn = document.getElementById('navLoginBtn');
+  var loginModal = document.getElementById('loginModal');
+  var loginModalOverlay = document.getElementById('loginModalOverlay');
+  var loginModalClose = document.getElementById('loginModalClose');
+
+  function openLoginModal() {
+    if (loginModal && loginModalOverlay) {
+      loginModal.classList.add('is-open');
+      loginModalOverlay.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeLoginModal() {
+    if (loginModal && loginModalOverlay) {
+      loginModal.classList.remove('is-open');
+      loginModalOverlay.classList.remove('is-open');
+      document.body.style.overflow = '';
+    }
+  }
+
+  if (navLoginBtn) {
+    navLoginBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      openLoginModal();
+    });
+  }
+
+  if (loginModalClose) {
+    loginModalClose.addEventListener('click', closeLoginModal);
+  }
+
+  if (loginModalOverlay) {
+    loginModalOverlay.addEventListener('click', closeLoginModal);
+  }
+
+  // Global keydown for closing drawer/modals
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      closeCartDrawer();
+      closeLoginModal();
+    }
+  });
+
+  // Expose BirlaCart globally
+  window.BirlaCart = {
+    get: getCart,
+    save: saveCart,
+    add: function (item) {
+      var cart = getCart();
+      // Check if duplicate item exists (matching dia and variant)
+      var found = false;
+      for (var i = 0; i < cart.length; i++) {
+        if (cart[i].dia === item.dia && cart[i].variant === item.variant) {
+          cart[i].qty += item.qty;
+          cart[i].total = (cart[i].unitPrice || 0) * cart[i].qty;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        cart.push(item);
+      }
+      saveCart(cart);
+      openCartDrawer();
+    },
+    open: openCartDrawer,
+    close: closeCartDrawer,
+    updateUI: updateCartUI
+  };
+
+  // Initial Cart UI sync on load
+  updateCartUI();
+
 });

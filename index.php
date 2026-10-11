@@ -293,73 +293,260 @@ include __DIR__ . '/includes/header.php';
       </p>
     </div>
 
-    <!-- Single Primary Product Family Card -->
-    <div class="product-hero-card" data-aos="zoom-in" data-aos-duration="700">
+    <!-- Redesigned Precision Drilling Solutions Card matching reference design -->
+    <div class="precision-solutions-card" id="precisionSolutionsCard">
       
-      <!-- Left Column: Authentic Product Visual -->
-      <div class="product-media-column">
-        <span class="product-authentic-badge">IS : 5101 Standard</span>
-        <img 
-          src="assets/images/products/hss_jobber_drills_clean.png" 
-          alt="Birla Precision HSS Parallel Shank Jobber Twist Drills Lineup on Pedestal" 
-          class="product-showcase-img"
-        >
-      </div>
-
-      <!-- Right Column: Technical Details & Specifications -->
-      <div class="product-info-column">
+      <!-- Left Column: Visual Showcase, Feature Badges & Thumbnails Carousel -->
+      <div class="sol-visual-col">
         
-        <div class="product-brand-tags">
-          <span class="tag-dagger">Dagger Brand</span>
-          <span class="tag-spec">HSN 8207</span>
-          <span class="tag-spec">Jobber Series</span>
+        <!-- Upper Visual Box (Main Showcase + 4 Vertical Feature Icons) -->
+        <div class="sol-showcase-box">
+          
+          <!-- Main Product Image Display Area with Badges -->
+          <div class="sol-main-image-wrap">
+            <div class="sol-floating-badges">
+              <span class="sol-badge-pill-tag sol-badge-red">DAGGER BRAND</span>
+              <span class="sol-badge-pill-tag sol-badge-charcoal">IS : 5101</span>
+              <span class="sol-badge-pill-tag sol-badge-charcoal">HSN 8207</span>
+            </div>
+
+            <img 
+              src="assets/images/products/gallery_view_1.jpg" 
+              alt="HSS Parallel Shank Jobber Drills Series Lineup on Pedestal" 
+              id="solMainImage" 
+              class="sol-main-image"
+            >
+          </div>
+
+          <!-- 4 Vertical Feature Badges Stacked on Right -->
+          <div class="sol-features-column">
+            
+            <div class="sol-feature-item">
+              <div class="sol-feature-icon-circle">
+                <!-- Target / Crosshair icon -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="22" y1="12" x2="18" y2="12"></line>
+                  <line x1="6" y1="12" x2="2" y2="12"></line>
+                  <line x1="12" y1="6" x2="12" y2="2"></line>
+                  <line x1="12" y1="22" x2="12" y2="18"></line>
+                </svg>
+              </div>
+              <span class="sol-feature-label">Precision Ground Flutes</span>
+            </div>
+
+            <div class="sol-feature-item">
+              <div class="sol-feature-icon-circle">
+                <!-- Shield with Checkmark icon -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  <polyline points="9 12 11 14 15 10"></polyline>
+                </svg>
+              </div>
+              <span class="sol-feature-label">High-Speed Steel (HSS)</span>
+            </div>
+
+            <div class="sol-feature-item">
+              <div class="sol-feature-icon-circle">
+                <!-- Cog / Gear icon -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+              </div>
+              <span class="sol-feature-label">Wide Applications</span>
+            </div>
+
+            <div class="sol-feature-item">
+              <div class="sol-feature-icon-circle">
+                <!-- Diamond icon -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 3h12l4 6-10 12L2 9l4-6z"></path>
+                  <path d="M12 21L7 9"></path>
+                  <path d="M12 21l5-12"></path>
+                  <path d="M2 9h20"></path>
+                </svg>
+              </div>
+              <span class="sol-feature-label">Consistent Performance</span>
+            </div>
+
+          </div>
+
         </div>
 
-        <h3 class="product-title">HSS Parallel Shank Twist Drills — Jobber Series</h3>
+        <!-- Lower Carousel Thumbnails Row with < and > Arrow Controls -->
+        <div class="sol-carousel-nav">
+          <button type="button" class="sol-arrow-btn sol-arrow-prev" id="solThumbPrev" aria-label="Previous image">
+            <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+          </button>
 
-        <p class="product-description">
+          <div class="sol-thumbs-strip" id="solThumbsStrip">
+            <button type="button" class="sol-thumb-item is-active" data-full-src="assets/images/products/gallery_view_1.jpg" data-index="0" aria-label="View 1: Series Showcase">
+              <img src="assets/images/products/gallery_thumb_1.jpg" alt="Series Lineup">
+            </button>
+            <button type="button" class="sol-thumb-item" data-full-src="assets/images/products/gallery_view_2.jpg" data-index="1" aria-label="View 2: Point Angle Macro">
+              <img src="assets/images/products/gallery_thumb_2.jpg" alt="Point Angle">
+            </button>
+            <button type="button" class="sol-thumb-item" data-full-src="assets/images/products/gallery_view_3.jpg" data-index="2" aria-label="View 3: Drill Group">
+              <img src="assets/images/products/gallery_thumb_3.jpg" alt="Drill Group">
+            </button>
+            <button type="button" class="sol-thumb-item" data-full-src="assets/images/products/gallery_view_4.jpg" data-index="3" aria-label="View 4: Flute Helix Macro">
+              <img src="assets/images/products/gallery_thumb_4.jpg" alt="Flute Macro">
+            </button>
+            <button type="button" class="sol-thumb-item" data-full-src="assets/images/products/gallery_view_5.jpg" data-index="4" aria-label="View 5: Cylindrical Shank">
+              <img src="assets/images/products/gallery_thumb_5.jpg" alt="Parallel Shank">
+            </button>
+          </div>
+
+          <button type="button" class="sol-arrow-btn sol-arrow-next" id="solThumbNext" aria-label="Next image">
+            <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Technical Details, Specifications & CTAs -->
+      <div class="sol-content-col">
+        
+        <!-- Top Pill Badges -->
+        <div class="sol-pill-tags-row">
+          <span class="sol-pill-badge sol-pill-brand">DAGGER BRAND – BIRLA PRECISION</span>
+          <span class="sol-pill-badge sol-pill-gray">Standard: IS : 5101 / ISO 235</span>
+          <span class="sol-pill-badge sol-pill-gray">HSN Code: 8207</span>
+        </div>
+
+        <!-- Main Product Title -->
+        <h3 class="sol-main-title">HSS Parallel Shank Twist Drills &mdash; Jobber Series</h3>
+
+        <!-- Description Paragraph -->
+        <p class="sol-main-description">
           Manufactured from high-grade High-Speed Steel (M2 / M35 Cobalt) by Indian Tool Manufacturers (ITM), pioneers of cutting tools in India since 1937. Featuring precision-ground flutes, uniform hardness, and consistent concentricity for clean, vibration-free hole making in automotive, aerospace, structural engineering, and heavy metal fabrication.
         </p>
 
-        <!-- Key Specifications Grid -->
-        <div class="product-specs-grid">
-          <div class="spec-item">
-            <span class="spec-label">Indian Standard</span>
-            <span class="spec-value">IS : 5101 / ISO 235</span>
+        <!-- 6-Card Specifications Grid (2 cols x 3 rows) -->
+        <div class="sol-specs-grid">
+          
+          <!-- 1. Indian Standard -->
+          <div class="sol-spec-box">
+            <div class="sol-spec-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+            </div>
+            <div class="sol-spec-text-box">
+              <span class="sol-spec-subtitle">INDIAN STANDARD</span>
+              <strong class="sol-spec-value">IS : 5101 / ISO 235</strong>
+            </div>
           </div>
-          <div class="spec-item">
-            <span class="spec-label">Diameter Range</span>
-            <span class="spec-value">0.30 mm to 22.22 mm (7/8")</span>
+
+          <!-- 2. Diameter Range -->
+          <div class="sol-spec-box">
+            <div class="sol-spec-icon-box">
+              <!-- Diameter circle with diagonal line -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"></circle>
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+              </svg>
+            </div>
+            <div class="sol-spec-text-box">
+              <span class="sol-spec-subtitle">DIAMETER RANGE</span>
+              <strong class="sol-spec-value">0.30 mm to 22.22 mm (7/8")</strong>
+            </div>
           </div>
-          <div class="spec-item">
-            <span class="spec-label">Catalogue Scope</span>
-            <span class="spec-value">262 Verified Diameters</span>
+
+          <!-- 3. Catalogue Scope -->
+          <div class="sol-spec-box">
+            <div class="sol-spec-icon-box">
+              <!-- Stacked layers icon -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                <polyline points="2 17 12 22 22 17"></polyline>
+                <polyline points="2 12 12 17 22 12"></polyline>
+              </svg>
+            </div>
+            <div class="sol-spec-text-box">
+              <span class="sol-spec-subtitle">CATALOGUE SCOPE</span>
+              <strong class="sol-spec-value">262 Verified Diameters</strong>
+            </div>
           </div>
-          <div class="spec-item">
-            <span class="spec-label">Material &amp; Grades</span>
-            <span class="spec-value">HSS M2 / TiN / M35 Cobalt</span>
+
+          <!-- 4. Material & Grades -->
+          <div class="sol-spec-box">
+            <div class="sol-spec-icon-box">
+              <!-- 3D Cube icon -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+              </svg>
+            </div>
+            <div class="sol-spec-text-box">
+              <span class="sol-spec-subtitle">MATERIAL &amp; GRADES</span>
+              <strong class="sol-spec-value">HSS M2 / TiN / M35 Cobalt</strong>
+            </div>
           </div>
-          <div class="spec-item">
-            <span class="spec-label">Available Variants</span>
-            <span class="spec-value">6 Tailored Series</span>
+
+          <!-- 5. Available Variants -->
+          <div class="sol-spec-box">
+            <div class="sol-spec-icon-box">
+              <!-- Price tag icon -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                <line x1="7" y1="7" x2="7.01" y2="7"></line>
+              </svg>
+            </div>
+            <div class="sol-spec-text-box">
+              <span class="sol-spec-subtitle">AVAILABLE VARIANTS</span>
+              <strong class="sol-spec-value">6 Tailored Series</strong>
+            </div>
           </div>
-          <div class="spec-item">
-            <span class="spec-label">Commercial Basis</span>
-            <span class="spec-value">Price Per 10 Pieces (Rs.)</span>
+
+          <!-- 6. Commercial Basis -->
+          <div class="sol-spec-box">
+            <div class="sol-spec-icon-box">
+              <!-- Coins / Cylinder stack icon -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+              </svg>
+            </div>
+            <div class="sol-spec-text-box">
+              <span class="sol-spec-subtitle">COMMERCIAL BASIS</span>
+              <strong class="sol-spec-value">Price Per 10 Pieces (Rs.)</strong>
+            </div>
           </div>
+
         </div>
 
-        <!-- Action CTAs -->
-        <div class="product-cta-group">
-          <a href="products/parallel-shank-twist-drills.php" class="btn btn-primary">
-            Explore Sizes &amp; Pricing
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+        <!-- Action Buttons -->
+        <div class="sol-cta-row">
+          
+          <a href="products/parallel-shank-twist-drills.php" class="sol-btn-primary">
+            <!-- Document icon -->
+            <svg class="sol-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
             </svg>
+            <span>Explore Sizes &amp; Pricing</span>
+            <span class="sol-btn-arrow">&rarr;</span>
           </a>
-          <a href="products/parallel-shank-twist-drills.php#enquiry" class="btn btn-secondary">
-            Request Quotation
+
+          <a href="products/parallel-shank-twist-drills.php#enquiry" class="sol-btn-secondary">
+            <!-- Chat bubble / Enquiry icon -->
+            <svg class="sol-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>Request Quotation</span>
           </a>
+
         </div>
 
       </div>

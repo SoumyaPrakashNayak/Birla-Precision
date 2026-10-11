@@ -115,6 +115,93 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
     </div>
   </footer>
 
+  <!-- Slide-out Cart Drawer -->
+  <div class="cart-drawer-overlay" id="cartDrawerOverlay"></div>
+  <aside class="cart-slide-drawer" id="cartSlideDrawer" aria-label="Shopping Cart">
+    <div class="cart-drawer-header">
+      <div class="cart-header-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1"></circle>
+          <circle cx="20" cy="21" r="1"></circle>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+        </svg>
+        <span>Commercial Cart</span>
+        <span class="cart-items-counter-tag" id="cartDrawerCount">0 Items</span>
+      </div>
+      <button type="button" class="cart-drawer-close" id="cartDrawerClose" aria-label="Close Cart">&times;</button>
+    </div>
+
+    <!-- Cart Body (Scrollable items list) -->
+    <div class="cart-drawer-body" id="cartDrawerBody">
+      <!-- Empty state / Rendered dynamically via JS -->
+      <div class="cart-empty-state" id="cartEmptyState">
+        <div class="cart-empty-icon-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+        </div>
+        <h4>Your Cart is Empty</h4>
+        <p>Explore our HSS Parallel Shank Twist Drills (Jobber Series) catalogue and add required diameters based on Minimum Order Quantities (MOQ).</p>
+        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php" class="btn btn-primary" style="margin-top:12px;">
+          Configure Jobber Drills &rarr;
+        </a>
+      </div>
+
+      <div class="cart-items-list" id="cartItemsList" style="display:none;"></div>
+    </div>
+
+    <!-- Cart Drawer Footer -->
+    <div class="cart-drawer-footer" id="cartDrawerFooter" style="display:none;">
+      <div class="cart-summary-subtotal-row">
+        <span>Estimated Total</span>
+        <strong class="cart-total-price" id="cartDrawerTotal">₹ 0.00</strong>
+      </div>
+      <p class="cart-tax-notice">Taxes and freight extra as applicable. Commercial pricing based on April 2026 Price List.</p>
+      <div class="cart-actions-column">
+        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php#enquiry" class="btn-checkout-quote" id="cartCheckoutQuoteBtn">
+          Request Quotation for Cart Items &rarr;
+        </a>
+        <button type="button" class="btn-clear-cart" id="cartClearBtn">Clear Cart</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Customer & Distributor Login Modal -->
+  <div class="login-modal-overlay" id="loginModalOverlay"></div>
+  <div class="login-modal" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
+    <button type="button" class="login-modal-close" id="loginModalClose" aria-label="Close Login">&times;</button>
+    <div class="login-modal-header">
+      <img src="<?php echo $base_url; ?>assets/images/brand/birla_precision_logo.png" alt="Birla Precision" class="login-modal-logo">
+      <h3 id="loginModalTitle">Customer &amp; Distributor Portal</h3>
+      <p>Sign in to access distributor pricing tiers, real-time dispatch tracking, and commercial orders.</p>
+    </div>
+    <form class="login-modal-form" id="loginForm" onsubmit="event.preventDefault(); alert('Demo: Authenticated to Birla Precision Customer Portal!'); document.getElementById('loginModal').classList.remove('is-open'); document.getElementById('loginModalOverlay').classList.remove('is-open');">
+      <div class="form-group">
+        <label class="form-label" for="loginEmail">Email / Account Code</label>
+        <input type="text" id="loginEmail" class="form-control" placeholder="e.g. distributor@birlaprecision.com" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" class="form-control" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" required>
+      </div>
+      <div class="login-form-options">
+        <label class="login-remember-me">
+          <input type="checkbox" checked> Remember me
+        </label>
+        <a href="#" class="login-forgot-link" onclick="alert('Please contact your Birla Precision sales representative or email info@birlaprecision.com to reset distributor credentials.'); return false;">Forgot Password?</a>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;margin-top:14px;">
+        Sign In to Portal
+      </button>
+      <div class="distributor-register-note">
+        <span>New industrial partner?</span>
+        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php#enquiry">Apply for Dealership &rarr;</a>
+      </div>
+    </form>
+  </div>
+
   <!-- Floating WhatsApp & Customer Support Widget (Matching iBELL screenshots) -->
   <div class="floating-chat-widget" id="floatingChatWidget">
     <div class="chat-pill" id="chatPill">

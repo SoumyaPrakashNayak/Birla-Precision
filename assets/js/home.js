@@ -156,4 +156,97 @@ document.addEventListener('DOMContentLoaded', function () {
   showSlide(0);
   startAutoplay();
 
+  // --------------------------------------------------------------------------
+  // Precision Drilling Solutions Card — Interactive Carousel & Scroll-Scale
+  // --------------------------------------------------------------------------
+  var solCard = document.getElementById('precisionSolutionsCard');
+  var solMainImg = document.getElementById('solMainImg');
+  var solThumbBtns = document.querySelectorAll('.sol-thumb-item');
+  var solPrevBtn = document.getElementById('solThumbPrev');
+  var solNextBtn = document.getElementById('solThumbNext');
+
+  var currentSolIndex = 0;
+
+  function switchSolImage(index) {
+    if (!solThumbBtns || solThumbBtns.length === 0) return;
+    if (index >= solThumbBtns.length) index = 0;
+    if (index < 0) index = solThumbBtns.length - 1;
+
+    solThumbBtns.forEach(function (btn, i) {
+      if (i === index) {
+        btn.classList.add('is-active');
+      } else {
+        btn.classList.remove('is-active');
+      }
+    });
+
+    var targetBtn = solThumbBtns[index];
+    var fullSrc = targetBtn.getAttribute('data-full-src');
+    if (fullSrc && solMainImg) {
+      solMainImg.classList.add('is-loading');
+      var imgPreload = new Image();
+      imgPreload.onload = function () {
+        solMainImg.src = fullSrc;
+        solMainImg.classList.remove('is-loading');
+      };
+      imgPreload.src = fullSrc;
+    }
+    currentSolIndex = index;
+  }
+
+  solThumbBtns.forEach(function (btn, idx) {
+    btn.addEventListener('click', function () {
+      switchSolImage(idx);
+    });
+  });
+
+  if (solPrevBtn) {
+    solPrevBtn.addEventListener('click', function () {
+      switchSolImage(currentSolIndex - 1);
+    });
+  }
+
+  if (solNextBtn) {
+    solNextBtn.addEventListener('click', function () {
+      switchSolImage(currentSolIndex + 1);
+    });
+  }
+
+  // Smooth Scroll-Scaling:
+  // As user scrolls down the webpage, causes the entire section card to scale down or up smoothly
+  if (solCard && window.matchMedia('(min-width: 768px)').matches) {
+    var ticking = false;
+
+    function updateCardScaleOnScroll() {
+      var rect = solCard.getBoundingClientRect();
+      var windowH = window.innerHeight;
+      
+      // Calculate how close the center of the card is to the center of the viewport
+      var cardCenterY = rect.top + rect.height / 2;
+      var viewCenterY = windowH / 2;
+      var distFromCenter = Math.abs(cardCenterY - viewCenterY);
+      var maxDist = windowH * 0.85;
+      
+      // Normalized distance 0 (at center) to 1 (far away)
+      var normDist = Math.min(1, Math.max(0, distFromCenter / maxDist));
+      
+      // Scale smoothly: 1.0 at center, scaling down to 0.93 when scrolling above or below
+      var scale = 1.0 - (0.07 * normDist);
+      scale = Math.round(scale * 1000) / 1000;
+      
+      solCard.style.setProperty('--sol-scroll-scale', scale);
+      ticking = false;
+    }
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) {
+        requestAnimationFrame(updateCardScaleOnScroll);
+        ticking = true;
+      }
+    }, { passive: true });
+
+    // Initial check
+    updateCardScaleOnScroll();
+  }
+
 });
