@@ -160,13 +160,142 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
       </div>
       <p class="cart-tax-notice">Taxes and freight extra as applicable. Commercial pricing based on April 2026 Price List.</p>
       <div class="cart-actions-column">
+        <button type="button" class="btn-cart-buy-now" id="cartBuyNowBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="buy-btn-icon">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+          <span>Proceed to Buy / Instant Checkout</span>
+        </button>
         <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php#enquiry" class="btn-checkout-quote" id="cartCheckoutQuoteBtn">
-          Request Quotation for Cart Items &rarr;
+          Request Official PO Quotation &rarr;
         </a>
         <button type="button" class="btn-clear-cart" id="cartClearBtn">Clear Cart</button>
       </div>
     </div>
   </aside>
+
+  <!-- Instant Checkout / Commercial Order Modal -->
+  <div class="checkout-modal-overlay" id="checkoutModalOverlay"></div>
+  <div class="checkout-modal" id="checkoutModal" role="dialog" aria-modal="true" aria-labelledby="checkoutModalTitle">
+    <button type="button" class="checkout-modal-close" id="checkoutModalClose" aria-label="Close Checkout">&times;</button>
+    <div class="checkout-modal-header">
+      <div class="checkout-badge-row">
+        <span class="checkout-secure-badge">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          Birla Precision Direct Factory Checkout
+        </span>
+      </div>
+      <h3 id="checkoutModalTitle">Commercial Purchase Order Checkout</h3>
+      <p>Direct factory procurement with official tax invoice, dispatch tracking, and authentic IS:5101 certification.</p>
+    </div>
+
+    <div class="checkout-modal-body" id="checkoutModalBody">
+      <!-- Order Summary Card -->
+      <div class="checkout-order-summary">
+        <h4 class="checkout-subhead">Order Summary</h4>
+        <div class="checkout-items-preview" id="checkoutItemsPreview"></div>
+        <div class="checkout-totals-box">
+          <div class="checkout-row">
+            <span>Catalogue Subtotal</span>
+            <strong id="checkoutSubtotal">₹ 0.00</strong>
+          </div>
+          <div class="checkout-row">
+            <span>Applicable GST (18%)</span>
+            <span id="checkoutGst">₹ 0.00</span>
+          </div>
+          <div class="checkout-row">
+            <span>Freight &amp; Insurance</span>
+            <span class="text-free-shipping">F.O.R. Included</span>
+          </div>
+          <div class="checkout-row checkout-grand-total">
+            <span>Total Payable Amount</span>
+            <strong id="checkoutGrandTotal">₹ 0.00</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Commercial Buyer Details Form -->
+      <form class="checkout-form" id="checkoutForm">
+        <h4 class="checkout-subhead">Commercial Buyer Details</h4>
+        <div class="form-row-2col">
+          <div class="form-group">
+            <label class="form-label" for="coCompanyName">Company / Firm Name *</label>
+            <input type="text" id="coCompanyName" class="form-control" placeholder="e.g. Apex Industrial Solutions Pvt Ltd" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="coGstin">GSTIN Number *</label>
+            <input type="text" id="coGstin" class="form-control" placeholder="e.g. 27AAACB1234F1Z5" required>
+          </div>
+        </div>
+        <div class="form-row-2col">
+          <div class="form-group">
+            <label class="form-label" for="coContactName">Contact Person *</label>
+            <input type="text" id="coContactName" class="form-control" placeholder="e.g. Rajesh Sharma" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="coPhone">Phone / Mobile *</label>
+            <input type="tel" id="coPhone" class="form-control" placeholder="e.g. +91 98765 43210" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="coEmail">Commercial Email *</label>
+          <input type="email" id="coEmail" class="form-control" placeholder="e.g. procurement@company.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="coDeliveryAddress">Delivery Plant Address &amp; Pincode *</label>
+          <textarea id="coDeliveryAddress" class="form-control" rows="2" placeholder="Plant / Warehouse address for freight dispatch" required></textarea>
+        </div>
+
+        <!-- Payment Method Selection -->
+        <h4 class="checkout-subhead" style="margin-top:16px;">Payment / Credit Terms</h4>
+        <div class="checkout-payment-methods">
+          <label class="payment-option is-active">
+            <input type="radio" name="payMethod" value="neft" checked>
+            <div class="pay-option-content">
+              <strong>Bank Wire (RTGS / NEFT)</strong>
+              <span>Immediate dispatch upon wire confirmation</span>
+            </div>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="payMethod" value="credit">
+            <div class="pay-option-content">
+              <strong>Commercial Credit Line (30 Days)</strong>
+              <span>Approved BPTL distributor / OEM corporate accounts</span>
+            </div>
+          </label>
+          <label class="payment-option">
+            <input type="radio" name="payMethod" value="online">
+            <div class="pay-option-content">
+              <strong>Instant Online / UPI Gateway</strong>
+              <span>Corporate Credit Card / NetBanking / UPI</span>
+            </div>
+          </label>
+        </div>
+
+        <button type="submit" class="btn-confirm-order" id="checkoutSubmitBtn">
+          <span class="btn-submit-text">Confirm &amp; Place Commercial Order</span>
+          <span class="btn-submit-spinner" id="checkoutSpinner" style="display:none;"></span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Success Confirmation State (shown after placing order) -->
+    <div class="checkout-success-view" id="checkoutSuccessView" style="display:none;">
+      <div class="success-icon-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      </div>
+      <h3>Commercial Order Confirmed!</h3>
+      <p class="success-po-tag">Purchase Order Reference: <strong id="successPoNumber">BPTL-2026-9842</strong></p>
+      <p class="success-desc">
+        Thank you for choosing Birla Precision Technologies. An official proforma tax invoice and dispatch tracking timeline have been sent to your commercial email.
+      </p>
+      <div class="success-actions">
+        <button type="button" class="btn btn-primary" id="checkoutDoneBtn">Done / Continue Browsing</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Customer & Distributor Login Modal -->
   <div class="login-modal-overlay" id="loginModalOverlay"></div>

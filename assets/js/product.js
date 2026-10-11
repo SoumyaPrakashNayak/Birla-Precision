@@ -558,22 +558,32 @@ document.addEventListener('DOMContentLoaded', function () {
         qty: qty,
         unitPrice: unitPrice,
         total: total,
+        moq: moq,
         img: 'assets/images/products/gallery_thumb_1.jpg'
       };
 
-      if (window.BirlaCart && typeof window.BirlaCart.add === 'function') {
-        window.BirlaCart.add(cartItem);
+      // Show loader state on button
+      addToCartBtn.disabled = true;
+      var originalText = cartBtnText ? cartBtnText.textContent : 'Add to Cart';
+      if (cartBtnText) {
+        cartBtnText.innerHTML = '<span class="cart-btn-spinner"></span> Adding to Cart...';
       }
 
-      if (cartBtnText) {
-        var originalText = cartBtnText.textContent;
-        cartBtnText.textContent = 'Added to Cart ✓';
-        addToCartBtn.classList.add('is-added');
-        setTimeout(function () {
-          cartBtnText.textContent = originalText;
-          addToCartBtn.classList.remove('is-added');
-        }, 1600);
-      }
+      setTimeout(function () {
+        if (window.BirlaCart && typeof window.BirlaCart.add === 'function') {
+          window.BirlaCart.add(cartItem);
+        }
+
+        addToCartBtn.disabled = false;
+        if (cartBtnText) {
+          cartBtnText.textContent = 'Added ' + qty + ' pcs to Cart ✓';
+          addToCartBtn.classList.add('is-added');
+          setTimeout(function () {
+            cartBtnText.textContent = originalText;
+            addToCartBtn.classList.remove('is-added');
+          }, 1800);
+        }
+      }, 400);
     });
   }
 
