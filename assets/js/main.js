@@ -256,6 +256,28 @@ document.addEventListener('DOMContentLoaded', function () {
     updateCartUI();
   }
 
+  // Expose global BirlaCart API for product pages & batch additions
+  window.BirlaCart = {
+    get: getCart,
+    save: saveCart,
+    add: function (item) {
+      var cart = getCart();
+      var existing = cart.find(function (it) {
+        return it.dia === item.dia && it.variant === item.variant;
+      });
+      if (existing) {
+        existing.qty += (item.qty || 10);
+        existing.total = (existing.unitPrice || 0) * existing.qty;
+      } else {
+        cart.push(item);
+      }
+      saveCart(cart);
+      openCartDrawer();
+    },
+    open: openCartDrawer,
+    close: closeCartDrawer
+  };
+
   function formatPriceINR(num) {
     return '₹ ' + parseFloat(num || 0).toLocaleString('en-IN', {
       minimumFractionDigits: 2,
@@ -327,20 +349,37 @@ document.addEventListener('DOMContentLoaded', function () {
         if (cartCouponAccordion) cartCouponAccordion.style.display = 'block';
         cartDrawerFooter.style.display = 'block';
 
-        // Calculate total with coupon discount if applied
-        var finalTotal = totalAmount;
-        if (appliedCoupon && appliedCoupon.percent) {
-          var discountAmt = (totalAmount * appliedCoupon.percent) / 100.0;
-          finalTotal = Math.max(0, totalAmount - discountAmt);
+        var cartSummaryScope = document.getElementById('cartSummaryScope');
+        if (cartSummaryScope) {
+          cartSummaryScope.textContent = totalLineItems + ' Product' + (totalLineItems === 1 ? '' : 's') + ' (' + totalPieces + ' total pieces)';
         }
 
         if (cartDrawerTotal) {
-          cartDrawerTotal.textContent = formatPriceINR(finalTotal);
+          cartDrawerTotal.textContent = 'Quote on Request';
+        }
+
+        if (cartBuyNowBtn) {
+          cartBuyNowBtn.innerHTML =
+            '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="buy-btn-icon">' +
+              '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>' +
+              '<polyline points="14 2 14 8 20 8"></polyline>' +
+              '<line x1="16" y1="13" x2="8" y2="13"></line>' +
+              '<line x1="16" y1="17" x2="8" y2="17"></line>' +
+              '<polyline points="10 9 9 9 8 9"></polyline>' +
+            '</svg>' +
+            '<span id="cartQuoteBtnText">Request Official Quotation</span>' +
+            '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="buy-btn-arrow">' +
+              '<line x1="5" y1="12" x2="19" y2="12"></line>' +
+              '<polyline points="12 5 19 12 12 19"></polyline>' +
+            '</svg>';
         }
 
         cartItemsList.innerHTML = '';
         cart.forEach(function (item, index) {
           var moq = parseInt(item.moq, 10) || 100;
+          item.unitPrice = 0;
+          item.total = 0;
+
           var card = document.createElement('div');
           card.className = 'cart-item-card';
           card.innerHTML =
@@ -366,22 +405,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 '</div>' +
               '</div>' +
             '</div>' +
-            '<div class="cart-card-pricing-grid">' +
-              '<div class="pricing-col">' +
-                '<span class="pricing-label">Rate (per piece)</span>' +
-                '<span class="pricing-rate-val">' + formatPriceINR(item.unitPrice) + ' / pc</span>' +
-              '</div>' +
-              '<div class="pricing-col">' +
-                '<span class="pricing-label">Quantity (pcs)</span>' +
+            '<div class="cart-card-qty-strip">' +
+              '<div class="cart-qty-ctrl-group">' +
+                '<span class="cart-qty-ctrl-label">Quantity to Quote:</span>' +
                 '<div class="cart-stepper-box">' +
                   '<button type="button" class="cart-step-btn cart-step-minus" data-index="' + index + '" aria-label="Decrease quantity">&minus;</button>' +
                   '<input type="text" class="cart-step-input" data-index="' + index + '" value="' + item.qty + '">' +
                   '<button type="button" class="cart-step-btn cart-step-plus" data-index="' + index + '" aria-label="Increase quantity">&plus;</button>' +
                 '</div>' +
+                '<span class="cart-pcs-unit">pcs</span>' +
               '</div>' +
-              '<div class="pricing-col pricing-col-total">' +
-                '<span class="pricing-label">Total</span>' +
-                '<span class="pricing-total-val">' + formatPriceINR(item.total) + '</span>' +
+              '<div class="cart-quote-tag">' +
+                '<span class="cart-quote-badge">Official Quote on Request</span>' +
               '</div>' +
             '</div>' +
             '<div class="cart-order-info-section">' +
@@ -614,6 +649,7 @@ document.addEventListener('DOMContentLoaded', function () {
       checkoutItemsPreview.innerHTML = '';
       cart.forEach(function (item) {
         sub += (item.total || 0);
+        var coPriceText = (item.total && parseFloat(item.total) > 0) ? formatPriceINR(item.total) : 'Quote on Request';
         var previewRow = document.createElement('div');
         previewRow.className = 'co-item-row';
         previewRow.innerHTML =
@@ -627,7 +663,7 @@ document.addEventListener('DOMContentLoaded', function () {
             '</div>' +
             '<div class="co-item-meta-row">' +
               '<span>' + escapeHtml(item.variantName || 'ITM STD.') + (item.diaText ? ' - ' + escapeHtml(item.diaText) : '') + '</span>' +
-              '<span class="co-item-price">' + formatPriceINR(item.total) + '</span>' +
+              '<span class="co-item-price">' + coPriceText + '</span>' +
             '</div>' +
             '<div class="co-item-badges">' +
               '<span class="cart-badge-dagger">DAGGER BRAND</span>' +
@@ -644,12 +680,18 @@ document.addEventListener('DOMContentLoaded', function () {
         finalSub = Math.max(0, sub - discount);
       }
 
-      var gst = Math.round((finalSub * 0.18) * 100) / 100;
-      var grand = Math.round((finalSub + gst) * 100) / 100;
+      if (finalSub > 0) {
+        var gst = Math.round((finalSub * 0.18) * 100) / 100;
+        var grand = Math.round((finalSub + gst) * 100) / 100;
 
-      checkoutSubtotal.textContent = formatPriceINR(finalSub);
-      checkoutGst.textContent = formatPriceINR(gst);
-      checkoutGrandTotal.textContent = formatPriceINR(grand);
+        checkoutSubtotal.textContent = formatPriceINR(finalSub);
+        checkoutGst.textContent = formatPriceINR(gst);
+        checkoutGrandTotal.textContent = formatPriceINR(grand);
+      } else {
+        checkoutSubtotal.textContent = 'Quote on Request';
+        checkoutGst.textContent = 'Applicable on Invoicing';
+        checkoutGrandTotal.textContent = 'Official Quote on Request';
+      }
     }
 
     if (checkoutModalBody && checkoutSuccessView) {
@@ -672,12 +714,45 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  function redirectToQuotationWithCart() {
+    var cart = getCart();
+    if (cart.length === 0) {
+      alert('Your cart is empty. Please select drill sizes to request an official quotation.');
+      return;
+    }
+
+    closeCartDrawer();
+
+    var isProductPage = window.location.pathname.indexOf('/parallel-shank-twist-drills.php') !== -1;
+
+    if (isProductPage) {
+      if (typeof window.syncCartToEnquiryForm === 'function') {
+        window.syncCartToEnquiryForm(cart);
+      }
+      var enquirySec = document.getElementById('enquiry');
+      if (enquirySec) {
+        enquirySec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(function () {
+          var nameInp = document.getElementById('enquiryNameInput');
+          if (nameInp) nameInp.focus();
+        }, 500);
+      }
+    } else {
+      try {
+        localStorage.setItem('birla_sync_cart_to_quote', '1');
+      } catch (e) {}
+      window.location.href = resolveAssetUrl('products/parallel-shank-twist-drills.php#enquiry');
+    }
+  }
+
   if (cartBuyNowBtn) {
     cartBuyNowBtn.addEventListener('click', function (e) {
       e.preventDefault();
-      openCheckoutModal();
+      redirectToQuotationWithCart();
     });
   }
+
+  window.redirectToQuotationWithCart = redirectToQuotationWithCart;
 
   if (checkoutModalClose) {
     checkoutModalClose.addEventListener('click', closeCheckoutModal);
@@ -692,15 +767,17 @@ document.addEventListener('DOMContentLoaded', function () {
       e.preventDefault();
       if (checkoutSubmitBtn) checkoutSubmitBtn.disabled = true;
       if (checkoutSpinner) checkoutSpinner.style.display = 'inline-block';
+      var cart = getCart();
+      var isQuoteRequest = cart.reduce(function(acc, i){ return acc + (parseFloat(i.total) || 0); }, 0) === 0;
       var submitText = checkoutSubmitBtn ? checkoutSubmitBtn.querySelector('.btn-submit-text') : null;
-      if (submitText) submitText.textContent = 'Generating B2B Purchase Order...';
+      if (submitText) submitText.textContent = isQuoteRequest ? 'Submitting B2B Quotation Request...' : 'Generating B2B Purchase Order...';
 
       setTimeout(function () {
         if (checkoutSpinner) checkoutSpinner.style.display = 'none';
         if (checkoutSubmitBtn) checkoutSubmitBtn.disabled = false;
-        if (submitText) submitText.textContent = 'Confirm & Place Commercial Order';
+        if (submitText) submitText.textContent = isQuoteRequest ? 'Submit Official Quotation Request' : 'Confirm & Place Commercial Order';
 
-        var poNum = 'BPTL-2026-' + Math.floor(1000 + Math.random() * 9000);
+        var poNum = (isQuoteRequest ? 'RFQ-' : 'BPTL-') + '2026-' + Math.floor(1000 + Math.random() * 9000);
         if (successPoNumber) successPoNumber.textContent = poNum;
 
         if (checkoutModalBody && checkoutSuccessView) {

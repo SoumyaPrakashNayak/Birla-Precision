@@ -162,68 +162,39 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
       <!-- Rendered Items List -->
       <div class="cart-items-list" id="cartItemsList" style="display:none;"></div>
 
-      <!-- Apply Coupon Accordion (matching Image 2 Reference) -->
-      <div class="cart-coupon-accordion" id="cartCouponAccordion" style="display:none;">
-        <button type="button" class="coupon-accordion-header" id="couponToggleBtn">
-          <div class="coupon-header-left">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="coupon-tag-icon">
-              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-              <line x1="7" y1="7" x2="7.01" y2="7"></line>
-            </svg>
-            <span class="coupon-accordion-title">Apply Coupon <span class="coupon-opt-tag">(Optional)</span></span>
-          </div>
-          <svg viewBox="0 0 24 24" width="16" height="16" class="coupon-chevron" id="couponChevron" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-        </button>
-        <div class="coupon-accordion-body" id="couponAccordionBody" style="display:none;">
-          <div class="coupon-input-group">
-            <input type="text" id="couponCodeInput" class="coupon-code-input" placeholder="Enter coupon code (e.g. BIRLA10)">
-            <button type="button" class="coupon-apply-action-btn" id="couponApplyBtn">Apply</button>
-          </div>
-          <div class="coupon-feedback-msg" id="couponFeedback" style="display:none;"></div>
-        </div>
-      </div>
     </div>
 
-    <!-- Cart Drawer Footer (matching Image 2 Reference) -->
+    <!-- Cart Drawer Footer (Quotation Focused - No Prices, No Checkout) -->
     <div class="cart-drawer-footer" id="cartDrawerFooter" style="display:none;">
       
-      <!-- Estimated Total Row -->
+      <!-- Quotation Scope Row (No prices shown) -->
       <div class="cart-summary-total-box">
-        <div class="cart-estimated-total-row">
-          <span class="estimated-total-label">Estimated Total</span>
-          <strong class="estimated-total-value" id="cartDrawerTotal">₹ 0.00</strong>
+        <div class="cart-quotation-summary-row">
+          <span class="quotation-summary-label">Quotation Scope</span>
+          <strong class="quotation-summary-value" id="cartSummaryScope">All Selected Items</strong>
         </div>
-        <p class="cart-tax-notice">Taxes and freight extra as applicable. Commercial pricing based on April 2026 Price List.</p>
+        <p class="cart-tax-notice">Official B2B quotation with factory rates, GST terms &amp; dispatch schedule will be prepared for all selected specifications.</p>
       </div>
 
-      <!-- Action Buttons Row (Matching Image 2) -->
+      <!-- Action Buttons Row: Priority Button = Request Official Quotation -->
       <div class="cart-actions-column">
-        <!-- 1. Primary Red Buy Now Button with cart icon & right arrow -->
-        <button type="button" class="btn-cart-buy-now" id="cartBuyNowBtn">
+        <!-- 1. Priority Red Button: Request Official Quotation -->
+        <button type="button" class="btn-cart-buy-now btn-cart-quote-primary" id="cartBuyNowBtn">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="buy-btn-icon">
-            <circle cx="9" cy="21" r="1"></circle>
-            <circle cx="20" cy="21" r="1"></circle>
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
           </svg>
-          <span>Proceed to Buy / Instant Checkout</span>
+          <span id="cartQuoteBtnText">Request Official Quotation</span>
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="buy-btn-arrow">
             <line x1="5" y1="12" x2="19" y2="12"></line>
             <polyline points="12 5 19 12 12 19"></polyline>
           </svg>
         </button>
 
-        <!-- 2. Secondary Request Official PO Quotation Button -->
-        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php#enquiry" class="btn-checkout-quote" id="cartCheckoutQuoteBtn">
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="quote-btn-icon">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="16" y1="13" x2="8" y2="13"></line>
-            <line x1="16" y1="17" x2="8" y2="17"></line>
-          </svg>
-          <span>Request Official PO Quotation</span>
-        </a>
-
-        <!-- 3. Tertiary Clear Cart Button with Trash Can icon -->
+        <!-- 2. Clear Cart Button with Trash Can icon -->
         <button type="button" class="btn-clear-cart" id="cartClearBtn">
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="3 6 5 6 21 6"></polyline>

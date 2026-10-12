@@ -9,11 +9,11 @@ document.addEventListener('DOMContentLoaded', function () {
   'use strict';
 
   // Global State
-  var currentDiameter = '3.17'; // Default popular diameter (1/8")
+  var currentDiameter = '3.17'; // Default popular diameter
   var currentVariant = 'itm_std'; // Default standard variant
-  var currentUnit = 'mm'; // 'mm', 'inch', 'dg'
   var allSizesData = [];
   var allVariantsMap = {};
+  var collectiveItems = [];
 
   // DOM Elements
   var diaSearchInput = document.getElementById('diaSearchInput');
@@ -21,20 +21,18 @@ document.addEventListener('DOMContentLoaded', function () {
   var diaInputContainer = document.getElementById('diaInputContainer');
   var diaDropdownMenu = document.getElementById('diaDropdownMenu');
   var diaMenuScroll = document.getElementById('diaMenuScroll');
-  var unitSelectBox = document.getElementById('unitSelectBox');
-  var unitPills = document.querySelectorAll('.unit-pill-btn');
+  var addDiaToListBtn = document.getElementById('addDiaToListBtn');
+  var quickAddPills = document.getElementById('quickAddPills');
   var variantCards = document.querySelectorAll('.variant-item-card');
   var selectedDiaText = document.getElementById('selectedDiaText');
   var diaChangeBtn = document.getElementById('diaChangeBtn');
-  var commPriceDisplay = document.getElementById('commPriceDisplay');
   var commMoqDisplay = document.getElementById('commMoqDisplay');
-  var cartQtyInput = document.getElementById('cartQtyInput');
-  var cartQtyMinus = document.getElementById('cartQtyMinus');
-  var cartQtyPlus = document.getElementById('cartQtyPlus');
-  var cartMoqPill = document.getElementById('cartMoqPill');
-  var cartSubtotalDisplay = document.getElementById('cartSubtotalDisplay');
+  var collectiveItemsContainer = document.getElementById('collectiveItemsContainer');
+  var collectiveCountBadge = document.getElementById('collectiveCountBadge');
+  var collectiveAddMoreBtn = document.getElementById('collectiveAddMoreBtn');
   var addToCartBtn = document.getElementById('addToCartBtn');
   var cartBtnText = document.getElementById('cartBtnText');
+  var requestQuotationBtn = document.getElementById('requestQuotationBtn');
   var catalogueTableBody = document.getElementById('catalogueTableBody');
   var tableSearchInput = document.getElementById('tableSearchInput');
   var tableRowsCount = document.getElementById('tableRowsCount');
@@ -178,65 +176,48 @@ document.addEventListener('DOMContentLoaded', function () {
           currentVariant = paramVar;
         }
 
+        // Initialize collective list with initial selected diameter
+        var initMoq = 200;
+        var initRow = allSizesData.find(function (r) {
+          return parseFloat(r.mm) === parseFloat(currentDiameter);
+        });
+        if (initRow) initMoq = parseInt(initRow.moq, 10) || 100;
+        var initVarInfo = allVariantsMap[currentVariant] || { name: 'ITM STD.' };
+
+        collectiveItems = [
+          {
+            mm: currentDiameter,
+            variant: currentVariant,
+            variantName: initVarInfo.name || 'ITM STD.',
+            qty: initMoq,
+            moq: initMoq
+          }
+        ];
+
         // Initialize UI with loaded data
         renderDiameterDropdownMenu();
         updateConfiguratorState();
-        renderCatalogueTable(allSizesData);
+        renderCollectiveList();
+
+        // Check if redirected from cart or hash is #enquiry
+        if (window.location.hash === '#enquiry' || (window.BirlaCart && window.BirlaCart.get().length > 0)) {
+          syncEnquiryForm();
+        }
       }
     })
     .catch(function (err) {
       console.warn('Could not fetch dynamic API data, using embedded state:', err);
     });
 
-  // 4. Unit Selector Sync (Dropdown box + Toggle Pills)
-  function setUnit(unit) {
-    currentUnit = unit;
-    if (unitSelectBox) {
-      unitSelectBox.value = unit;
-    }
-    unitPills.forEach(function (pill) {
-      if (pill.getAttribute('data-unit') === unit) {
-        pill.classList.add('is-active');
-        pill.setAttribute('aria-checked', 'true');
-      } else {
-        pill.classList.remove('is-active');
-        pill.setAttribute('aria-checked', 'false');
-      }
-    });
-    renderDiameterDropdownMenu();
-  }
-
-  if (unitSelectBox) {
-    unitSelectBox.addEventListener('change', function () {
-      setUnit(this.value);
-    });
-  }
-
-  unitPills.forEach(function (pill) {
-    pill.addEventListener('click', function () {
-      var unit = this.getAttribute('data-unit');
-      setUnit(unit);
-    });
-  });
-
-  // 5. Render Diameter Dropdown Items
+  // 4. Render Diameter Dropdown Items (Metric mm only)
   function renderDiameterDropdownMenu(filterQuery) {
     if (!diaMenuScroll) return;
 
     var query = (filterQuery || '').toLowerCase().trim();
     var filtered = allSizesData.filter(function (row) {
-      if (!row) return false;
-
-      // Unit filter
-      if (currentUnit === 'inch' && !row.inch) return false;
-      if (currentUnit === 'dg' && !row.dg) return false;
-
-      // Text query filter
+      if (!row || !row.mm) return false;
       if (query) {
-        var mmMatch = (row.mm || '').toLowerCase().indexOf(query) !== -1;
-        var inchMatch = (row.inch || '').toLowerCase().indexOf(query) !== -1;
-        var dgMatch = (row.dg || '').toLowerCase().indexOf(query) !== -1;
-        return mmMatch || inchMatch || dgMatch;
+        return (row.mm || '').toLowerCase().indexOf(query) !== -1;
       }
       return true;
     });
@@ -247,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function () {
       var emptyMsg = document.createElement('div');
       emptyMsg.className = 'dia-menu-item';
       emptyMsg.style.color = '#888';
-      emptyMsg.textContent = 'No matching diameters found';
+      emptyMsg.textContent = 'No matching metric diameters found';
       diaMenuScroll.appendChild(emptyMsg);
       return;
     }
@@ -255,9 +236,7 @@ document.addEventListener('DOMContentLoaded', function () {
     filtered.forEach(function (row) {
       var item = document.createElement('div');
       item.className = 'dia-menu-item' + (row.mm === currentDiameter ? ' is-selected' : '');
-      
-      var label = formatDiameterLabel(row, currentUnit);
-      item.innerHTML = '<span>' + label + '</span>';
+      item.innerHTML = '<span>' + escapeHtml(row.mm) + ' mm</span>';
 
       item.addEventListener('click', function (e) {
         e.stopPropagation();
@@ -269,25 +248,17 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  function formatDiameterLabel(row, unit) {
-    if (unit === 'inch' && row.inch) {
-      return row.inch + ' inch (' + row.mm + ' mm)';
-    } else if (unit === 'dg' && row.dg) {
-      return 'DG ' + row.dg + ' (' + row.mm + ' mm)';
-    } else {
-      var text = row.mm + ' mm';
-      if (row.inch) text += ' (' + row.inch + ' inch)';
-      else if (row.dg) text += ' (DG ' + row.dg + ')';
-      return text;
-    }
+  function formatDiameterLabel(row) {
+    if (!row) return '';
+    return row.mm + ' mm';
   }
 
-  // 6. Diameter Dropdown Open / Close Behavior
+  // 5. Diameter Dropdown Open / Close Behavior
   function openDiameterDropdown() {
     if (diaDropdownMenu && diaInputContainer) {
       diaDropdownMenu.classList.add('is-open');
       diaInputContainer.classList.add('is-open');
-      renderDiameterDropdownMenu(diaSearchInput.value);
+      renderDiameterDropdownMenu(diaSearchInput ? diaSearchInput.value : '');
     }
   }
 
@@ -335,13 +306,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // 7. Select Diameter
+  // 6. Select Diameter (in mm)
   function selectDiameter(mm) {
     currentDiameter = mm;
     updateConfiguratorState();
   }
 
-  // 8. Variant Cards Selection
+  // 7. Variant Cards Selection
   variantCards.forEach(function (card) {
     card.addEventListener('click', function () {
       var variantCode = this.getAttribute('data-variant');
@@ -352,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // 9. Update Full Configurator UI State
+  // 8. Update Full Configurator UI State (Metric mm only, NO prices displayed)
   function updateConfiguratorState() {
     var sizeRow = allSizesData.find(function (r) {
       return parseFloat(r.mm) === parseFloat(currentDiameter);
@@ -365,14 +336,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (!sizeRow) return;
 
-    // Update Input Display
+    // Update Input Display in mm only
     if (diaSearchInput) {
-      diaSearchInput.value = formatDiameterLabel(sizeRow, currentUnit);
+      diaSearchInput.value = sizeRow.mm + ' mm';
     }
 
-    // Update Summary Box
+    // Update Summary Box in mm only
     if (selectedDiaText) {
-      selectedDiaText.textContent = formatDiameterLabel(sizeRow, 'mm');
+      selectedDiaText.textContent = sizeRow.mm + ' mm';
     }
 
     // Update Variant Cards Active Class
@@ -384,72 +355,18 @@ document.addEventListener('DOMContentLoaded', function () {
         card.classList.remove('is-active');
       }
 
-      // Update in stock or unavailable
-      var price = sizeRow[vCode];
       var stockTag = card.querySelector('.variant-stock-pill');
       if (stockTag) {
-        if (price !== null && price !== undefined) {
-          stockTag.className = 'variant-stock-pill stock-in';
-          stockTag.innerHTML = '<span class="stock-dot"></span> In Stock';
-        } else {
-          stockTag.className = 'variant-stock-pill stock-limited';
-          stockTag.innerHTML = '<span class="stock-dot"></span> Custom Order';
-        }
+        stockTag.className = 'variant-stock-pill stock-in';
+        stockTag.innerHTML = '<span class="stock-dot"></span> In Stock';
       }
     });
-
-    // Update Commercial Price
-    var currentPrice = sizeRow[currentVariant];
-    if (commPriceDisplay) {
-      if (currentPrice !== null && currentPrice !== undefined) {
-        commPriceDisplay.textContent = '₹ ' + formatINR(currentPrice);
-      } else {
-        commPriceDisplay.textContent = 'Available on Request';
-      }
-    }
 
     // Update MOQ Display
     var moq = sizeRow.moq || 100;
     if (commMoqDisplay) {
-      commMoqDisplay.textContent = moq + ' Pieces';
+      commMoqDisplay.textContent = 'MOQ: ' + moq + ' pcs (Multiples of 10)';
     }
-
-    // Update Enquiry Form
-    if (enquiryDiaInput) {
-      enquiryDiaInput.value = sizeRow.mm + ' mm' + (sizeRow.inch ? ' (' + sizeRow.inch + '")' : '');
-    }
-    if (enquiryVariantInput && allVariantsMap[currentVariant]) {
-      enquiryVariantInput.value = allVariantsMap[currentVariant].name;
-    }
-    if (enquiryQuantityInput) {
-      enquiryQuantityInput.value = moq;
-      enquiryQuantityInput.min = moq;
-    }
-    if (enquiryMoqNotice) {
-      enquiryMoqNotice.textContent = 'Standard MOQ for ' + sizeRow.mm + ' mm is ' + moq + ' pcs (Multiples of 10).';
-    }
-    if (enquiryPriceBasisInput) {
-      if (currentPrice) {
-        enquiryPriceBasisInput.value = 'Catalogue ₹ ' + formatINR(currentPrice) + ' per 10 pcs (April 2026 Price List)';
-      } else {
-        enquiryPriceBasisInput.value = 'Quotation on Request (April 2026 Price List)';
-      }
-    }
-
-    // Update Cart Quantity & MOQ pill
-    var currentMoq = parseInt(sizeRow.moq, 10) || 100;
-    if (cartMoqPill) {
-      cartMoqPill.textContent = 'MOQ: ' + currentMoq + ' pcs';
-    }
-    if (cartQtyInput) {
-      cartQtyInput.min = currentMoq;
-      cartQtyInput.step = currentMoq;
-      var curVal = parseInt(cartQtyInput.value, 10);
-      if (isNaN(curVal) || curVal < currentMoq) {
-        cartQtyInput.value = currentMoq;
-      }
-    }
-    updateCartSubtotal(sizeRow);
 
     // Highlight row in full table
     var rows = catalogueTableBody ? catalogueTableBody.querySelectorAll('tr') : [];
@@ -462,193 +379,316 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // Helper to get currently active size row object
-  function getCurrentSizeRow() {
-    var sizeRow = allSizesData.find(function (r) {
-      return parseFloat(r.mm) === parseFloat(currentDiameter);
+  // 9. Collective Multi-Size Management
+  function renderCollectiveList() {
+    if (!collectiveItemsContainer) return;
+    collectiveItemsContainer.innerHTML = '';
+
+    if (collectiveItems.length === 0) {
+      var emptyDiv = document.createElement('div');
+      emptyDiv.className = 'collective-empty-msg';
+      emptyDiv.style.padding = '14px';
+      emptyDiv.style.textAlign = 'center';
+      emptyDiv.style.color = '#9CA3AF';
+      emptyDiv.style.fontSize = '12px';
+      emptyDiv.textContent = 'No sizes selected. Pick a size in mm above and click "+ Add Size".';
+      collectiveItemsContainer.appendChild(emptyDiv);
+
+      if (collectiveCountBadge) collectiveCountBadge.textContent = '0 Sizes';
+      if (cartBtnText) cartBtnText.textContent = 'Add to Cart';
+      syncEnquiryForm();
+      return;
+    }
+
+    collectiveItems.forEach(function (item, idx) {
+      var row = document.createElement('div');
+      row.className = 'collective-item-row';
+      row.innerHTML =
+        '<div class="c-item-left">' +
+          '<span class="c-size-badge">' + escapeHtml(item.mm) + ' mm</span>' +
+          '<span class="c-variant-badge">' + escapeHtml(item.variantName) + '</span>' +
+          '<span class="c-moq-label">MOQ: ' + item.moq + ' pcs</span>' +
+        '</div>' +
+        '<div class="c-item-right">' +
+          '<div class="c-stepper-box">' +
+            '<button type="button" class="c-step-btn c-step-minus" data-idx="' + idx + '" aria-label="Decrease quantity">&minus;</button>' +
+            '<input type="number" class="c-step-input" data-idx="' + idx + '" value="' + item.qty + '" min="' + item.moq + '" step="10">' +
+            '<button type="button" class="c-step-btn c-step-plus" data-idx="' + idx + '" aria-label="Increase quantity">&plus;</button>' +
+          '</div>' +
+          '<span class="c-pcs-tag">pcs</span>' +
+          '<button type="button" class="c-item-remove-btn" data-idx="' + idx + '" title="Remove ' + item.mm + ' mm" aria-label="Remove ' + item.mm + ' mm">' +
+            '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+              '<line x1="18" y1="6" x2="6" y2="18"></line>' +
+              '<line x1="6" y1="6" x2="18" y2="18"></line>' +
+            '</svg>' +
+          '</button>' +
+        '</div>';
+
+      collectiveItemsContainer.appendChild(row);
     });
-    return sizeRow || (allSizesData.length > 0 ? allSizesData[0] : null);
+
+    // Wire up stepper decrease
+    var minusBtns = collectiveItemsContainer.querySelectorAll('.c-step-minus');
+    minusBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var idx = parseInt(this.getAttribute('data-idx'), 10);
+        if (!collectiveItems[idx]) return;
+        var moq = collectiveItems[idx].moq || 100;
+        var newQty = collectiveItems[idx].qty - 10;
+        if (newQty < moq) newQty = moq;
+        collectiveItems[idx].qty = newQty;
+        renderCollectiveList();
+      });
+    });
+
+    // Wire up stepper increase
+    var plusBtns = collectiveItemsContainer.querySelectorAll('.c-step-plus');
+    plusBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var idx = parseInt(this.getAttribute('data-idx'), 10);
+        if (!collectiveItems[idx]) return;
+        collectiveItems[idx].qty += 10;
+        renderCollectiveList();
+      });
+    });
+
+    // Wire up direct input change
+    var inputs = collectiveItemsContainer.querySelectorAll('.c-step-input');
+    inputs.forEach(function (inp) {
+      inp.addEventListener('change', function () {
+        var idx = parseInt(this.getAttribute('data-idx'), 10);
+        if (!collectiveItems[idx]) return;
+        var moq = collectiveItems[idx].moq || 100;
+        var val = parseInt(this.value, 10);
+        if (isNaN(val) || val < moq) val = moq;
+        var rem = val % 10;
+        if (rem !== 0) val = Math.ceil(val / 10) * 10;
+        collectiveItems[idx].qty = val;
+        renderCollectiveList();
+      });
+    });
+
+    // Wire up remove size button
+    var removeBtns = collectiveItemsContainer.querySelectorAll('.c-item-remove-btn');
+    removeBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var idx = parseInt(this.getAttribute('data-idx'), 10);
+        collectiveItems.splice(idx, 1);
+        renderCollectiveList();
+      });
+    });
+
+    // Update count badge & button text
+    if (collectiveCountBadge) {
+      collectiveCountBadge.textContent = collectiveItems.length + (collectiveItems.length === 1 ? ' Size' : ' Sizes');
+    }
+    if (cartBtnText) {
+      var totalPcs = collectiveItems.reduce(function (sum, it) { return sum + it.qty; }, 0);
+      cartBtnText.textContent = 'Add ' + collectiveItems.length + ' Size' + (collectiveItems.length === 1 ? '' : 's') + ' (' + totalPcs + ' pcs) to Cart';
+    }
+
+    syncEnquiryForm();
   }
 
-  // Update Cart Subtotal display
-  function updateCartSubtotal(row) {
-    if (!cartSubtotalDisplay) return;
-    var size = row || getCurrentSizeRow();
-    if (!size) return;
-    var moq = parseInt(size.moq, 10) || 100;
-    var qty = cartQtyInput ? (parseInt(cartQtyInput.value, 10) || moq) : moq;
-    if (qty < moq) qty = moq;
+  function addSizeToCollective(mm, variant) {
+    var sizeRow = allSizesData.find(function (r) {
+      return parseFloat(r.mm) === parseFloat(mm);
+    });
+    if (!sizeRow) return;
+    var targetVariant = variant || currentVariant;
+    var moq = parseInt(sizeRow.moq, 10) || 100;
+    var variantInfo = allVariantsMap[targetVariant] || { name: targetVariant.toUpperCase() };
+    var variantName = variantInfo.name || targetVariant.toUpperCase();
 
-    var currentPrice = size[currentVariant];
-    if (currentPrice !== null && currentPrice !== undefined && !isNaN(parseFloat(currentPrice))) {
-      var unitPrice = parseFloat(currentPrice) / 10.0;
-      var subtotal = unitPrice * qty;
-      cartSubtotalDisplay.textContent = '₹ ' + formatINR(subtotal);
+    var existing = collectiveItems.find(function (it) {
+      return parseFloat(it.mm) === parseFloat(sizeRow.mm) && it.variant === targetVariant;
+    });
+
+    if (existing) {
+      existing.qty += 10;
     } else {
-      cartSubtotalDisplay.textContent = 'Quote Required';
+      collectiveItems.push({
+        mm: sizeRow.mm,
+        variant: targetVariant,
+        variantName: variantName,
+        qty: moq,
+        moq: moq
+      });
+    }
+
+    currentDiameter = sizeRow.mm;
+    updateConfiguratorState();
+    renderCollectiveList();
+  }
+
+  var enquiryCartSummaryBox = document.getElementById('enquiryCartSummaryBox');
+  var enquirySummaryCount = document.getElementById('enquirySummaryCount');
+  var enquirySummaryItems = document.getElementById('enquirySummaryItems');
+
+  function syncEnquiryForm(customItems) {
+    var itemsToSync = customItems;
+    if (!itemsToSync || !Array.isArray(itemsToSync) || itemsToSync.length === 0) {
+      if (collectiveItems && collectiveItems.length > 0) {
+        itemsToSync = collectiveItems;
+      } else if (window.BirlaCart && typeof window.BirlaCart.get === 'function') {
+        itemsToSync = window.BirlaCart.get();
+      }
+    }
+
+    if (!itemsToSync || itemsToSync.length === 0) {
+      if (enquiryCartSummaryBox) enquiryCartSummaryBox.style.display = 'none';
+      return;
+    }
+
+    // Render visual breakdown box in enquiry card
+    if (enquiryCartSummaryBox && enquirySummaryItems) {
+      enquiryCartSummaryBox.style.display = 'block';
+      if (enquirySummaryCount) {
+        enquirySummaryCount.textContent = itemsToSync.length + (itemsToSync.length === 1 ? ' Item' : ' Items');
+      }
+      enquirySummaryItems.innerHTML = '';
+
+      itemsToSync.forEach(function (it) {
+        var dia = it.diaText || (it.mm ? (it.mm + ' mm') : '');
+        var vName = it.variantName || 'ITM STD.';
+        var qty = it.qty || 100;
+        var chip = document.createElement('div');
+        chip.className = 'enquiry-summary-chip';
+        chip.innerHTML =
+          '<div class="chip-main">' +
+            '<strong class="chip-dia">' + escapeHtml(dia) + '</strong>' +
+            '<span class="chip-variant">' + escapeHtml(vName) + '</span>' +
+          '</div>' +
+          '<div class="chip-qty-wrap">' +
+            '<span class="chip-qty">' + qty + ' pcs</span>' +
+          '</div>';
+        enquirySummaryItems.appendChild(chip);
+      });
+    }
+
+    if (enquiryDiaInput) {
+      var diaDescriptions = itemsToSync.map(function (it) {
+        var dia = it.diaText || (it.mm ? (it.mm + ' mm') : '');
+        var vName = it.variantName || 'ITM STD.';
+        var qty = it.qty || 100;
+        return dia + ' (' + qty + ' pcs - ' + vName + ')';
+      });
+      enquiryDiaInput.value = diaDescriptions.join(', ');
+    }
+
+    var totalQty = itemsToSync.reduce(function (sum, it) { return sum + (parseInt(it.qty, 10) || 0); }, 0);
+    if (enquiryQuantityInput) {
+      enquiryQuantityInput.value = totalQty;
+    }
+
+    if (enquiryVariantInput) {
+      var vNames = itemsToSync.map(function (it) { return it.variantName || 'ITM STD.'; })
+        .filter(function (v, i, a) { return a.indexOf(v) === i; });
+      enquiryVariantInput.value = vNames.join(' / ');
+    }
+
+    if (enquiryPriceBasisInput) {
+      enquiryPriceBasisInput.value = 'Official B2B Quotation on Request (IS : 5101 Conformance)';
+    }
+
+    // Populate message with detailed list if message is empty
+    var enquiryMessageInput = document.getElementById('enquiryMessageInput');
+    if (enquiryMessageInput && !enquiryMessageInput.value.trim()) {
+      var msgLines = ['Kindly provide official quotation for the following tooling specifications:'];
+      itemsToSync.forEach(function (it, idx) {
+        var dia = it.diaText || (it.mm ? (it.mm + ' mm') : '');
+        var vName = it.variantName || 'ITM STD.';
+        var qty = it.qty || 100;
+        msgLines.push((idx + 1) + '. HSS Jobber Series Drill — ' + dia + ' — Variant: ' + vName + ' — Quantity: ' + qty + ' pcs');
+      });
+      msgLines.push('\nDelivery terms: F.O.R. Destination. Please share best commercial discount and delivery timeline.');
+      enquiryMessageInput.value = msgLines.join('\n');
     }
   }
 
-  // 9b. Commercial Cart Stepper & Add to Cart Handlers (multiples of 10 pcs as per catalogue)
-  if (cartQtyMinus) {
-    cartQtyMinus.addEventListener('click', function () {
-      var row = getCurrentSizeRow();
-      var moq = row ? (parseInt(row.moq, 10) || 100) : 100;
-      var step = 10;
-      var curVal = cartQtyInput ? (parseInt(cartQtyInput.value, 10) || moq) : moq;
-      var newVal = curVal - step;
-      if (newVal < moq) newVal = moq;
-      if (cartQtyInput) cartQtyInput.value = newVal;
-      updateCartSubtotal(row);
-    });
-  }
+  window.syncCartToEnquiryForm = syncEnquiryForm;
 
-  if (cartQtyPlus) {
-    cartQtyPlus.addEventListener('click', function () {
-      var row = getCurrentSizeRow();
-      var moq = row ? (parseInt(row.moq, 10) || 100) : 100;
-      var step = 10;
-      var curVal = cartQtyInput ? (parseInt(cartQtyInput.value, 10) || moq) : moq;
-      var newVal = curVal + step;
-      if (cartQtyInput) cartQtyInput.value = newVal;
-      updateCartSubtotal(row);
-    });
-  }
-
-  if (cartQtyInput) {
-    cartQtyInput.addEventListener('change', function () {
-      var row = getCurrentSizeRow();
-      var moq = row ? (parseInt(row.moq, 10) || 100) : 100;
-      var val = parseInt(this.value, 10);
-      if (isNaN(val) || val < moq) {
-        val = moq;
-      } else {
-        var rem = val % 10;
-        if (rem !== 0) {
-          val = Math.ceil(val / 10) * 10;
-        }
+  // Quick-Add Popular Metric Sizes Buttons
+  var quickBtns = document.querySelectorAll('.quick-size-btn');
+  quickBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var mm = this.getAttribute('data-mm');
+      if (mm) {
+        addSizeToCollective(mm, currentVariant);
       }
-      this.value = val;
-      updateCartSubtotal(row);
     });
+  });
 
-    cartQtyInput.addEventListener('input', function () {
-      var row = getCurrentSizeRow();
-      updateCartSubtotal(row);
+  // + Add Size Button next to Diameter Search
+  if (addDiaToListBtn) {
+    addDiaToListBtn.addEventListener('click', function () {
+      addSizeToCollective(currentDiameter, currentVariant);
     });
   }
 
+  // + Add Another Size Button inside Collective Box
+  if (collectiveAddMoreBtn) {
+    collectiveAddMoreBtn.addEventListener('click', function () {
+      openDiameterDropdown();
+      if (diaSearchInput) {
+        diaSearchInput.focus();
+        diaSearchInput.select();
+      }
+    });
+  }
+
+  // Add All Selected Sizes to Cart Handler
   if (addToCartBtn) {
     addToCartBtn.addEventListener('click', function () {
-      var row = getCurrentSizeRow();
-      if (!row) return;
-      var moq = parseInt(row.moq, 10) || 100;
-      var qty = cartQtyInput ? (parseInt(cartQtyInput.value, 10) || moq) : moq;
-      if (qty < moq) qty = moq;
+      if (collectiveItems.length === 0) {
+        addSizeToCollective(currentDiameter, currentVariant);
+      }
 
-      var currentPrice = row[currentVariant];
-      var unitPrice = (currentPrice !== null && currentPrice !== undefined && !isNaN(parseFloat(currentPrice))) ? (parseFloat(currentPrice) / 10.0) : 0;
-      var total = unitPrice * qty;
-      var variantInfo = allVariantsMap[currentVariant] || { name: currentVariant.toUpperCase() };
-
-      var cartItem = {
-        dia: row.mm,
-        variant: currentVariant,
-        title: 'HSS Jobber Series Twist Drill',
-        variantName: variantInfo.name || currentVariant.toUpperCase(),
-        diaText: row.mm + ' mm' + (row.inch ? ' (' + row.inch + '")' : ''),
-        qty: qty,
-        unitPrice: unitPrice,
-        total: total,
-        moq: moq,
-        img: 'assets/images/products/gallery_thumb_1.jpg'
-      };
-
-      // Show loader state on button
       addToCartBtn.disabled = true;
-      var originalText = cartBtnText ? cartBtnText.textContent : 'Add to Cart';
+      var originalText = cartBtnText ? cartBtnText.textContent : 'Add Selected Sizes to Cart';
       if (cartBtnText) {
-        cartBtnText.innerHTML = '<span class="cart-btn-spinner"></span> Adding to Cart...';
+        cartBtnText.innerHTML = '<span class="cart-btn-spinner"></span> Adding ' + collectiveItems.length + ' Sizes to Cart...';
       }
 
       setTimeout(function () {
-        if (window.BirlaCart && typeof window.BirlaCart.add === 'function') {
-          window.BirlaCart.add(cartItem);
-        }
+        collectiveItems.forEach(function (item) {
+          if (window.BirlaCart && typeof window.BirlaCart.add === 'function') {
+            window.BirlaCart.add({
+              dia: item.mm,
+              variant: item.variant,
+              title: 'HSS Jobber Series Twist Drill',
+              variantName: item.variantName,
+              diaText: item.mm + ' mm',
+              qty: item.qty,
+              unitPrice: 0,
+              total: 0,
+              moq: item.moq,
+              img: 'assets/images/products/gallery_thumb_1.jpg'
+            });
+          }
+        });
 
         addToCartBtn.disabled = false;
         if (cartBtnText) {
-          cartBtnText.textContent = 'Added ' + qty + ' pcs to Cart ✓';
+          cartBtnText.textContent = 'Added ' + collectiveItems.length + ' Sizes to Cart ✓';
           addToCartBtn.classList.add('is-added');
           setTimeout(function () {
             cartBtnText.textContent = originalText;
             addToCartBtn.classList.remove('is-added');
           }, 1800);
         }
-      }, 400);
+      }, 350);
     });
   }
 
-  // 10. Render Full Catalogue Table
-  function renderCatalogueTable(data) {
-    if (!catalogueTableBody) return;
-    catalogueTableBody.innerHTML = '';
-
-    if (tableRowsCount) {
-      tableRowsCount.textContent = 'Showing ' + data.length + ' diameter specifications (IS : 5101)';
-    }
-
-    data.forEach(function (row) {
-      var tr = document.createElement('tr');
-      tr.setAttribute('data-dia', row.mm);
-      if (row.mm === currentDiameter) {
-        tr.className = 'is-selected-row';
-      }
-
-      var html = '<td class="dia-cell"><strong>' + escapeHtml(row.mm) + '</strong></td>';
-      html += '<td>' + (row.inch ? escapeHtml(row.inch) : '<span class="price-dash">-</span>') + '</td>';
-      html += '<td>' + (row.dg ? escapeHtml(row.dg) : '<span class="price-dash">-</span>') + '</td>';
-
-      ['itm_std', 'itm_std_tin', 'panther', 'ninja', 'forgeline', 'hathyar'].forEach(function (v) {
-        if (row[v]) {
-          html += '<td><span class="price-tag-table">₹' + formatINR(row[v]) + '</span></td>';
-        } else {
-          html += '<td><span class="price-dash">—</span></td>';
-        }
-      });
-
-      html += '<td><span class="badge badge-light">' + (row.moq || 100) + '</span></td>';
-      tr.innerHTML = html;
-
-      tr.addEventListener('click', function () {
-        selectDiameter(row.mm);
-        // Scroll to configurator
-        var overview = document.getElementById('productOverview');
-        if (overview) {
-          overview.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-
-      catalogueTableBody.appendChild(tr);
+  // Request Quotation Button Handler
+  if (requestQuotationBtn) {
+    requestQuotationBtn.addEventListener('click', function () {
+      syncEnquiryForm();
     });
   }
 
-  // 11. Table Filter Search
-  if (tableSearchInput) {
-    tableSearchInput.addEventListener('input', function () {
-      var val = this.value.trim().toLowerCase();
-      var filtered = allSizesData.filter(function (r) {
-        if (!val) return true;
-        var mm = (r.mm || '').toLowerCase();
-        var inch = (r.inch || '').toLowerCase();
-        var dg = (r.dg || '').toLowerCase();
-        return mm.indexOf(val) !== -1 || inch.indexOf(val) !== -1 || dg.indexOf(val) !== -1;
-      });
-      renderCatalogueTable(filtered);
-    });
-  }
-
-  // 12. Helper Functions
+  // 10. Helper Functions
   function findSizeMatch(query) {
     if (!query) return null;
     var q = query.trim().toLowerCase();

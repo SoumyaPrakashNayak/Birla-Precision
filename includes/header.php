@@ -43,54 +43,7 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
   <!-- Site Header (Exact replica of specified design) -->
   <header class="site-header" id="siteHeader">
 
-    <!-- 1. Top Utility Bar (Charcoal #25292D) -->
-    <div class="top-utility-bar">
-      <div class="container top-utility-inner">
-        
-        <div class="top-tagline">
-          Precision Tools for a Stronger Tomorrow
-        </div>
-
-        <div class="top-utility-links">
-          <a href="<?php echo $base_url; ?>index.php#catalogue" class="top-util-link">
-            <svg class="top-util-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-            </svg>
-            <span>Catalogue (2026)</span>
-          </a>
-
-          <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php#enquiry" class="top-util-link">
-            <svg class="top-util-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="3"></circle>
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-            </svg>
-            <span>Technical Support</span>
-          </a>
-
-          <a href="tel:+912532352315" class="top-util-link">
-            <svg class="top-util-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-            </svg>
-            <span>+91 253 2352315</span>
-          </a>
-
-          <span class="top-divider">|</span>
-
-          <div class="top-country-btn" title="Country: India">
-            <svg class="top-util-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"></path>
-              <circle cx="12" cy="10" r="3"></circle>
-            </svg>
-            <span>India</span>
-            <svg class="top-chevron" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- 2. Main Header Row (White #FFFFFF) -->
+    <!-- 1. Main Header Row (White #FFFFFF) -->
     <div class="header-main-row">
       <div class="container header-main-inner">
         
@@ -350,25 +303,9 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
             </div>
           </li>
 
-          <!-- Applications -->
-          <li class="nav-bar-item">
-            <a href="<?php echo $base_url; ?>index.php#applications" class="nav-bar-link">
-              <span>Applications</span>
-              <svg class="nav-arrow-icon" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
-            </a>
-          </li>
-
           <!-- About Us -->
           <li class="nav-bar-item">
             <a href="<?php echo $base_url; ?>index.php#about" class="nav-bar-link">About Us</a>
-          </li>
-
-          <!-- Resources -->
-          <li class="nav-bar-item">
-            <a href="<?php echo $base_url; ?>index.php#catalogue" class="nav-bar-link">
-              <span>Resources</span>
-              <svg class="nav-arrow-icon" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
-            </a>
           </li>
 
           <!-- Contact -->

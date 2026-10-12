@@ -163,16 +163,17 @@ include __DIR__ . '/../includes/header.php';
           <div class="step-header-row">
             <div class="step-title-group">
               <span class="step-num-circle">1</span>
-              <h2 class="step-heading">Find your drill size</h2>
+              <h2 class="step-heading">Find your drill size (in mm)</h2>
+              <span class="unit-only-pill-tag">Metric (mm)</span>
             </div>
-            <a href="#all-sizes-table" class="step-link-red">
-              <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-              <span>View size chart &rarr;</span>
+            <a href="#technical-specs" class="step-link-red">
+              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span>View technical specs &rarr;</span>
             </a>
           </div>
 
-          <!-- Unit Selector & Diameter Dropdown Row -->
-          <div class="size-controls-row">
+          <!-- Diameter Dropdown Row (Metric mm only) -->
+          <div class="size-controls-row size-controls-mm-only">
             
             <!-- Left: Search & Diameter Dropdown Box -->
             <div class="diameter-dropdown-wrapper" id="diaDropdownWrapper">
@@ -184,55 +185,51 @@ include __DIR__ . '/../includes/header.php';
                   type="text" 
                   id="diaSearchInput" 
                   class="dia-search-input" 
-                  placeholder="Search or choose a diameter..." 
-                  value="3.17 mm (1/8 inch)" 
+                  placeholder="Search or choose size in mm (e.g. 3.00, 4.50, 6.00)..." 
+                  value="<?php echo htmlspecialchars($initial_row['mm']); ?> mm" 
                   autocomplete="off"
                 >
                 <svg class="dia-chevron-icon" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
               </div>
 
-              <!-- Dropped Down Size Menu List -->
+              <!-- Dropped Down Size Menu List (MM Only) -->
               <div class="diameter-dropdown-menu" id="diaDropdownMenu">
                 <div class="dia-menu-scroll" id="diaMenuScroll">
-                  <!-- Populated dynamically via JS matching unit (MM, INCH, DG) -->
+                  <!-- Populated dynamically via JS matching mm -->
                 </div>
-                <a href="#all-sizes-table" class="dia-menu-footer-link">
-                  <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
-                  <span>View all sizes (0.30 mm – 22.22 mm) &rarr;</span>
-                </a>
+                <div class="dia-menu-footer-note">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                  <span>All 262 metric sizes available (0.30 mm – 22.22 mm)</span>
+                </div>
               </div>
             </div>
 
-            <!-- Right: Unit Selector (Dropdown Box + Interactive Toggle Pills) -->
-            <div class="unit-selector-container">
-              
-              <!-- Required Dropdown box for SIZE units (MM, INCH, DG) -->
-              <div class="unit-dropdown-box-wrap">
-                <label for="unitSelectBox" class="unit-dropdown-label">SIZE:</label>
-                <select id="unitSelectBox" class="unit-dropdown-select" aria-label="Select Size Unit">
-                  <option value="mm" selected>MM</option>
-                  <option value="inch">INCH</option>
-                  <option value="dg">DG</option>
-                </select>
-              </div>
-
-              <!-- Interactive Unit Toggle Pills matching screenshot -->
-              <div class="unit-toggle-pills" role="radiogroup" aria-label="Size Units">
-                <button type="button" class="unit-pill-btn is-active" data-unit="mm" aria-checked="true">
-                  <span class="unit-radio-dot"></span>
-                  <span>Metric (mm)</span>
-                </button>
-                <button type="button" class="unit-pill-btn" data-unit="inch" aria-checked="false">
-                  <span>Inch</span>
-                </button>
-                <button type="button" class="unit-pill-btn" data-unit="dg" aria-checked="false">
-                  <svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
-                  <span>Gauge Lookup</span>
-                </button>
-              </div>
-
+            <!-- Right: Add Size Button -->
+            <div class="size-action-container">
+              <button type="button" class="btn-add-size-direct" id="addDiaToListBtn" title="Add this size to your collective order list">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>+ Add Size</span>
+              </button>
             </div>
 
+          </div>
+
+          <!-- Popular Quick-Add Metric Sizes in mm -->
+          <div class="quick-add-sizes-wrapper">
+            <span class="quick-add-label">Quick-Add Popular Sizes (mm):</span>
+            <div class="quick-add-pills" id="quickAddPills">
+              <button type="button" class="quick-size-btn" data-mm="2.50">+ 2.50 mm</button>
+              <button type="button" class="quick-size-btn" data-mm="3.00">+ 3.00 mm</button>
+              <button type="button" class="quick-size-btn" data-mm="4.00">+ 4.00 mm</button>
+              <button type="button" class="quick-size-btn" data-mm="5.00">+ 5.00 mm</button>
+              <button type="button" class="quick-size-btn" data-mm="6.00">+ 6.00 mm</button>
+              <button type="button" class="quick-size-btn" data-mm="8.00">+ 8.00 mm</button>
+              <button type="button" class="quick-size-btn" data-mm="10.00">+ 10.00 mm</button>
+              <button type="button" class="quick-size-btn" data-mm="12.00">+ 12.00 mm</button>
+            </div>
           </div>
         </div>
 
@@ -324,40 +321,33 @@ include __DIR__ . '/../includes/header.php';
           </div>
         </div>
 
-        <!-- Selected Diameter Summary Bar -->
+        <!-- Selected Diameter Bar (Metric mm only) -->
         <div class="selected-dia-summary-bar">
           <div class="dia-summary-left">
             <span class="dia-summary-label">Selected Diameter</span>
-            <div class="dia-summary-val" id="selectedDiaText"><?php 
-              $disp = $initial_row['mm'] . ' mm';
-              if (!empty($initial_row['inch'])) $disp .= ' (' . $initial_row['inch'] . ' inch)';
-              elseif (!empty($initial_row['dg'])) $disp .= ' (DG ' . $initial_row['dg'] . ')';
-              echo htmlspecialchars($disp);
-            ?></div>
+            <div class="dia-summary-val" id="selectedDiaText"><?php echo htmlspecialchars($initial_row['mm']); ?> mm</div>
           </div>
-          <button type="button" class="dia-change-btn" id="diaChangeBtn" aria-label="Change Selected Diameter">
+          <button type="button" class="dia-change-btn" id="diaChangeBtn" title="Choose or change diameter in mm">
             <span>Change</span>
             <span class="refresh-symbol">&#x21bb;</span>
           </button>
         </div>
 
-        <!-- Commercial Pricing & Logistics Charcoal Card -->
+        <!-- Selected Diameter & Collective Multi-Size Order Card -->
         <div class="commercial-charcoal-card">
           
           <div class="commercial-info-row">
             
-            <!-- Col 1: Catalogue Price -->
-            <div class="commercial-col commercial-col-price">
+            <!-- Col 1: Conformance & Standard -->
+            <div class="commercial-col commercial-col-spec">
               <div class="comm-icon-box">
-                <svg viewBox="0 0 24 24"><path d="M4 6h16v3H4zm0 6h16v3H4zm0 6h16v3H4zM2 4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
               </div>
               <div class="comm-text-box">
-                <span class="comm-label">Catalogue Price (per 10 pieces)</span>
-                <div class="comm-price-big" id="commPriceDisplay"><?php 
-                  echo !empty($initial_row[$initial_variant]) ? '₹ ' . number_format($initial_row[$initial_variant], 2) : 'Available on Request';
-                ?></div>
+                <span class="comm-label">Conformance & Standard</span>
+                <div class="comm-val-highlight">IS : 5101 / ISO 235</div>
                 <p class="comm-note">
-                  April 2026 catalogue. Taxes extra. Please request an official quotation for the latest pricing and availability.
+                  Precision ground High-Speed Steel (M2 / M35 Cobalt).
                 </p>
               </div>
             </div>
@@ -368,8 +358,11 @@ include __DIR__ . '/../includes/header.php';
                 <svg viewBox="0 0 24 24"><path d="M21 16.5l-9 5.2-9-5.2V7.5l9-5.2 9 5.2v9zM12 4.1L5.2 8 12 11.9 18.8 8 12 4.1zm-7 5.7v6.6l7 4v-6.6l-7-4zm16 0l-7 4v6.6l7-4V9.8z"/></svg>
               </div>
               <div class="comm-text-box">
-                <span class="comm-label">Minimum Order Quantity (MOQ)</span>
-                <div class="comm-val-highlight" id="commMoqDisplay"><?php echo (int)($initial_row['moq'] ?? 100); ?> Pieces</div>
+                <span class="comm-label">Packaging & MOQ</span>
+                <div class="comm-val-highlight" id="commMoqDisplay">Multiples of 10 pcs</div>
+                <p class="comm-note">
+                  Standard MOQ applies per size.
+                </p>
               </div>
             </div>
 
@@ -381,56 +374,40 @@ include __DIR__ . '/../includes/header.php';
               <div class="comm-text-box">
                 <span class="comm-label">Delivery Terms</span>
                 <div class="comm-val-highlight">F.O.R. Destination</div>
+                <p class="comm-note">
+                  Direct dispatch from Nashik / Aurangabad plants.
+                </p>
               </div>
             </div>
 
           </div>
 
-          <!-- Interactive Order Quantity & Add to Cart based on MOQ -->
-          <div class="commercial-cart-section">
-            
-            <div class="cart-quantity-group">
-              <label for="cartQtyInput" class="cart-qty-label">
-                <span>Order Quantity</span>
-                <span class="cart-moq-pill" id="cartMoqPill">MOQ: <?php echo (int)($initial_row['moq'] ?? 100); ?> pcs</span>
-              </label>
-              
-              <div class="cart-qty-stepper">
-                <button type="button" class="qty-btn qty-minus" id="cartQtyMinus" aria-label="Decrease quantity by MOQ">&minus;</button>
-                <input 
-                  type="number" 
-                  id="cartQtyInput" 
-                  class="cart-qty-input" 
-                  value="<?php echo (int)($initial_row['moq'] ?? 100); ?>" 
-                  min="<?php echo (int)($initial_row['moq'] ?? 100); ?>" 
-                  step="<?php echo (int)($initial_row['moq'] ?? 100); ?>" 
-                  aria-label="Order Quantity in Pieces"
-                >
-                <button type="button" class="qty-btn qty-plus" id="cartQtyPlus" aria-label="Increase quantity by MOQ">&plus;</button>
+          <!-- Collective Multi-Size Product List Container -->
+          <div class="collective-order-card" id="collectiveOrderCard">
+            <div class="collective-box-header">
+              <div class="collective-box-title-group">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+                <span class="collective-box-title">Selected Sizes to Order / Enquire:</span>
+                <span class="collective-count-badge" id="collectiveCountBadge">1 Size</span>
               </div>
-              <span class="cart-qty-unit-label">pieces</span>
+              <button type="button" class="collective-add-btn" id="collectiveAddMoreBtn" title="Choose and add another diameter in mm">
+                <span>+ Add Another Size (mm)</span>
+              </button>
             </div>
 
-            <div class="cart-subtotal-group">
-              <span class="cart-subtotal-label">Estimated Total:</span>
-              <div class="cart-subtotal-amount" id="cartSubtotalDisplay"><?php 
-                $moq = (int)($initial_row['moq'] ?? 100);
-                $p = (float)($initial_row[$initial_variant] ?? 0);
-                $tot = ($p > 0) ? ($p / 10.0) * $moq : 0;
-                echo ($tot > 0) ? '₹ ' . number_format($tot, 2) : 'Quote Required';
-              ?></div>
-              <span class="cart-subtotal-hint">(Excl. taxes)</span>
+            <!-- Dynamic list of collective items -->
+            <div class="collective-items-container" id="collectiveItemsContainer">
+              <!-- Rendered dynamically by product.js -->
             </div>
-
-            <button type="button" class="btn-add-to-cart" id="addToCartBtn">
-              <svg class="cart-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="9" cy="21" r="1"></circle>
-                <circle cx="20" cy="21" r="1"></circle>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-              </svg>
-              <span class="cart-btn-text" id="cartBtnText">Add to Cart</span>
-            </button>
-
+            
+            <div class="collective-note-row">
+              <span class="collective-note-icon">ℹ</span>
+              <span>Packaged in multiples of 10 pieces as per IS:5101. You can add multiple sizes and enquire / add to cart collectively.</span>
+            </div>
           </div>
 
           <!-- Bottom Button Action Bar -->
@@ -440,10 +417,14 @@ include __DIR__ . '/../includes/header.php';
               <span>Request Official Quotation &rarr;</span>
             </a>
 
-            <a href="#all-sizes-table" class="btn-compare-table" id="compareTableBtn">
-              <svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
-              <span>Compare in Full Size Table</span>
-            </a>
+            <button type="button" class="btn-add-to-cart" id="addToCartBtn">
+              <svg class="cart-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="21" r="1"></circle>
+                <circle cx="20" cy="21" r="1"></circle>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+              </svg>
+              <span class="cart-btn-text" id="cartBtnText">Add Selected Sizes to Cart</span>
+            </button>
           </div>
 
         </div>
@@ -541,12 +522,12 @@ include __DIR__ . '/../includes/header.php';
       <div style="background-color:#F8F9FA;padding:24px;border-radius:6px;border:1px solid #ECEFF1;font-size:0.88rem;line-height:1.7;">
         <h4 style="font-family:var(--font-heading);color:#111;margin-bottom:12px;">Official Commercial Terms (Effective 1st April 2026):</h4>
         <ol style="margin-left:20px;display:flex;flex-direction:column;gap:8px;">
-          <li><strong>Pricing Basis:</strong> All listed prices are stated <em>PRICE PER 10 PCS (RS.)</em>. These are base prices; GST and applicable government levies will be charged extra.</li>
-          <li><strong>Packaging &amp; Order Quantities:</strong> All sizes must be ordered in multiples of 10 only.</li>
-          <li><strong>Minimum Order Quantity (MOQ):</strong> MOQ applies for each size / length of the product (e.g. 200 pcs, 100 pcs, 20 pcs as noted). A smaller-than-MOQ order may attract a surcharge upon request.</li>
-          <li><strong>Non-Listed Intermediate Sizes:</strong> For non-listed intermediate sizes, the higher price of the nearest listed size (Inch or MM) will be applicable.</li>
-          <li><strong>Special Flutes:</strong> Quick spiral or slow spiral drills: sizes up to 3.17mm (1/8") attract 50% extra; sizes over 3.17mm attract 25% extra. Jobbers with tenon: 10% extra.</li>
-          <li><strong>Price Revision:</strong> Prices are quoted on an F.O.R. destination basis and are subject to change without prior notice.</li>
+          <li><strong>Quotation Terms:</strong> Official B2B quotations are issued on request. GST and applicable government levies will be itemized on the official quote.</li>
+          <li><strong>Packaging &amp; Order Quantities:</strong> All sizes must be ordered in multiples of 10 only as per IS : 5101.</li>
+          <li><strong>Minimum Order Quantity (MOQ):</strong> Standard packaging MOQ applies for each diameter (e.g. 200 pcs, 100 pcs, 20 pcs as noted).</li>
+          <li><strong>Non-Listed Intermediate Sizes:</strong> For non-listed intermediate sizes, quotation will be provided upon engineering assessment.</li>
+          <li><strong>Special Flutes:</strong> Quick spiral, slow spiral, or tenon shanks can be manufactured and quoted upon request.</li>
+          <li><strong>Dispatch Terms:</strong> Quotations are issued on an F.O.R. destination basis direct from plant dispatch.</li>
         </ol>
       </div>
     </div>
@@ -556,15 +537,15 @@ include __DIR__ . '/../includes/header.php';
       <div class="specs-data-grid">
         <div class="specs-data-row">
           <strong>Jobber Drill 13 Pcs. Set (1/64" Rise)</strong>
-          <span>Range: 1/16" to 1/4" &bull; <strong>Catalogue Price: ₹3,030</strong></span>
+          <span>Range: 1/16" to 1/4" &bull; <strong>Quotation on Official Request</strong></span>
         </div>
         <div class="specs-data-row">
           <strong>Hathyar Drill 13 Pcs. Set (1/64" Rise)</strong>
-          <span>Range: 1/16" to 1/4" &bull; <strong>Catalogue Price: ₹2,727</strong></span>
+          <span>Range: 1/16" to 1/4" &bull; <strong>Quotation on Official Request</strong></span>
         </div>
         <div class="specs-data-row">
           <strong>Hathyar Drill 25 Pcs. Set (0.5mm Rise)</strong>
-          <span>Range: 1.00 mm to 13.00 mm &bull; <strong>Catalogue Price: ₹13,685</strong></span>
+          <span>Range: 1.00 mm to 13.00 mm &bull; <strong>Quotation on Official Request</strong></span>
         </div>
       </div>
     </div>
@@ -573,76 +554,7 @@ include __DIR__ . '/../includes/header.php';
 </section>
 
 <!-- ==========================================================================
-     COMPLETE 262-ROW CATALOGUE DATA TABLE (Pages 17 to 22)
-     ========================================================================== -->
-<section class="catalogue-table-section" id="all-sizes-table">
-  <div class="container">
-    
-    <div class="section-header-center" style="margin-bottom:30px;">
-      <span class="section-eyebrow">Authoritative PDF Price Table</span>
-      <h2 class="section-title">Complete Jobber Series Size &amp; Pricing Directory</h2>
-      <p class="section-subtitle">
-        Extracted directly from pages 17 to 22 of the April 2026 Price List. Click any row to load into the live configurator.
-      </p>
-    </div>
-
-    <!-- Controls Bar -->
-    <div class="table-controls-bar">
-      <div class="table-filter-group">
-        <input 
-          type="text" 
-          id="tableSearchInput" 
-          class="table-search-input" 
-          placeholder="Filter table (e.g. 3.17, 1/4, 6.80)..."
-        >
-        <span class="table-count-label" id="tableRowsCount">Showing 262 diameter specifications (IS : 5101)</span>
-      </div>
-      <div>
-        <span class="badge badge-dark">Unit: Price Per 10 Pieces (Rs.)</span>
-      </div>
-    </div>
-
-    <!-- Responsive Table Container -->
-    <div class="table-responsive-wrapper">
-      <table class="catalogue-table" id="jobberCatalogueTable">
-        <thead>
-          <tr>
-            <th scope="col">MM</th>
-            <th scope="col">INCH</th>
-            <th scope="col">DG</th>
-            <th scope="col">ITM STD.</th>
-            <th scope="col">ITM STD. TIN</th>
-            <th scope="col">PANTHER</th>
-            <th scope="col">NINJA</th>
-            <th scope="col">FORGELINE</th>
-            <th scope="col">HATHYAR</th>
-            <th scope="col">MOQ</th>
-          </tr>
-        </thead>
-        <tbody id="catalogueTableBody">
-          <?php foreach ($all_sizes as $row): ?>
-            <tr data-dia="<?php echo htmlspecialchars($row['mm']); ?>" class="<?php echo ($row['mm'] === $initial_dia_val) ? 'is-selected-row' : ''; ?>">
-              <td class="dia-cell"><strong><?php echo htmlspecialchars($row['mm']); ?></strong></td>
-              <td><?php echo !empty($row['inch']) ? htmlspecialchars($row['inch']) : '<span class="price-dash">-</span>'; ?></td>
-              <td><?php echo !empty($row['dg']) ? htmlspecialchars($row['dg']) : '<span class="price-dash">-</span>'; ?></td>
-              <td><?php echo !empty($row['itm_std']) ? '<span class="price-tag-table">₹' . number_format($row['itm_std'], 0) . '</span>' : '<span class="price-dash">—</span>'; ?></td>
-              <td><?php echo !empty($row['itm_std_tin']) ? '<span class="price-tag-table">₹' . number_format($row['itm_std_tin'], 0) . '</span>' : '<span class="price-dash">—</span>'; ?></td>
-              <td><?php echo !empty($row['panther']) ? '<span class="price-tag-table">₹' . number_format($row['panther'], 0) . '</span>' : '<span class="price-dash">—</span>'; ?></td>
-              <td><?php echo !empty($row['ninja']) ? '<span class="price-tag-table">₹' . number_format($row['ninja'], 0) . '</span>' : '<span class="price-dash">—</span>'; ?></td>
-              <td><?php echo !empty($row['forgeline']) ? '<span class="price-tag-table">₹' . number_format($row['forgeline'], 0) . '</span>' : '<span class="price-dash">—</span>'; ?></td>
-              <td><?php echo !empty($row['hathyar']) ? '<span class="price-tag-table">₹' . number_format($row['hathyar'], 0) . '</span>' : '<span class="price-dash">—</span>'; ?></td>
-              <td><span class="badge badge-light"><?php echo (int)($row['moq'] ?? 100); ?></span></td>
-            </tr>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
-    </div>
-
-  </div>
-</section>
-
-<!-- ==========================================================================
-     PRODUCT ENQUIRY WORKFLOW (Preserves Selected Configuration)
+     PRODUCT ENQUIRY & OFFICIAL QUOTATION WORKFLOW
      ========================================================================== -->
 <section class="enquiry-section" id="enquiry">
   <div class="container">
@@ -651,15 +563,34 @@ include __DIR__ . '/../includes/header.php';
       <div style="text-align:center;margin-bottom:24px;">
         <span class="section-eyebrow">Official Quotation Workflow</span>
         <h2 style="font-family:var(--font-heading);font-size:1.8rem;color:#111;margin-bottom:8px;">
-          Request Updated Quotation / Bulk Enquiry
+          Request Official Quotation / Bulk Tooling Enquiry
         </h2>
         <p style="font-size:0.9rem;color:#6C757D;">
-          Specifications from the live configurator above are automatically pre-filled. Multiples of 10 pieces required.
+          All selected tooling specifications from your cart and configurator are shared below. Multiples of 10 pieces required.
         </p>
       </div>
 
       <!-- Feedback Banner -->
       <div id="enquiryFeedback" class="form-feedback-message"></div>
+
+      <!-- Selected Items from Cart / Configurator Breakdown (Live Shared Info) -->
+      <div class="enquiry-cart-summary-box" id="enquiryCartSummaryBox" style="display:none;">
+        <div class="enquiry-summary-header">
+          <div class="enquiry-summary-title-wrap">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <span class="enquiry-summary-title">Selected Tooling Specifications to be Quoted:</span>
+          </div>
+          <span class="enquiry-summary-count-badge" id="enquirySummaryCount">0 Items</span>
+        </div>
+        <div class="enquiry-summary-items" id="enquirySummaryItems">
+          <!-- Populated dynamically via JS from Cart -->
+        </div>
+      </div>
 
       <!-- Form -->
       <form id="productEnquiryForm" method="POST" action="../enquiry_submit.php">
@@ -713,15 +644,15 @@ include __DIR__ . '/../includes/header.php';
             </small>
           </div>
 
-          <!-- Price Basis Reference -->
+          <!-- Procurement Basis Reference -->
           <div class="form-group">
-            <label class="form-label" for="enquiryPriceBasisInput">Catalogue Price Basis</label>
+            <label class="form-label" for="enquiryPriceBasisInput">Procurement Basis</label>
             <input 
               type="text" 
               name="price_basis" 
               id="enquiryPriceBasisInput" 
               class="form-control form-readonly" 
-              value="Catalogue <?php echo format_inr($initial_row[$initial_variant]); ?> per 10 pcs (April 2026 Price List)"
+              value="Official B2B Quotation on Request (IS : 5101)"
               readonly
             >
           </div>
