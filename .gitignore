@@ -1,0 +1,17 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Temporary & dump folders
+scratch/
+extracted_assets/
+rendered_pages/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Log files
+*.log

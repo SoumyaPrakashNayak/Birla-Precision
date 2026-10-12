@@ -1,0 +1,21 @@
+[
+    {
+        "enquiry_ref": "BPTL-20261011-F5E3EB",
+        "timestamp": "2026-10-11T21:24:15+02:00",
+        "product_family": "HSS Parallel Shank Twist Drills \u2014 Jobber Series",
+        "metric_dia": "6.80",
+        "inch_equiv": "",
+        "gauge_number": "",
+        "variant_name": "PANTHER",
+        "quantity": 100,
+        "moq_status": "Meets or exceeds standard MOQ",
+        "price_basis": "Catalogue \u20b95,201 per 10 pcs (April 2026 Price List)",
+        "customer_name": "Abhijeet Sharma",
+        "company_name": "Industrial Precision Works",
+        "email": "procurement@industrialworks.in",
+        "phone": "+91 98200 54321",
+        "message": "Testing enquiry form submission for 100 pcs M8 tap drill batch.",
+        "ip_address": "127.0.0.1",
+        "db_saved": true
+    }
+]
