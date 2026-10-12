@@ -79,11 +79,6 @@ if (empty($variant_name)) {
 
 if ($quantity_raw === false || $quantity_raw === null || $quantity_raw <= 0) {
     $errors['quantity'] = 'Quantity must be a valid positive whole number.';
-} else {
-    // Commercial rule: all sizes to be ordered in multiples of 10
-    if ($quantity_raw % 10 !== 0) {
-        $errors['quantity'] = 'As per Birla Precision commercial terms, drill orders must be in multiples of 10 pieces.';
-    }
 }
 
 if (!empty($errors)) {
@@ -102,6 +97,9 @@ $standard_moq = $target_size ? (int)$target_size['moq'] : 100;
 $moq_status = 'Meets or exceeds standard MOQ';
 if ($quantity_raw < $standard_moq) {
     $moq_status = 'Below standard MOQ of ' . $standard_moq . ' pcs (Subject to small-quantity surcharge)';
+}
+if ($quantity_raw % 10 !== 0) {
+    $moq_status .= ' | Note: Multiples of 10 recommended as per IS : 5101 packaging standard.';
 }
 
 // 5. Generate Reference ID

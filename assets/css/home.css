@@ -1390,10 +1390,17 @@
 
 @media (max-width: 768px) {
   .hero-carousel-section {
-    height: 440px;
+    height: 380px;
   }
   .hero-promo-title {
     font-size: 1.4rem;
+  }
+  .hero-trusted-heading {
+    font-size: 1.8rem;
+  }
+  .hero-dark-subheading {
+    font-size: 0.9rem;
+    max-width: 100%;
   }
   .carousel-btn {
     display: none;
@@ -1401,20 +1408,20 @@
   .tiles-row {
     grid-template-columns: 1fr !important;
     height: auto;
-    gap: 16px;
+    gap: 14px;
   }
   .feature-tile {
-    height: 240px;
+    height: 220px;
   }
   .tile-label {
-    font-size: 1.4rem;
+    font-size: 1.35rem;
   }
   .collection-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px 14px;
+    gap: 16px 12px;
   }
   .collection-img-box {
-    height: 140px;
+    height: 130px;
   }
   .collection-item-title {
     font-size: 0.85rem;
@@ -1425,5 +1432,116 @@
   .heritage-grid {
     grid-template-columns: 1fr;
     gap: 18px;
+  }
+}
+
+@media (max-width: 520px) {
+  .hero-carousel-section {
+    height: 330px;
+  }
+  .hero-dark-text-box {
+    padding: 12px 0;
+    max-width: 100%;
+  }
+  .hero-eyebrow-red {
+    font-size: 11px;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .hero-trusted-heading {
+    font-size: 1.45rem;
+    line-height: 1.25;
+    margin-bottom: 8px;
+  }
+  .hero-dark-subheading {
+    font-size: 0.82rem;
+    line-height: 1.45;
+    margin-bottom: 14px;
+  }
+  .hero-explore-btn {
+    font-size: 12.5px;
+    padding: 9px 18px;
+  }
+
+  /* Feature Tiles on Mobile */
+  .feature-tiles-section {
+    padding: 24px 0;
+  }
+  .feature-tile {
+    height: 180px;
+  }
+  .tile-label {
+    font-size: 1.15rem;
+  }
+  .tile-subtext {
+    font-size: 0.78rem;
+  }
+
+  /* Collection List on Mobile */
+  .collection-list-section {
+    padding: 36px 0;
+  }
+  .collection-title {
+    font-size: 1.45rem;
+    letter-spacing: 1px;
+    margin-bottom: 18px;
+  }
+  .collection-grid {
+    gap: 12px 10px;
+  }
+  .collection-card {
+    padding: 10px;
+    border-radius: 8px;
+  }
+  .collection-img-box {
+    height: 110px;
+  }
+  .collection-item-title {
+    font-size: 0.8rem;
+  }
+  .btn-view-more {
+    font-size: 12.5px;
+    padding: 9px 28px;
+  }
+
+  /* Foundation in Numbers on Mobile */
+  .foundation-numbers-section {
+    padding: 45px 0 55px;
+  }
+  .foundation-eyebrow-text {
+    font-size: 10.5px;
+    letter-spacing: 1.5px;
+  }
+  .foundation-main-title {
+    font-size: 1.65rem;
+    line-height: 1.25;
+  }
+  .foundation-lead-desc {
+    font-size: 0.85rem;
+  }
+  .stat-roll-number {
+    font-size: 2.2rem;
+  }
+  .foundation-stat-heading {
+    font-size: 1.05rem;
+  }
+  .foundation-stat-summary {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .hero-carousel-section {
+    height: 300px;
+  }
+  .hero-trusted-heading {
+    font-size: 1.25rem;
+  }
+  .collection-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .collection-img-box {
+    height: 120px;
   }
 }

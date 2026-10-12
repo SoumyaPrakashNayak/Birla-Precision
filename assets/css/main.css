@@ -71,6 +71,9 @@ html {
   font-size: 16px;
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
 }
 
 body {
@@ -83,6 +86,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+  position: relative;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -142,6 +148,14 @@ ul, ol {
   margin-right: auto;
   padding-left: 24px;
   padding-right: 24px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
 }
 
 /* ==========================================================================
@@ -1337,42 +1351,149 @@ ul, ol {
 
 @media (max-width: 860px) {
   .top-utility-bar {
-    display: none;
+    display: none !important;
   }
   .header-nav-row {
-    display: none;
+    display: none !important;
   }
   .nav-mobile-toggle {
-    display: block;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
   .header-main-row {
-    padding: 10px 0;
+    padding: 8px 0 10px !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+  .header-main-inner {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    grid-template-areas:
+      "brand actions"
+      "search search" !important;
+    align-items: center !important;
+    gap: 8px 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+  .brand-group {
+    grid-area: brand !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    min-width: 0 !important;
+  }
+  .header-action-group {
+    grid-area: actions !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 12px !important;
+    min-width: 0 !important;
   }
   .header-action-group .btn-request-quote,
   .header-action-group .quick-enquiry-link {
-    display: none;
+    display: none !important;
   }
   .header-search-wrap {
-    margin: 0;
-    max-width: 100%;
+    grid-area: search !important;
+    flex: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 4px 0 0 !important;
+    min-width: 0 !important;
   }
   .search-category-pill {
-    display: none;
+    display: none !important;
+  }
+  .search-pill-container {
+    height: 42px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
   .brand-birla-logo {
-    height: 36px;
+    height: 34px !important;
+    max-width: 110px !important;
+    width: auto !important;
   }
   .brand-dagger-logo {
-    height: 32px;
+    height: 30px !important;
+    max-width: 44px !important;
+    width: auto !important;
   }
   .footer-grid {
-    grid-template-columns: 1fr;
-    gap: 36px;
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
   }
   .footer-bottom {
-    flex-direction: column;
-    gap: 16px;
-    text-align: center;
+    flex-direction: column-reverse !important;
+    gap: 16px !important;
+    text-align: center !important;
+    align-items: center !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .header-main-inner {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    gap: 6px 10px !important;
+  }
+  .brand-group {
+    gap: 6px !important;
+  }
+  .brand-birla-logo {
+    height: 28px !important;
+    max-width: 95px !important;
+  }
+  .brand-dagger-logo {
+    height: 24px !important;
+    max-width: 36px !important;
+  }
+  .brand-separator-line {
+    height: 20px !important;
+    margin: 0 2px !important;
+  }
+  .header-action-group {
+    gap: 8px !important;
+  }
+  .nav-login-label {
+    display: none !important;
+  }
+  .nav-profile-login-link {
+    padding: 4px !important;
+  }
+  .user-pill-name {
+    display: none !important;
+  }
+  .nav-user-pill-btn {
+    padding: 3px 6px !important;
+    gap: 4px !important;
+  }
+  .nav-cart-btn {
+    width: 36px !important;
+    height: 36px !important;
+  }
+  .nav-mobile-toggle {
+    width: 36px !important;
+    height: 36px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .brand-birla-logo {
+    height: 24px !important;
+    max-width: 80px !important;
+  }
+  .brand-dagger-logo {
+    height: 22px !important;
+    max-width: 30px !important;
   }
 }
 
@@ -3532,13 +3653,34 @@ ul, ol {
   line-height: 1.6;
 }
 
-/* Responsive Rules for Modals */
+/* Responsive Rules for Modals and Cart Drawer */
 @media (max-width: 900px) {
+  .login-modal {
+    width: 95vw;
+    max-width: 560px;
+  }
   .login-modal-grid {
     grid-template-columns: 1fr;
+    min-height: auto;
   }
   .login-drills-graphic {
     display: none;
+  }
+  .login-grid-left {
+    padding: 24px 20px 20px;
+  }
+  .login-form-wrapper {
+    padding: 24px 20px;
+  }
+  .portal-features-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .checkout-modal {
+    width: 95vw;
+    max-width: 640px;
   }
   .checkout-grid-container {
     grid-template-columns: 1fr;
@@ -3549,11 +3691,84 @@ ul, ol {
 }
 
 @media (max-width: 600px) {
+  .portal-features-list {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .portal-main-heading {
+    font-size: 20px;
+  }
+  .portal-desc {
+    font-size: 13px;
+  }
+  .portal-input {
+    font-size: 16px;
+    min-height: 44px;
+  }
+  .login-submit-btn {
+    min-height: 46px;
+  }
+  .checkout-modal-header-banner {
+    padding: 16px;
+    background-size: 130px auto;
+  }
+  .checkout-banner-heading {
+    font-size: 17px;
+  }
+  .checkout-banner-top-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .checkout-dagger-tag {
+    display: none;
+  }
   .co-row-2col {
     grid-template-columns: 1fr;
   }
+  .co-input {
+    font-size: 16px;
+    min-height: 44px;
+  }
   .checkout-stepper-progress {
     display: none;
+  }
+  .checkout-modal-body {
+    padding: 16px;
+  }
+}
+
+/* Cart Slide-out Drawer Mobile Rules */
+@media (max-width: 520px) {
+  .cart-slide-drawer {
+    width: 100vw;
+    max-width: 100vw;
+  }
+  .cart-drawer-header {
+    padding: 16px 14px;
+    background-size: 100px auto;
+  }
+  .cart-header-tagline {
+    display: none;
+  }
+  .cart-drawer-body {
+    padding: 12px;
+  }
+  .cart-drawer-footer {
+    padding: 14px;
+  }
+  .cart-trust-badges-strip {
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+  }
+  .cart-trust-item {
+    font-size: 11px;
+    gap: 4px;
+  }
+  .btn-cart-buy-now {
+    min-height: 46px;
+    font-size: 14px;
   }
 }
 

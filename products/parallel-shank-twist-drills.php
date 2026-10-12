@@ -142,289 +142,246 @@ include __DIR__ . '/../includes/header.php';
         </div>
       </div>
 
-      <!-- Right Column: Interactive Configurator Panel -->
+      <!-- Right Column: Interactive Configurator Panel (Reference Design) -->
       <div class="product-config-panel">
         
         <!-- Meta Header -->
         <div class="product-meta-header">
           <div class="product-brand-row">
-            <span class="brand-pill-red">DAGGER BRAND &bull; BIRLA PRECISION</span>
+            <span class="brand-text-red">DAGGER BRAND &bull; BIRLA PRECISION</span>
             <span class="std-pill">Standard: IS : 5101 / ISO 235</span>
             <span class="std-pill">HSN Code: 8207</span>
           </div>
           <h1 class="product-page-title">HSS Parallel Shank Twist Drills — Jobber Series</h1>
           <p class="product-lead-desc">
-            Pioneered by Indian Tool Manufacturers (ITM) since 1937. Manufactured from high-purity High-Speed Steel and precision ground for accurate, vibration-free drilling. Designed for a wide range of applications in general engineering, automotive, aerospace and heavy fabrication.
+            High-speed steel drills for general engineering, automotive, aerospace and fabrication applications. Manufactured to Indian Tool Manufacturers (ITM) standards with precision ground flutes for accurate, efficient drilling.
           </p>
         </div>
 
-        <!-- 1. Step 1: Find your drill size -->
-        <div class="config-step-card">
+        <!-- 1. Step 1: Add sizes and quantity -->
+        <div class="config-step-card" id="step1Card">
           <div class="step-header-row">
             <div class="step-title-group">
               <span class="step-num-circle">1</span>
-              <h2 class="step-heading">Find your drill size (in mm)</h2>
-              <span class="unit-only-pill-tag">Metric (mm)</span>
+              <div class="step-title-text">
+                <h2 class="step-heading">Add sizes and quantity</h2>
+                <p class="step-subheading" id="stepSubheading">Enter the drill size (in mm) and quantity. You can add multiple sizes.</p>
+              </div>
             </div>
-            <a href="#technical-specs" class="step-link-red">
-              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              <span>View technical specs &rarr;</span>
-            </a>
+            <div class="unit-toggle-segmented" id="unitToggleSegmented" role="group" aria-label="Unit of measure">
+              <button type="button" class="unit-toggle-btn is-active" data-unit="mm" id="unitBtnMm">Metric (mm)</button>
+              <button type="button" class="unit-toggle-btn" data-unit="inch" id="unitBtnInch">Inch</button>
+            </div>
           </div>
 
-          <!-- Diameter Dropdown Row (Metric mm only) -->
-          <div class="size-controls-row size-controls-mm-only">
+          <!-- Controls Row: Drill Size, Quantity, Add to list -->
+          <div class="step-controls-row">
             
-            <!-- Left: Search & Diameter Dropdown Box -->
-            <div class="diameter-dropdown-wrapper" id="diaDropdownWrapper">
-              <div class="diameter-input-container" id="diaInputContainer">
-                <svg class="dia-search-glass" viewBox="0 0 24 24">
-                  <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                </svg>
+            <!-- Col 1: Drill Size -->
+            <div class="step-control-col dia-col">
+              <label class="control-label" id="diaControlLabel" for="diaSearchInput">Drill Size (mm)</label>
+              <div class="dia-combobox-wrapper" id="diaComboboxWrapper">
                 <input 
                   type="text" 
                   id="diaSearchInput" 
-                  class="dia-search-input" 
-                  placeholder="Search or choose size in mm (e.g. 3.00, 4.50, 6.00)..." 
-                  value="<?php echo htmlspecialchars($initial_row['mm']); ?> mm" 
+                  class="dia-select-input" 
+                  placeholder="Select or type size (e.g. 3.5)" 
                   autocomplete="off"
                 >
-                <svg class="dia-chevron-icon" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
-              </div>
-
-              <!-- Dropped Down Size Menu List (MM Only) -->
-              <div class="diameter-dropdown-menu" id="diaDropdownMenu">
-                <div class="dia-menu-scroll" id="diaMenuScroll">
-                  <!-- Populated dynamically via JS matching mm -->
-                </div>
-                <div class="dia-menu-footer-note">
-                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-                  <span>All 262 metric sizes available (0.30 mm – 22.22 mm)</span>
+                <button type="button" class="dia-toggle-dropdown-btn" id="diaToggleDropdownBtn" aria-label="Toggle diameter options">
+                  <svg class="dia-chevron-icon" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+                </button>
+                <div class="dia-dropdown-menu" id="diaDropdownMenu">
+                  <div class="dia-menu-scroll" id="diaMenuScroll">
+                    <!-- Populated dynamically via JS -->
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- Right: Add Size Button -->
-            <div class="size-action-container">
-              <button type="button" class="btn-add-size-direct" id="addDiaToListBtn" title="Add this size to your collective order list">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg>
-                <span>+ Add Size</span>
+            <!-- Col 2: Quantity (pcs) -->
+            <div class="step-control-col qty-col">
+              <div class="qty-label-wrap">
+                <label class="control-label" for="stepQtyInput">Quantity (pcs)</label>
+                <span class="qty-moq-badge" id="stepMoqBadge">MOQ: 200 pcs</span>
+              </div>
+              <div class="qty-stepper-box">
+                <button type="button" class="qty-step-btn" id="stepQtyMinus" aria-label="Decrease quantity">&minus;</button>
+                <input type="number" id="stepQtyInput" class="qty-step-input" value="50" min="1">
+                <button type="button" class="qty-step-btn" id="stepQtyPlus" aria-label="Increase quantity">&plus;</button>
+              </div>
+            </div>
+
+            <!-- Col 3: Add to list button -->
+            <div class="step-control-col add-col">
+              <button type="button" class="btn-add-to-list" id="addToListBtn">
+                <span class="btn-plus-icon">+</span> Add to list
               </button>
             </div>
 
           </div>
 
-          <!-- Popular Quick-Add Metric Sizes in mm -->
-          <div class="quick-add-sizes-wrapper">
-            <span class="quick-add-label">Quick-Add Popular Sizes (mm):</span>
-            <div class="quick-add-pills" id="quickAddPills">
-              <button type="button" class="quick-size-btn" data-mm="2.50">+ 2.50 mm</button>
-              <button type="button" class="quick-size-btn" data-mm="3.00">+ 3.00 mm</button>
-              <button type="button" class="quick-size-btn" data-mm="4.00">+ 4.00 mm</button>
-              <button type="button" class="quick-size-btn" data-mm="5.00">+ 5.00 mm</button>
-              <button type="button" class="quick-size-btn" data-mm="6.00">+ 6.00 mm</button>
-              <button type="button" class="quick-size-btn" data-mm="8.00">+ 8.00 mm</button>
-              <button type="button" class="quick-size-btn" data-mm="10.00">+ 10.00 mm</button>
-              <button type="button" class="quick-size-btn" data-mm="12.00">+ 12.00 mm</button>
+          <!-- Popular Sizes Row -->
+          <div class="popular-sizes-row">
+            <span class="popular-sizes-label">Popular sizes:</span>
+            <div class="popular-sizes-list" id="popularSizesList">
+              <button type="button" class="popular-size-pill" data-val="2.00">2.00</button>
+              <button type="button" class="popular-size-pill" data-val="3.00">3.00</button>
+              <button type="button" class="popular-size-pill" data-val="4.00">4.00</button>
+              <button type="button" class="popular-size-pill" data-val="5.00">5.00</button>
+              <button type="button" class="popular-size-pill" data-val="6.00">6.00</button>
+              <button type="button" class="popular-size-pill" data-val="8.00">8.00</button>
+              <button type="button" class="popular-size-pill" data-val="10.00">10.00</button>
+              <button type="button" class="popular-size-pill" data-val="12.00">12.00</button>
             </div>
           </div>
+
         </div>
 
-        <!-- 2. Step 2: Choose drill variant -->
-        <div class="config-step-card">
+        <!-- 2. Step 2: Selected sizes for quotation -->
+        <div class="config-step-card" id="step2Card">
           <div class="step-header-row">
             <div class="step-title-group">
               <span class="step-num-circle">2</span>
-              <h2 class="step-heading">Choose drill variant</h2>
-              <span class="info-help-icon" title="Authentic variant specifications from April 2026 catalogue">ⓘ</span>
+              <h2 class="step-heading">Selected sizes for quotation</h2>
             </div>
-          </div>
-
-          <!-- 6 Variant Cards Grid (2-column layout matching reference design) -->
-          <div class="variant-cards-grid">
-            
-            <!-- 1. ITM STD. -->
-            <div class="variant-item-card is-active" data-variant="itm_std">
-              <div class="variant-card-header">
-                <div class="variant-name">ITM STD.</div>
-                <div class="variant-radio-circle"></div>
-              </div>
-              <div class="variant-card-sub">HSS</div>
-              <div class="variant-stock-pill stock-in">
-                <span class="stock-dot"></span> In Stock
-              </div>
-            </div>
-
-            <!-- 2. ITM STD. TIN -->
-            <div class="variant-item-card" data-variant="itm_std_tin">
-              <div class="variant-card-header">
-                <div class="variant-name">ITM STD. TIN</div>
-                <div class="variant-radio-circle"></div>
-              </div>
-              <div class="variant-card-sub">HSS + TiN Coated</div>
-              <div class="variant-stock-pill stock-in">
-                <span class="stock-dot"></span> In Stock
-              </div>
-            </div>
-
-            <!-- 3. PANTHER -->
-            <div class="variant-item-card" data-variant="panther">
-              <div class="variant-card-header">
-                <div class="variant-name">PANTHER</div>
-                <div class="variant-radio-circle"></div>
-              </div>
-              <div class="variant-card-sub">HSS Premium</div>
-              <div class="variant-stock-pill stock-in">
-                <span class="stock-dot"></span> In Stock
-              </div>
-            </div>
-
-            <!-- 4. NINJA -->
-            <div class="variant-item-card" data-variant="ninja">
-              <div class="variant-card-header">
-                <div class="variant-name">NINJA</div>
-                <div class="variant-radio-circle"></div>
-              </div>
-              <div class="variant-card-sub">HSS Cobalt</div>
-              <div class="variant-stock-pill stock-limited">
-                <span class="stock-dot"></span> Limited Stock
-              </div>
-            </div>
-
-            <!-- 5. FORGELINE -->
-            <div class="variant-item-card" data-variant="forgeline">
-              <div class="variant-card-header">
-                <div class="variant-name">FORGELINE</div>
-                <div class="variant-radio-circle"></div>
-              </div>
-              <div class="variant-card-sub">HSS Robust Geometry</div>
-              <div class="variant-stock-pill stock-in">
-                <span class="stock-dot"></span> In Stock
-              </div>
-            </div>
-
-            <!-- 6. HATHYAR -->
-            <div class="variant-item-card" data-variant="hathyar">
-              <div class="variant-card-header">
-                <div class="variant-name">HATHYAR</div>
-                <div class="variant-radio-circle"></div>
-              </div>
-              <div class="variant-card-sub">HSS Heavy Duty</div>
-              <div class="variant-stock-pill stock-in">
-                <span class="stock-dot"></span> In Stock
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- Selected Diameter Bar (Metric mm only) -->
-        <div class="selected-dia-summary-bar">
-          <div class="dia-summary-left">
-            <span class="dia-summary-label">Selected Diameter</span>
-            <div class="dia-summary-val" id="selectedDiaText"><?php echo htmlspecialchars($initial_row['mm']); ?> mm</div>
-          </div>
-          <button type="button" class="dia-change-btn" id="diaChangeBtn" title="Choose or change diameter in mm">
-            <span>Change</span>
-            <span class="refresh-symbol">&#x21bb;</span>
-          </button>
-        </div>
-
-        <!-- Selected Diameter & Collective Multi-Size Order Card -->
-        <div class="commercial-charcoal-card">
-          
-          <div class="commercial-info-row">
-            
-            <!-- Col 1: Conformance & Standard -->
-            <div class="commercial-col commercial-col-spec">
-              <div class="comm-icon-box">
-                <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>
-              </div>
-              <div class="comm-text-box">
-                <span class="comm-label">Conformance & Standard</span>
-                <div class="comm-val-highlight">IS : 5101 / ISO 235</div>
-                <p class="comm-note">
-                  Precision ground High-Speed Steel (M2 / M35 Cobalt).
-                </p>
-              </div>
-            </div>
-
-            <!-- Col 2: MOQ -->
-            <div class="commercial-col commercial-col-moq">
-              <div class="comm-icon-box">
-                <svg viewBox="0 0 24 24"><path d="M21 16.5l-9 5.2-9-5.2V7.5l9-5.2 9 5.2v9zM12 4.1L5.2 8 12 11.9 18.8 8 12 4.1zm-7 5.7v6.6l7 4v-6.6l-7-4zm16 0l-7 4v6.6l7-4V9.8z"/></svg>
-              </div>
-              <div class="comm-text-box">
-                <span class="comm-label">Packaging & MOQ</span>
-                <div class="comm-val-highlight" id="commMoqDisplay">Multiples of 10 pcs</div>
-                <p class="comm-note">
-                  Standard MOQ applies per size.
-                </p>
-              </div>
-            </div>
-
-            <!-- Col 3: Delivery Terms -->
-            <div class="commercial-col commercial-col-delivery">
-              <div class="comm-icon-box">
-                <svg viewBox="0 0 24 24"><path d="M20 8h-3V4H1v13h2a3 3 0 0 0 6 0h6a3 3 0 0 0 6 0h2v-5l-3-4zM6 18.5A1.5 1.5 0 1 1 7.5 17 1.5 1.5 0 0 1 6 18.5zm12 0a1.5 1.5 0 1 1 1.5-1.5 1.5 1.5 0 0 1-1.5 1.5zM17 12V9.5h2.5l2 2.5H17z"/></svg>
-              </div>
-              <div class="comm-text-box">
-                <span class="comm-label">Delivery Terms</span>
-                <div class="comm-val-highlight">F.O.R. Destination</div>
-                <p class="comm-note">
-                  Direct dispatch from Nashik / Aurangabad plants.
-                </p>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Collective Multi-Size Product List Container -->
-          <div class="collective-order-card" id="collectiveOrderCard">
-            <div class="collective-box-header">
-              <div class="collective-box-title-group">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                  <line x1="3" y1="6" x2="21" y2="6"></line>
-                  <path d="M16 10a4 4 0 0 1-8 0"></path>
-                </svg>
-                <span class="collective-box-title">Selected Sizes to Order / Enquire:</span>
-                <span class="collective-count-badge" id="collectiveCountBadge">1 Size</span>
-              </div>
-              <button type="button" class="collective-add-btn" id="collectiveAddMoreBtn" title="Choose and add another diameter in mm">
-                <span>+ Add Another Size (mm)</span>
-              </button>
-            </div>
-
-            <!-- Dynamic list of collective items -->
-            <div class="collective-items-container" id="collectiveItemsContainer">
-              <!-- Rendered dynamically by product.js -->
-            </div>
-            
-            <div class="collective-note-row">
-              <span class="collective-note-icon">ℹ</span>
-              <span>Packaged in multiples of 10 pieces as per IS:5101. You can add multiple sizes and enquire / add to cart collectively.</span>
-            </div>
-          </div>
-
-          <!-- Bottom Button Action Bar -->
-          <div class="commercial-actions-bar">
-            <a href="#enquiry" class="btn-quote-red" id="requestQuotationBtn">
-              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-              <span>Request Official Quotation &rarr;</span>
-            </a>
-
-            <button type="button" class="btn-add-to-cart" id="addToCartBtn">
-              <svg class="cart-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="9" cy="21" r="1"></circle>
-                <circle cx="20" cy="21" r="1"></circle>
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            <button type="button" class="btn-clear-all" id="clearAllSizesBtn">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
               </svg>
-              <span class="cart-btn-text" id="cartBtnText">Add Selected Sizes to Cart</span>
+              <span>Clear all</span>
             </button>
+          </div>
+
+          <!-- Quotation Table -->
+          <div class="quotation-table-wrapper">
+            <table class="quotation-table" id="quotationTable">
+              <thead>
+                <tr>
+                  <th class="th-sno">S.No.</th>
+                  <th class="th-size" id="colHeaderSize">Size (mm)</th>
+                  <th class="th-qty">Quantity (pcs) &amp; MOQ</th>
+                  <th class="th-avail">Availability</th>
+                  <th class="th-action">Action</th>
+                </tr>
+              </thead>
+              <tbody id="quotationTableBody">
+                <tr>
+                  <td class="td-sno">1</td>
+                  <td class="td-size">3.00</td>
+                  <td class="td-qty">
+                    <div class="table-qty-container">
+                      <div class="table-stepper-box">
+                        <button type="button" class="table-step-btn btn-table-minus" data-id="seed-1" aria-label="Decrease quantity">&minus;</button>
+                        <input type="number" class="table-step-input input-table-qty" data-id="seed-1" value="50" min="1">
+                        <button type="button" class="table-step-btn btn-table-plus" data-id="seed-1" aria-label="Increase quantity">&plus;</button>
+                      </div>
+                      <span class="table-row-moq">MOQ: 200 pcs</span>
+                    </div>
+                  </td>
+                  <td class="td-avail">
+                    <span class="stock-pill-badge">
+                      <span class="stock-pill-dot"></span> In Stock
+                    </span>
+                  </td>
+                  <td class="td-action">
+                    <button type="button" class="row-delete-btn" data-id="seed-1" title="Remove 3.00" aria-label="Remove 3.00">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="td-sno">2</td>
+                  <td class="td-size">5.00</td>
+                  <td class="td-qty">
+                    <div class="table-qty-container">
+                      <div class="table-stepper-box">
+                        <button type="button" class="table-step-btn btn-table-minus" data-id="seed-2" aria-label="Decrease quantity">&minus;</button>
+                        <input type="number" class="table-step-input input-table-qty" data-id="seed-2" value="100" min="1">
+                        <button type="button" class="table-step-btn btn-table-plus" data-id="seed-2" aria-label="Increase quantity">&plus;</button>
+                      </div>
+                      <span class="table-row-moq">MOQ: 200 pcs</span>
+                    </div>
+                  </td>
+                  <td class="td-avail">
+                    <span class="stock-pill-badge">
+                      <span class="stock-pill-dot"></span> In Stock
+                    </span>
+                  </td>
+                  <td class="td-action">
+                    <button type="button" class="row-delete-btn" data-id="seed-2" title="Remove 5.00" aria-label="Remove 5.00">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="td-sno">3</td>
+                  <td class="td-size">10.00</td>
+                  <td class="td-qty">
+                    <div class="table-qty-container">
+                      <div class="table-stepper-box">
+                        <button type="button" class="table-step-btn btn-table-minus" data-id="seed-3" aria-label="Decrease quantity">&minus;</button>
+                        <input type="number" class="table-step-input input-table-qty" data-id="seed-3" value="25" min="1">
+                        <button type="button" class="table-step-btn btn-table-plus" data-id="seed-3" aria-label="Increase quantity">&plus;</button>
+                      </div>
+                      <span class="table-row-moq">MOQ: 100 pcs</span>
+                    </div>
+                  </td>
+                  <td class="td-avail">
+                    <span class="stock-pill-badge">
+                      <span class="stock-pill-dot"></span> In Stock
+                    </span>
+                  </td>
+                  <td class="td-action">
+                    <button type="button" class="row-delete-btn" data-id="seed-3" title="Remove 10.00" aria-label="Remove 10.00">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="quotation-empty-state" id="quotationEmptyState" style="display:none;">
+              <p>No sizes selected yet. Use Step 1 above to add drill sizes for quotation.</p>
+            </div>
+          </div>
+
+          <!-- Next Step Banner Box -->
+          <div class="next-step-box">
+            <div class="next-step-left">
+              <div class="next-step-info-icon">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="#DC2626">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                </svg>
+              </div>
+              <div class="next-step-content">
+                <div class="next-step-title">Next Step</div>
+                <p class="next-step-desc">
+                  Click on &ldquo;Request Quotation&rdquo; to send these sizes to us. You can continue browsing and add more sizes from this or other products.
+                </p>
+              </div>
+            </div>
+            <div class="next-step-right">
+              <a href="#enquiry" class="btn-request-quote-main" id="heroRequestQuotationBtn">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <span>Request Quotation &rarr;</span>
+              </a>
+            </div>
           </div>
 
         </div>
@@ -573,8 +530,8 @@ include __DIR__ . '/../includes/header.php';
       <!-- Feedback Banner -->
       <div id="enquiryFeedback" class="form-feedback-message"></div>
 
-      <!-- Selected Items from Cart / Configurator Breakdown (Live Shared Info) -->
-      <div class="enquiry-cart-summary-box" id="enquiryCartSummaryBox" style="display:none;">
+      <!-- Selected Items from Configurator / Live Quotation Breakdown -->
+      <div class="enquiry-cart-summary-box" id="enquiryCartSummaryBox">
         <div class="enquiry-summary-header">
           <div class="enquiry-summary-title-wrap">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
@@ -585,10 +542,20 @@ include __DIR__ . '/../includes/header.php';
             </svg>
             <span class="enquiry-summary-title">Selected Tooling Specifications to be Quoted:</span>
           </div>
-          <span class="enquiry-summary-count-badge" id="enquirySummaryCount">0 Items</span>
+          <span class="enquiry-summary-count-badge" id="enquirySummaryCount">3 Sizes | 175 pcs</span>
         </div>
+        
+        <!-- Live Product Conformance Header -->
+        <div class="enquiry-product-meta-row">
+          <span class="meta-tag"><strong>Product:</strong> HSS Parallel Shank Twist Drills (Jobber Series)</span>
+          <span class="meta-tag"><strong>Standard:</strong> IS : 5101 / ISO 235</span>
+          <span class="meta-tag"><strong>HSN Code:</strong> 8207</span>
+          <span class="meta-tag"><strong>Material:</strong> High-Speed Steel (M2 Grade)</span>
+          <span class="meta-tag"><strong>Dispatch:</strong> ITM Nashik &amp; Aurangabad Plants</span>
+        </div>
+
         <div class="enquiry-summary-items" id="enquirySummaryItems">
-          <!-- Populated dynamically via JS from Cart -->
+          <!-- Populated dynamically via JS -->
         </div>
       </div>
 
@@ -600,59 +567,58 @@ include __DIR__ . '/../includes/header.php';
 
         <div class="enquiry-form-grid">
           
-          <!-- Selected Diameter (Pre-filled) -->
-          <div class="form-group">
-            <label class="form-label" for="enquiryDiaInput">Selected Drill Diameter</label>
+          <!-- Selected Diameter & Product Line (Pre-filled) -->
+          <div class="form-group form-group-full">
+            <label class="form-label" for="enquiryDiaInput">Product Specification &amp; Selected Diameters</label>
             <input 
               type="text" 
               name="metric_dia" 
               id="enquiryDiaInput" 
               class="form-control form-readonly" 
-              value="<?php echo htmlspecialchars($initial_row['mm']); ?> mm"
+              value="HSS Jobber Series (IS:5101) — 3.00 mm (50 pcs, MOQ: 200), 5.00 mm (100 pcs, MOQ: 200), 10.00 mm (25 pcs, MOQ: 100)"
               readonly
             >
           </div>
 
           <!-- Selected Variant (Pre-filled) -->
           <div class="form-group">
-            <label class="form-label" for="enquiryVariantInput">Selected Variant</label>
+            <label class="form-label" for="enquiryVariantInput">Selected Variant &amp; Metallurgy</label>
             <input 
               type="text" 
               name="variant_name" 
               id="enquiryVariantInput" 
               class="form-control form-readonly" 
-              value="<?php echo htmlspecialchars($variants[$initial_variant]['name']); ?>"
+              value="ITM STD. (HSS M2 / Precision Ground Flutes — IS : 5101 | HSN: 8207)"
               readonly
             >
           </div>
 
           <!-- Quantity (Validated against MOQ & multiple of 10) -->
           <div class="form-group">
-            <label class="form-label" for="enquiryQuantityInput">Required Quantity (Pieces)</label>
+            <label class="form-label" for="enquiryQuantityInput">Total Required Quantity (Pieces) &amp; MOQ</label>
             <input 
               type="number" 
               name="quantity" 
               id="enquiryQuantityInput" 
               class="form-control" 
-              value="<?php echo (int)($initial_row['moq'] ?? 100); ?>" 
-              min="10" 
-              step="10" 
+              value="175" 
+              min="1" 
               required
             >
             <small id="enquiryMoqNotice" style="display:block;font-size:0.75rem;color:#78909C;margin-top:4px;">
-              Standard MOQ is <?php echo (int)($initial_row['moq'] ?? 100); ?> pcs (Multiples of 10).
+              Combined quantity for selected sizes. Standard MOQ applies per diameter as noted.
             </small>
           </div>
 
           <!-- Procurement Basis Reference -->
-          <div class="form-group">
-            <label class="form-label" for="enquiryPriceBasisInput">Procurement Basis</label>
+          <div class="form-group form-group-full">
+            <label class="form-label" for="enquiryPriceBasisInput">Procurement Basis &amp; Supply Terms</label>
             <input 
               type="text" 
               name="price_basis" 
               id="enquiryPriceBasisInput" 
               class="form-control form-readonly" 
-              value="Official B2B Quotation on Request (IS : 5101)"
+              value="Official April 2026 Price List — F.O.R. Destination (Direct ITM Plant Dispatch)"
               readonly
             >
           </div>
@@ -754,7 +720,7 @@ include __DIR__ . '/../includes/header.php';
 </div>
 
 <!-- Product Page JavaScript -->
-<script src="../assets/js/product.js"></script>
+<script src="../assets/js/product.js?v=<?php echo file_exists(__DIR__ . '/../assets/js/product.js') ? filemtime(__DIR__ . '/../assets/js/product.js') : time(); ?>"></script>
 
 <?php
 include __DIR__ . '/../includes/footer.php';
