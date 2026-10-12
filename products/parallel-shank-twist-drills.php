@@ -631,8 +631,6 @@ include __DIR__ . '/../includes/header.php';
   </div>
 </div>
 
-<!-- Product Page JavaScript -->
-<script src="../assets/js/product.js?v=<?php echo file_exists(__DIR__ . '/../assets/js/product.js') ? filemtime(__DIR__ . '/../assets/js/product.js') : time(); ?>"></script>
 
 <?php
 include __DIR__ . '/../includes/footer.php';
