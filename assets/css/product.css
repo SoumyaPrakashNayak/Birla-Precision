@@ -536,6 +536,14 @@
   color: #111827;
 }
 
+.qty-step-btn:disabled,
+.qty-step-btn[aria-disabled="true"] {
+  color: #D1D5DB;
+  cursor: not-allowed;
+  background-color: transparent;
+  pointer-events: none;
+}
+
 .qty-step-input {
   flex: 1;
   width: 100%;
@@ -813,6 +821,14 @@
 .table-step-btn:hover {
   background-color: #F3F4F6;
   color: #111827;
+}
+
+.table-step-btn:disabled,
+.table-step-btn[aria-disabled="true"] {
+  color: #D1D5DB;
+  cursor: not-allowed;
+  background-color: transparent;
+  pointer-events: none;
 }
 
 .table-step-input {

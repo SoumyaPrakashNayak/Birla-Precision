@@ -206,8 +206,8 @@ include __DIR__ . '/../includes/header.php';
                 <span class="qty-moq-badge" id="stepMoqBadge">MOQ: 200 pcs</span>
               </div>
               <div class="qty-stepper-box">
-                <button type="button" class="qty-step-btn" id="stepQtyMinus" aria-label="Decrease quantity">&minus;</button>
-                <input type="number" id="stepQtyInput" class="qty-step-input" value="50" min="1">
+                <button type="button" class="qty-step-btn" id="stepQtyMinus" aria-label="Decrease quantity" disabled>&minus;</button>
+                <input type="number" id="stepQtyInput" class="qty-step-input" value="200" min="200" step="10">
                 <button type="button" class="qty-step-btn" id="stepQtyPlus" aria-label="Increase quantity">&plus;</button>
               </div>
             </div>
@@ -256,7 +256,7 @@ include __DIR__ . '/../includes/header.php';
 
           <!-- Quotation Table -->
           <div class="quotation-table-wrapper">
-            <table class="quotation-table" id="quotationTable">
+            <table class="quotation-table" id="quotationTable" style="display:none;">
               <thead>
                 <tr>
                   <th class="th-sno">S.No.</th>
@@ -267,90 +267,10 @@ include __DIR__ . '/../includes/header.php';
                 </tr>
               </thead>
               <tbody id="quotationTableBody">
-                <tr>
-                  <td class="td-sno">1</td>
-                  <td class="td-size">3.00</td>
-                  <td class="td-qty">
-                    <div class="table-qty-container">
-                      <div class="table-stepper-box">
-                        <button type="button" class="table-step-btn btn-table-minus" data-id="seed-1" aria-label="Decrease quantity">&minus;</button>
-                        <input type="number" class="table-step-input input-table-qty" data-id="seed-1" value="50" min="1">
-                        <button type="button" class="table-step-btn btn-table-plus" data-id="seed-1" aria-label="Increase quantity">&plus;</button>
-                      </div>
-                      <span class="table-row-moq">MOQ: 200 pcs</span>
-                    </div>
-                  </td>
-                  <td class="td-avail">
-                    <span class="stock-pill-badge">
-                      <span class="stock-pill-dot"></span> In Stock
-                    </span>
-                  </td>
-                  <td class="td-action">
-                    <button type="button" class="row-delete-btn" data-id="seed-1" title="Remove 3.00" aria-label="Remove 3.00">
-                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="3 6 5 6 21 6"></polyline>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                      </svg>
-                    </button>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="td-sno">2</td>
-                  <td class="td-size">5.00</td>
-                  <td class="td-qty">
-                    <div class="table-qty-container">
-                      <div class="table-stepper-box">
-                        <button type="button" class="table-step-btn btn-table-minus" data-id="seed-2" aria-label="Decrease quantity">&minus;</button>
-                        <input type="number" class="table-step-input input-table-qty" data-id="seed-2" value="100" min="1">
-                        <button type="button" class="table-step-btn btn-table-plus" data-id="seed-2" aria-label="Increase quantity">&plus;</button>
-                      </div>
-                      <span class="table-row-moq">MOQ: 200 pcs</span>
-                    </div>
-                  </td>
-                  <td class="td-avail">
-                    <span class="stock-pill-badge">
-                      <span class="stock-pill-dot"></span> In Stock
-                    </span>
-                  </td>
-                  <td class="td-action">
-                    <button type="button" class="row-delete-btn" data-id="seed-2" title="Remove 5.00" aria-label="Remove 5.00">
-                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="3 6 5 6 21 6"></polyline>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                      </svg>
-                    </button>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="td-sno">3</td>
-                  <td class="td-size">10.00</td>
-                  <td class="td-qty">
-                    <div class="table-qty-container">
-                      <div class="table-stepper-box">
-                        <button type="button" class="table-step-btn btn-table-minus" data-id="seed-3" aria-label="Decrease quantity">&minus;</button>
-                        <input type="number" class="table-step-input input-table-qty" data-id="seed-3" value="25" min="1">
-                        <button type="button" class="table-step-btn btn-table-plus" data-id="seed-3" aria-label="Increase quantity">&plus;</button>
-                      </div>
-                      <span class="table-row-moq">MOQ: 100 pcs</span>
-                    </div>
-                  </td>
-                  <td class="td-avail">
-                    <span class="stock-pill-badge">
-                      <span class="stock-pill-dot"></span> In Stock
-                    </span>
-                  </td>
-                  <td class="td-action">
-                    <button type="button" class="row-delete-btn" data-id="seed-3" title="Remove 10.00" aria-label="Remove 10.00">
-                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="3 6 5 6 21 6"></polyline>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                      </svg>
-                    </button>
-                  </td>
-                </tr>
+                <!-- Populated dynamically via JS when sizes are selected -->
               </tbody>
             </table>
-            <div class="quotation-empty-state" id="quotationEmptyState" style="display:none;">
+            <div class="quotation-empty-state" id="quotationEmptyState">
               <p>No sizes selected yet. Use Step 1 above to add drill sizes for quotation.</p>
             </div>
           </div>
@@ -531,7 +451,7 @@ include __DIR__ . '/../includes/header.php';
       <div id="enquiryFeedback" class="form-feedback-message"></div>
 
       <!-- Selected Items from Configurator / Live Quotation Breakdown -->
-      <div class="enquiry-cart-summary-box" id="enquiryCartSummaryBox">
+      <div class="enquiry-cart-summary-box" id="enquiryCartSummaryBox" style="display:none;">
         <div class="enquiry-summary-header">
           <div class="enquiry-summary-title-wrap">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
@@ -542,7 +462,7 @@ include __DIR__ . '/../includes/header.php';
             </svg>
             <span class="enquiry-summary-title">Selected Tooling Specifications to be Quoted:</span>
           </div>
-          <span class="enquiry-summary-count-badge" id="enquirySummaryCount">3 Sizes | 175 pcs</span>
+          <span class="enquiry-summary-count-badge" id="enquirySummaryCount">0 Sizes | 0 pcs</span>
         </div>
         
         <!-- Live Product Conformance Header -->
@@ -572,10 +492,7 @@ include __DIR__ . '/../includes/header.php';
             <label class="form-label" for="enquiryDiaInput">Product Specification &amp; Selected Diameters</label>
             <input 
               type="text" 
-              name="metric_dia" 
-              id="enquiryDiaInput" 
-              class="form-control form-readonly" 
-              value="HSS Jobber Series (IS:5101) — 3.00 mm (50 pcs, MOQ: 200), 5.00 mm (100 pcs, MOQ: 200), 10.00 mm (25 pcs, MOQ: 100)"
+              name="metric_dia" id="enquiryDiaInput" class="form-control form-readonly" value="HSS Parallel Shank Twist Drills (Jobber Series) — Conforming to IS : 5101"
               readonly
             >
           </div>
@@ -598,12 +515,7 @@ include __DIR__ . '/../includes/header.php';
             <label class="form-label" for="enquiryQuantityInput">Total Required Quantity (Pieces) &amp; MOQ</label>
             <input 
               type="number" 
-              name="quantity" 
-              id="enquiryQuantityInput" 
-              class="form-control" 
-              value="175" 
-              min="1" 
-              required
+              name="quantity" id="enquiryQuantityInput" class="form-control" value="" placeholder="Add sizes above or enter total pieces" min="1" required
             >
             <small id="enquiryMoqNotice" style="display:block;font-size:0.75rem;color:#78909C;margin-top:4px;">
               Combined quantity for selected sizes. Standard MOQ applies per diameter as noted.

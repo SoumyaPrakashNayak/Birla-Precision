@@ -20,29 +20,80 @@ document.addEventListener('DOMContentLoaded', function () {
   var allSizesData = [];
   var allVariantsMap = {};
 
-  // Seeded quotation items matching Reference Design (Image 1)
-  var defaultQuotationItems = [
-    { id: 'seed-1', size: '3.00', unit: 'mm', qty: 50, moq: 200, availability: 'In Stock' },
-    { id: 'seed-2', size: '5.00', unit: 'mm', qty: 100, moq: 200, availability: 'In Stock' },
-    { id: 'seed-3', size: '10.00', unit: 'mm', qty: 25, moq: 100, availability: 'In Stock' }
-  ];
+  // ==========================================================================
+  // MOQ LOOKUP HELPER
+  // ==========================================================================
 
+  function getMoqForDiameter(diaStr) {
+    if (!diaStr) return 100;
+    var cleanStr = String(diaStr).replace(/mm|inch|"/gi, '').trim();
+    var parsedFloat = parseFloat(cleanStr);
+
+    // Search in loaded API catalogue sizes
+    if (allSizesData && allSizesData.length > 0) {
+      for (var i = 0; i < allSizesData.length; i++) {
+        var row = allSizesData[i];
+        if (row && row.mm && Math.abs(parseFloat(row.mm) - parsedFloat) < 0.001) {
+          if (row.moq) return parseInt(row.moq, 10);
+        }
+        if (row && row.inch) {
+          var rowInchClean = String(row.inch).replace(/"/g, '').trim();
+          if (rowInchClean === cleanStr) {
+            if (row.moq) return parseInt(row.moq, 10);
+          }
+        }
+      }
+    }
+
+    // Standard April 2026 Price List packaging rules by diameter range
+    if (!isNaN(parsedFloat)) {
+      if (parsedFloat <= 5.0) return 200;
+      if (parsedFloat <= 10.0) return 100;
+      if (parsedFloat <= 13.0) return 50;
+      if (parsedFloat <= 16.5) return 20;
+      return 10;
+    }
+    return 100;
+  }
+
+  // Quotation items state (starts empty on first visit; user adds sizes using Step 1)
   var quotationItems = [];
   try {
     var stored = localStorage.getItem('birla_quotation_items');
     if (stored) {
-      quotationItems = JSON.parse(stored);
-      if (!Array.isArray(quotationItems) || quotationItems.length === 0) {
-        quotationItems = JSON.parse(JSON.stringify(defaultQuotationItems));
+      var parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        // Exclude any legacy seed items so clean empty state is respected
+        quotationItems = parsed.filter(function (it) {
+          return it && it.id && String(it.id).indexOf('seed-') !== 0;
+        });
       }
-    } else {
-      quotationItems = JSON.parse(JSON.stringify(defaultQuotationItems));
     }
   } catch (e) {
-    quotationItems = JSON.parse(JSON.stringify(defaultQuotationItems));
+    quotationItems = [];
   }
 
+  // Strictly enforce that NO item in quotationItems has quantity less than its MOQ
+  function enforceMoqOnQuotationItems() {
+    var changed = false;
+    quotationItems.forEach(function (it) {
+      var itemMoq = getMoqForDiameter(it.size);
+      if (it.moq !== itemMoq) {
+        it.moq = itemMoq;
+        changed = true;
+      }
+      var curQty = parseInt(it.qty, 10);
+      if (isNaN(curQty) || curQty < itemMoq) {
+        it.qty = itemMoq;
+        changed = true;
+      }
+    });
+    return changed;
+  }
+  enforceMoqOnQuotationItems();
+
   function saveQuotationItems() {
+    enforceMoqOnQuotationItems();
     try {
       localStorage.setItem('birla_quotation_items', JSON.stringify(quotationItems));
     } catch (e) {
@@ -94,46 +145,23 @@ document.addEventListener('DOMContentLoaded', function () {
   var enquiryFeedback = document.getElementById('enquiryFeedback');
   var enquirySubmitBtn = document.getElementById('enquirySubmitBtn');
 
-  // ==========================================================================
-  // MOQ LOOKUP HELPER
-  // ==========================================================================
-
-  function getMoqForDiameter(diaStr) {
-    if (!diaStr) return 100;
-    var cleanStr = String(diaStr).replace(/mm|inch|"/gi, '').trim();
-    var parsedFloat = parseFloat(cleanStr);
-
-    // Search in loaded API catalogue sizes
-    if (allSizesData && allSizesData.length > 0) {
-      for (var i = 0; i < allSizesData.length; i++) {
-        var row = allSizesData[i];
-        if (row && row.mm && Math.abs(parseFloat(row.mm) - parsedFloat) < 0.001) {
-          if (row.moq) return parseInt(row.moq, 10);
-        }
-        if (row && row.inch) {
-          var rowInchClean = String(row.inch).replace(/"/g, '').trim();
-          if (rowInchClean === cleanStr) {
-            if (row.moq) return parseInt(row.moq, 10);
-          }
-        }
+  function updateStepMoqBadge(sizeStr) {
+    var moq = getMoqForDiameter(sizeStr);
+    if (stepMoqBadge) {
+      stepMoqBadge.textContent = 'MOQ: ' + moq + ' pcs';
+    }
+    if (stepQtyInput) {
+      stepQtyInput.min = moq;
+      var curVal = parseInt(stepQtyInput.value, 10);
+      if (isNaN(curVal) || curVal < moq) {
+        stepQtyInput.value = moq;
       }
     }
-
-    // Standard April 2026 Price List packaging rules by diameter range
-    if (!isNaN(parsedFloat)) {
-      if (parsedFloat <= 5.0) return 200;
-      if (parsedFloat <= 10.0) return 100;
-      if (parsedFloat <= 13.0) return 50;
-      if (parsedFloat <= 16.5) return 20;
-      return 10;
+    if (stepQtyMinus) {
+      var curVal = parseInt(stepQtyInput ? stepQtyInput.value : moq, 10) || moq;
+      stepQtyMinus.disabled = (curVal <= moq);
+      stepQtyMinus.setAttribute('aria-disabled', curVal <= moq ? 'true' : 'false');
     }
-    return 100;
-  }
-
-  function updateStepMoqBadge(sizeStr) {
-    if (!stepMoqBadge) return;
-    var moq = getMoqForDiameter(sizeStr);
-    stepMoqBadge.textContent = 'MOQ: ' + moq + ' pcs';
   }
 
   // Gallery Elements
@@ -253,12 +281,13 @@ document.addEventListener('DOMContentLoaded', function () {
         allSizesData = json.sizes || [];
         allVariantsMap = json.variants || {};
 
-        // Render Combobox dropdown once sizes are loaded
+        // Re-enforce MOQ constraints with dynamic catalogue sizes
+        enforceMoqOnQuotationItems();
         renderDropdownSizes();
-        var initialSize = diaSearchInput && diaSearchInput.value ? diaSearchInput.value : '3.00';
+        var initialSize = diaSearchInput && diaSearchInput.value ? diaSearchInput.value : (currentUnit === 'mm' ? '3.00' : '1/8"');
         updateStepMoqBadge(initialSize);
         renderQuotationTable();
-        syncEnquiryForm();
+        saveQuotationItems();
       }
     })
     .catch(function (err) {
@@ -482,26 +511,58 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (stepQtyMinus && stepQtyInput) {
     stepQtyMinus.addEventListener('click', function () {
-      var current = parseInt(stepQtyInput.value, 10) || 1;
-      var next = current > 1 ? current - 1 : 1;
-      stepQtyInput.value = next;
+      var activeSize = diaSearchInput ? diaSearchInput.value : '';
+      var activeMoq = getMoqForDiameter(activeSize);
+      var current = parseInt(stepQtyInput.value, 10) || activeMoq;
+      if (current > activeMoq) {
+        var next = Math.max(activeMoq, current - 10);
+        stepQtyInput.value = next;
+        stepQtyMinus.disabled = (next <= activeMoq);
+        stepQtyMinus.setAttribute('aria-disabled', next <= activeMoq ? 'true' : 'false');
+      } else {
+        stepQtyInput.value = activeMoq;
+        stepQtyMinus.disabled = true;
+        stepQtyMinus.setAttribute('aria-disabled', 'true');
+      }
     });
   }
 
   if (stepQtyPlus && stepQtyInput) {
     stepQtyPlus.addEventListener('click', function () {
-      var current = parseInt(stepQtyInput.value, 10) || 1;
-      stepQtyInput.value = current + 1;
+      var activeSize = diaSearchInput ? diaSearchInput.value : '';
+      var activeMoq = getMoqForDiameter(activeSize);
+      var current = parseInt(stepQtyInput.value, 10) || activeMoq;
+      if (current < activeMoq) {
+        stepQtyInput.value = activeMoq;
+      } else {
+        stepQtyInput.value = current + 10;
+      }
+      if (stepQtyMinus) {
+        stepQtyMinus.disabled = false;
+        stepQtyMinus.setAttribute('aria-disabled', 'false');
+      }
     });
   }
 
   if (stepQtyInput) {
-    stepQtyInput.addEventListener('change', function () {
-      var current = parseInt(this.value, 10);
-      if (isNaN(current) || current < 1) {
-        this.value = 1;
+    function sanitizeStepQty() {
+      var activeSize = diaSearchInput ? diaSearchInput.value : '';
+      var activeMoq = getMoqForDiameter(activeSize);
+      var current = parseInt(stepQtyInput.value, 10);
+      if (isNaN(current) || current < activeMoq) {
+        stepQtyInput.value = activeMoq;
+      } else if (current % 10 !== 0) {
+        stepQtyInput.value = Math.ceil(current / 10) * 10;
       }
-    });
+      if (stepQtyMinus) {
+        var valNow = parseInt(stepQtyInput.value, 10);
+        stepQtyMinus.disabled = (valNow <= activeMoq);
+        stepQtyMinus.setAttribute('aria-disabled', valNow <= activeMoq ? 'true' : 'false');
+      }
+    }
+
+    stepQtyInput.addEventListener('change', sanitizeStepQty);
+    stepQtyInput.addEventListener('blur', sanitizeStepQty);
   }
 
   // ==========================================================================
@@ -524,10 +585,14 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    var qty = parseInt(stepQtyInput ? stepQtyInput.value : 1, 10) || 1;
-    if (qty < 1) qty = 1;
-
     var itemMoq = getMoqForDiameter(cleanedSize);
+    var qty = parseInt(stepQtyInput ? stepQtyInput.value : itemMoq, 10) || itemMoq;
+    if (qty < itemMoq) {
+      qty = itemMoq;
+    }
+    if (qty % 10 !== 0) {
+      qty = Math.ceil(qty / 10) * 10;
+    }
 
     // Check if this size already exists in the quotation table
     var existingIndex = quotationItems.findIndex(function (it) {
@@ -538,6 +603,9 @@ document.addEventListener('DOMContentLoaded', function () {
       // Increase existing item quantity
       quotationItems[existingIndex].qty += qty;
       quotationItems[existingIndex].moq = itemMoq;
+      if (quotationItems[existingIndex].qty < itemMoq) {
+        quotationItems[existingIndex].qty = itemMoq;
+      }
     } else {
       // Add new item to table
       quotationItems.push({
@@ -550,9 +618,15 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     }
 
-    // Reset input fields
+    // Reset input fields to proper default MOQ
     diaSearchInput.value = '';
-    if (stepQtyInput) stepQtyInput.value = 1;
+    var nextDefaultSize = currentUnit === 'mm' ? '3.00' : '1/8"';
+    var nextDefaultMoq = getMoqForDiameter(nextDefaultSize);
+    if (stepQtyInput) {
+      stepQtyInput.value = nextDefaultMoq;
+      stepQtyInput.min = nextDefaultMoq;
+    }
+    updateStepMoqBadge(nextDefaultSize);
 
     // Remove active state on popular pills
     if (popularSizesList) {
@@ -590,6 +664,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     quotationItems.forEach(function (item, index) {
       var itemMoq = item.moq || getMoqForDiameter(item.size);
+      item.moq = itemMoq;
+      if (!item.qty || item.qty < itemMoq) {
+        item.qty = itemMoq;
+      }
+      var isAtMoq = item.qty <= itemMoq;
+
       var tr = document.createElement('tr');
       tr.innerHTML =
         '<td class="td-sno">' + (index + 1) + '</td>' +
@@ -597,8 +677,8 @@ document.addEventListener('DOMContentLoaded', function () {
         '<td class="td-qty">' +
           '<div class="table-qty-container">' +
             '<div class="table-stepper-box">' +
-              '<button type="button" class="table-step-btn btn-table-minus" data-id="' + item.id + '" aria-label="Decrease quantity">&minus;</button>' +
-              '<input type="number" class="table-step-input input-table-qty" data-id="' + item.id + '" value="' + item.qty + '" min="1">' +
+              '<button type="button" class="table-step-btn btn-table-minus" data-id="' + item.id + '" aria-label="Decrease quantity"' + (isAtMoq ? ' disabled aria-disabled="true"' : '') + '>&minus;</button>' +
+              '<input type="number" class="table-step-input input-table-qty" data-id="' + item.id + '" value="' + item.qty + '" min="' + itemMoq + '" step="10">' +
               '<button type="button" class="table-step-btn btn-table-plus" data-id="' + item.id + '" aria-label="Increase quantity">&plus;</button>' +
             '</div>' +
             '<span class="table-row-moq">MOQ: ' + itemMoq + ' pcs</span>' +
@@ -621,18 +701,23 @@ document.addEventListener('DOMContentLoaded', function () {
       quotationTableBody.appendChild(tr);
     });
 
-    // Wire up row stepper minus
+    // Wire up row stepper minus (never allow decrease below MOQ)
     var minusBtns = quotationTableBody.querySelectorAll('.btn-table-minus');
     minusBtns.forEach(function (btn) {
       btn.addEventListener('click', function () {
         var id = this.getAttribute('data-id');
         var target = quotationItems.find(function (it) { return it.id === id; });
-        if (target && target.qty > 1) {
-          target.qty -= 1;
-          var rowInput = quotationTableBody.querySelector('.input-table-qty[data-id="' + id + '"]');
-          if (rowInput) rowInput.value = target.qty;
-          saveQuotationItems();
-          syncEnquiryForm();
+        if (target) {
+          var itemMoq = target.moq || getMoqForDiameter(target.size);
+          if (target.qty > itemMoq) {
+            target.qty = Math.max(itemMoq, target.qty - 10);
+            var rowInput = quotationTableBody.querySelector('.input-table-qty[data-id="' + id + '"]');
+            if (rowInput) rowInput.value = target.qty;
+            this.disabled = (target.qty <= itemMoq);
+            this.setAttribute('aria-disabled', target.qty <= itemMoq ? 'true' : 'false');
+            saveQuotationItems();
+            syncEnquiryForm();
+          }
         }
       });
     });
@@ -644,9 +729,19 @@ document.addEventListener('DOMContentLoaded', function () {
         var id = this.getAttribute('data-id');
         var target = quotationItems.find(function (it) { return it.id === id; });
         if (target) {
-          target.qty += 1;
+          var itemMoq = target.moq || getMoqForDiameter(target.size);
+          if (target.qty < itemMoq) {
+            target.qty = itemMoq;
+          } else {
+            target.qty += 10;
+          }
           var rowInput = quotationTableBody.querySelector('.input-table-qty[data-id="' + id + '"]');
           if (rowInput) rowInput.value = target.qty;
+          var rowMinusBtn = quotationTableBody.querySelector('.btn-table-minus[data-id="' + id + '"]');
+          if (rowMinusBtn) {
+            rowMinusBtn.disabled = false;
+            rowMinusBtn.setAttribute('aria-disabled', 'false');
+          }
           saveQuotationItems();
           syncEnquiryForm();
         }
@@ -656,30 +751,47 @@ document.addEventListener('DOMContentLoaded', function () {
     // Wire up row quantity input live direct change (input, change, blur)
     var qtyInputs = quotationTableBody.querySelectorAll('.input-table-qty');
     qtyInputs.forEach(function (inp) {
-      function syncInputQty() {
-        var id = inp.getAttribute('data-id');
-        var val = parseInt(inp.value, 10);
-        if (!isNaN(val) && val > 0) {
-          var target = quotationItems.find(function (it) { return it.id === id; });
+      var id = inp.getAttribute('data-id');
+      var target = quotationItems.find(function (it) { return it.id === id; });
+      var itemMoq = target ? (target.moq || getMoqForDiameter(target.size)) : 100;
+
+      inp.addEventListener('input', function () {
+        var val = parseInt(this.value, 10);
+        if (!isNaN(val) && val >= itemMoq) {
           if (target) {
             target.qty = val;
           }
+          var rowMinusBtn = quotationTableBody.querySelector('.btn-table-minus[data-id="' + id + '"]');
+          if (rowMinusBtn) {
+            rowMinusBtn.disabled = (val <= itemMoq);
+            rowMinusBtn.setAttribute('aria-disabled', val <= itemMoq ? 'true' : 'false');
+          }
+          syncEnquiryForm();
         }
-        try {
-          localStorage.setItem('birla_quotation_items', JSON.stringify(quotationItems));
-        } catch (e) {}
+      });
+
+      function commitRowQty() {
+        var val = parseInt(inp.value, 10);
+        if (isNaN(val) || val < itemMoq) {
+          val = itemMoq;
+        } else if (val % 10 !== 0) {
+          val = Math.ceil(val / 10) * 10;
+        }
+        inp.value = val;
+        if (target) {
+          target.qty = val;
+        }
+        var rowMinusBtn = quotationTableBody.querySelector('.btn-table-minus[data-id="' + id + '"]');
+        if (rowMinusBtn) {
+          rowMinusBtn.disabled = (val <= itemMoq);
+          rowMinusBtn.setAttribute('aria-disabled', val <= itemMoq ? 'true' : 'false');
+        }
+        saveQuotationItems();
         syncEnquiryForm();
       }
 
-      inp.addEventListener('input', syncInputQty);
-      inp.addEventListener('change', function () {
-        var val = parseInt(this.value, 10);
-        if (isNaN(val) || val < 1) {
-          this.value = 1;
-        }
-        syncInputQty();
-      });
-      inp.addEventListener('blur', syncInputQty);
+      inp.addEventListener('change', commitRowQty);
+      inp.addEventListener('blur', commitRowQty);
     });
 
     // Wire up delete buttons
@@ -817,7 +929,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Strictly match cart total pieces
     if (enquiryQuantityInput) {
-      enquiryQuantityInput.value = totalPieces;
+      enquiryQuantityInput.value = totalPieces > 0 ? totalPieces : '';
     }
 
     if (enquiryMoqNotice) {
@@ -880,6 +992,8 @@ document.addEventListener('DOMContentLoaded', function () {
         msgLines.push('[Please specify your workpiece material (e.g. Mild Steel, SS304, Cast Iron), hole depth, machine model, or coating requirements here]');
 
         enquiryMessageInput.value = msgLines.join('\n');
+      } else if (isDefaultOrAuto) {
+        enquiryMessageInput.value = '';
       }
     }
   }
@@ -922,12 +1036,15 @@ document.addEventListener('DOMContentLoaded', function () {
     if (Array.isArray(cart) && cart.length > 0) {
       quotationItems = cart.map(function (cItem, idx) {
         var rawSize = String(cItem.dia || cItem.diaText || '3.00').replace(/mm|inch|"/gi, '').trim();
+        var itemMoq = parseInt(cItem.moq, 10) || getMoqForDiameter(rawSize);
+        var itemQty = parseInt(cItem.qty, 10) || itemMoq;
+        if (itemQty < itemMoq) itemQty = itemMoq;
         return {
           id: 'cart-' + idx + '-' + Date.now(),
           size: rawSize || '3.00',
           unit: (cItem.diaText && cItem.diaText.indexOf('"') !== -1) ? 'inch' : 'mm',
-          qty: parseInt(cItem.qty, 10) || 10,
-          moq: parseInt(cItem.moq, 10) || getMoqForDiameter(rawSize),
+          qty: itemQty,
+          moq: itemMoq,
           availability: 'In Stock'
         };
       });

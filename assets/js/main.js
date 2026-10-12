@@ -243,7 +243,16 @@ document.addEventListener('DOMContentLoaded', function () {
   function getCart() {
     try {
       var data = localStorage.getItem('birla_cart');
-      return data ? JSON.parse(data) : [];
+      var list = data ? JSON.parse(data) : [];
+      if (Array.isArray(list)) {
+        list.forEach(function (item) {
+          var itemMoq = parseInt(item.moq, 10) || 10;
+          if (!item.qty || item.qty < itemMoq) {
+            item.qty = itemMoq;
+          }
+        });
+      }
+      return list;
     } catch (e) {
       return [];
     }
@@ -265,10 +274,16 @@ document.addEventListener('DOMContentLoaded', function () {
       var existing = cart.find(function (it) {
         return it.dia === item.dia && it.variant === item.variant;
       });
+      var itemMoq = parseInt(item.moq, 10) || 10;
+      var itemQty = parseInt(item.qty, 10) || itemMoq;
+      if (itemQty < itemMoq) itemQty = itemMoq;
       if (existing) {
-        existing.qty += (item.qty || 10);
+        existing.qty += itemQty;
+        existing.moq = itemMoq;
         existing.total = (existing.unitPrice || 0) * existing.qty;
       } else {
+        item.qty = itemQty;
+        item.moq = itemMoq;
         cart.push(item);
       }
       saveCart(cart);
@@ -409,7 +424,7 @@ document.addEventListener('DOMContentLoaded', function () {
               '<div class="cart-qty-ctrl-group">' +
                 '<span class="cart-qty-ctrl-label">Quantity to Quote:</span>' +
                 '<div class="cart-stepper-box">' +
-                  '<button type="button" class="cart-step-btn cart-step-minus" data-index="' + index + '" aria-label="Decrease quantity">&minus;</button>' +
+                  '<button type="button" class="cart-step-btn cart-step-minus" data-index="' + index + '" aria-label="Decrease quantity"' + (item.qty <= moq ? ' disabled aria-disabled="true"' : '') + '>&minus;</button>' +
                   '<input type="text" class="cart-step-input" data-index="' + index + '" value="' + item.qty + '">' +
                   '<button type="button" class="cart-step-btn cart-step-plus" data-index="' + index + '" aria-label="Increase quantity">&plus;</button>' +
                 '</div>' +
@@ -468,14 +483,13 @@ document.addEventListener('DOMContentLoaded', function () {
             var idx = parseInt(btn.getAttribute('data-index'), 10);
             var currentCart = getCart();
             if (!currentCart[idx]) return;
-            var newQty = currentCart[idx].qty - 10;
-            if (newQty <= 0) {
-              currentCart.splice(idx, 1);
-            } else {
+            var itemMoq = parseInt(currentCart[idx].moq, 10) || 10;
+            if (currentCart[idx].qty > itemMoq) {
+              var newQty = Math.max(itemMoq, currentCart[idx].qty - 10);
               currentCart[idx].qty = newQty;
               currentCart[idx].total = (currentCart[idx].unitPrice || 0) * newQty;
+              saveCart(currentCart);
             }
-            saveCart(currentCart);
           });
         });
 
@@ -498,8 +512,9 @@ document.addEventListener('DOMContentLoaded', function () {
             var idx = parseInt(this.getAttribute('data-index'), 10);
             var currentCart = getCart();
             if (!currentCart[idx]) return;
+            var itemMoq = parseInt(currentCart[idx].moq, 10) || 10;
             var val = parseInt(this.value, 10);
-            if (isNaN(val) || val <= 0) val = 10;
+            if (isNaN(val) || val < itemMoq) val = itemMoq;
             var rem = val % 10;
             if (rem !== 0) val = Math.ceil(val / 10) * 10;
             currentCart[idx].qty = val;
