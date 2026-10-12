@@ -563,6 +563,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     stepQtyInput.addEventListener('change', sanitizeStepQty);
     stepQtyInput.addEventListener('blur', sanitizeStepQty);
+    stepQtyInput.addEventListener('input', function() { if (quotationItems.length === 0) syncEnquiryForm(); });
   }
 
   // ==========================================================================
@@ -889,7 +890,28 @@ document.addEventListener('DOMContentLoaded', function () {
     // 1. Update Enquiry Summary Chip Box
     if (enquiryCartSummaryBox && enquirySummaryItems) {
       if (itemsCount === 0 && totalPieces === 0) {
-        enquiryCartSummaryBox.style.display = 'none';
+        // If table has no items, check if Step 1 has a selected or active size
+        var activeStepDia = (diaSearchInput && diaSearchInput.value.trim()) ? diaSearchInput.value.trim() : (currentUnit === 'mm' ? '3.00' : '1/8"');
+        var cleanStepDia = activeStepDia.replace(/mm/i, '').replace(/inch/i, '').trim();
+        var stepMoq = getMoqForDiameter(cleanStepDia);
+        var stepQty = parseInt(stepQtyInput ? stepQtyInput.value : stepMoq, 10) || stepMoq;
+        if (stepQty < stepMoq) stepQty = stepMoq;
+
+        enquiryCartSummaryBox.style.display = 'block';
+        if (enquirySummaryCount) {
+          enquirySummaryCount.textContent = '1 Size | ' + stepQty + ' pcs';
+        }
+        enquirySummaryItems.innerHTML =
+          '<div class="enquiry-summary-chip">' +
+            '<div class="chip-main">' +
+              '<strong class="chip-dia">' + escapeHtml(cleanStepDia) + (currentUnit === 'mm' ? ' mm' : '') + '</strong>' +
+              '<span class="chip-variant">HSS Jobber Series</span>' +
+            '</div>' +
+            '<div class="chip-qty-wrap">' +
+              '<span class="chip-qty">' + stepQty + ' pcs</span>' +
+              '<span class="chip-moq-tag">MOQ: ' + stepMoq + ' pcs</span>' +
+            '</div>' +
+          '</div>';
       } else {
         enquiryCartSummaryBox.style.display = 'block';
         if (enquirySummaryCount) {
@@ -914,7 +936,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
 
-    // 2. Update Form Input Values
+    // 2. Update Form Input Values - Always explicitly mention the item size and quantity
     if (enquiryDiaInput) {
       if (itemsCount > 0) {
         var sizeStrings = quotationItems.map(function (it) {
@@ -923,13 +945,25 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         enquiryDiaInput.value = 'HSS Jobber Series (IS:5101) — ' + sizeStrings.join(', ');
       } else {
-        enquiryDiaInput.value = 'HSS Parallel Shank Twist Drills (Jobber Series) — Conforming to IS : 5101';
+        var fallbackDia = (diaSearchInput && diaSearchInput.value.trim()) ? diaSearchInput.value.trim() : (currentUnit === 'mm' ? '3.00' : '1/8"');
+        var cleanFallback = fallbackDia.replace(/mm/i, '').replace(/inch/i, '').trim();
+        var fallbackMoq = getMoqForDiameter(cleanFallback);
+        var fallbackQty = parseInt(stepQtyInput ? stepQtyInput.value : fallbackMoq, 10) || fallbackMoq;
+        if (fallbackQty < fallbackMoq) fallbackQty = fallbackMoq;
+        enquiryDiaInput.value = 'HSS Jobber Series (IS:5101) — ' + cleanFallback + (currentUnit === 'mm' ? ' mm' : '') + ' (' + fallbackQty + ' pcs, MOQ: ' + fallbackMoq + ')';
       }
     }
 
     // Strictly match cart total pieces
     if (enquiryQuantityInput) {
-      enquiryQuantityInput.value = totalPieces > 0 ? totalPieces : '';
+      if (itemsCount > 0) {
+        enquiryQuantityInput.value = totalPieces;
+      } else {
+        var activeDia = (diaSearchInput && diaSearchInput.value.trim()) ? diaSearchInput.value.trim() : (currentUnit === 'mm' ? '3.00' : '1/8"');
+        var moqVal = getMoqForDiameter(activeDia);
+        var qtyVal = parseInt(stepQtyInput ? stepQtyInput.value : moqVal, 10) || moqVal;
+        enquiryQuantityInput.value = Math.max(qtyVal, moqVal);
+      }
     }
 
     if (enquiryMoqNotice) {
@@ -939,7 +973,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }).join('; ');
         enquiryMoqNotice.textContent = 'Combined quantity in cart: ' + totalPieces + ' pcs. Standard MOQ: ' + moqDetails + '. Multiples of 10 pieces required.';
       } else {
-        enquiryMoqNotice.textContent = 'Standard MOQ applies per diameter as noted (Multiples of 10 pieces required).';
+        var activeDiaForMoq = (diaSearchInput && diaSearchInput.value.trim()) ? diaSearchInput.value.trim() : (currentUnit === 'mm' ? '3.00' : '1/8"');
+        var activeMoq = getMoqForDiameter(activeDiaForMoq);
+        enquiryMoqNotice.textContent = 'Selected size in Step 1: ' + activeDiaForMoq + (currentUnit === 'mm' ? ' mm' : '') + ' (Standard MOQ: ' + activeMoq + ' pcs). Multiples of 10 pieces required.';
       }
     }
 
@@ -957,7 +993,17 @@ document.addEventListener('DOMContentLoaded', function () {
         enquiryMessageInput.value.indexOf('Selected Drill Sizes for Official Quotation:') !== -1 ||
         enquiryMessageInput.value.indexOf('PRODUCT DETAILS & TECHNICAL SPECIFICATIONS:') !== -1;
 
-      if (isDefaultOrAuto && itemsCount > 0) {
+      if (isDefaultOrAuto) {
+        var activeSizesList = itemsCount > 0 ? quotationItems : [{
+          size: (diaSearchInput && diaSearchInput.value.trim()) ? diaSearchInput.value.trim().replace(/mm|inch/gi, '').trim() : (currentUnit === 'mm' ? '3.00' : '1/8"'),
+          unit: currentUnit,
+          qty: parseInt(stepQtyInput ? stepQtyInput.value : 200, 10) || 200,
+          moq: getMoqForDiameter((diaSearchInput && diaSearchInput.value.trim()) ? diaSearchInput.value.trim() : '3.00'),
+          availability: 'In Stock'
+        }];
+        var effectivePieces = itemsCount > 0 ? totalPieces : activeSizesList[0].qty;
+        var effectiveCount = activeSizesList.length;
+
         var msgLines = [
           'PRODUCT DETAILS & TECHNICAL SPECIFICATIONS:',
           '• Product Line: Birla Precision Technologies / Dagger Brand HSS Parallel Shank Twist Drills (Jobber Series)',
@@ -972,7 +1018,7 @@ document.addEventListener('DOMContentLoaded', function () {
           'SELECTED TOOLING SIZES & REQUIRED QUANTITIES (WITH STANDARD MOQ):'
         ];
 
-        quotationItems.forEach(function (it, i) {
+        activeSizesList.forEach(function (it, i) {
           var itemMoq = it.moq || getMoqForDiameter(it.size);
           msgLines.push(
             (i + 1) + '. Diameter: ' + it.size + (it.unit === 'mm' ? ' mm' : '') +
@@ -984,7 +1030,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         msgLines.push('');
         msgLines.push('COMMERCIAL & DISPATCH INSTRUCTIONS:');
-        msgLines.push('• Total Required Quantity: ' + totalPieces + ' pieces across ' + itemsCount + (itemsCount === 1 ? ' size' : ' sizes') + '.');
+        msgLines.push('• Total Required Quantity: ' + effectivePieces + ' pieces across ' + effectiveCount + (effectiveCount === 1 ? ' size' : ' sizes') + '.');
         msgLines.push('• Supply Terms: Official B2B Quotation requested with applicable volume discount and GST breakdown.');
         msgLines.push('• Delivery Basis: F.O.R. Destination direct from plant dispatch in standard packaging (Multiples of 10).');
         msgLines.push('');
@@ -992,8 +1038,6 @@ document.addEventListener('DOMContentLoaded', function () {
         msgLines.push('[Please specify your workpiece material (e.g. Mild Steel, SS304, Cast Iron), hole depth, machine model, or coating requirements here]');
 
         enquiryMessageInput.value = msgLines.join('\n');
-      } else if (isDefaultOrAuto) {
-        enquiryMessageInput.value = '';
       }
     }
   }
@@ -1001,6 +1045,39 @@ document.addEventListener('DOMContentLoaded', function () {
   if (heroRequestQuotationBtn) {
     heroRequestQuotationBtn.addEventListener('click', function (e) {
       e.preventDefault();
+
+      // If user typed/selected a size in Step 1, or if table is empty, auto-commit to quotation list
+      var currentStepSize = diaSearchInput ? diaSearchInput.value.trim() : '';
+      if (!currentStepSize && quotationItems.length === 0) {
+        currentStepSize = currentUnit === 'mm' ? '3.00' : '1/8"';
+        if (diaSearchInput) diaSearchInput.value = currentStepSize;
+      }
+
+      if (currentStepSize) {
+        var cleanSize = currentStepSize.replace(/mm/i, '').replace(/inch/i, '').trim();
+        var itemMoq = getMoqForDiameter(cleanSize);
+        var qty = parseInt(stepQtyInput ? stepQtyInput.value : itemMoq, 10) || itemMoq;
+        if (qty < itemMoq) qty = itemMoq;
+        if (qty % 10 !== 0) qty = Math.ceil(qty / 10) * 10;
+
+        var existing = quotationItems.find(function (it) {
+          return it.size.toLowerCase() === cleanSize.toLowerCase();
+        });
+        if (existing) {
+          existing.qty = qty;
+        } else {
+          quotationItems.push({
+            id: 'user-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+            size: cleanSize,
+            unit: currentUnit,
+            qty: qty,
+            moq: itemMoq,
+            availability: 'In Stock'
+          });
+        }
+        renderQuotationTable();
+      }
+
       // Read any active inputs from the table DOM into quotationItems first
       if (quotationTableBody) {
         var domInputs = quotationTableBody.querySelectorAll('.input-table-qty');
@@ -1015,6 +1092,7 @@ document.addEventListener('DOMContentLoaded', function () {
           }
         });
       }
+
       saveQuotationItems();
       syncEnquiryForm();
 
