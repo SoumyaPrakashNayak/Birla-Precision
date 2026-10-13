@@ -30,6 +30,7 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
           <h4 class="footer-col-title">Navigation</h4>
           <ul class="footer-links-list">
             <li><a href="<?php echo $base_url; ?>index.php" class="footer-link">Home</a></li>
+            <li><a href="<?php echo $base_url; ?>products.php" class="footer-link">All Products Catalogue</a></li>
             <li><a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php" class="footer-link">Parallel Shank Jobber Drills</a></li>
             <li><a href="<?php echo $base_url; ?>index.php#about" class="footer-link">About Company & Heritage</a></li>
             <li><a href="<?php echo $base_url; ?>index.php#applications" class="footer-link">Industrial Applications</a></li>

@@ -92,6 +92,20 @@ document.addEventListener('DOMContentLoaded', function () {
           megaTrigger.focus();
         }
       });
+
+      // Interactive Mega Menu Category Switcher (Strictly Listed Categories)
+      var megaCatItems = productsNavItem.querySelectorAll('.mega-col-categories .mega-item[data-target]');
+      var megaGroups = productsNavItem.querySelectorAll('.mega-col-subseries .mega-products-group');
+      megaCatItems.forEach(function (catItem) {
+        catItem.addEventListener('mouseenter', function () {
+          var targetId = 'group-' + this.getAttribute('data-target');
+          megaCatItems.forEach(function (ci) { ci.classList.remove('is-active-cat'); });
+          this.classList.add('is-active-cat');
+          megaGroups.forEach(function (grp) {
+            grp.style.display = (grp.id === targetId) ? 'block' : 'none';
+          });
+        });
+      });
     }
   }
 

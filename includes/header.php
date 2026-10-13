@@ -36,6 +36,8 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
     <link rel="stylesheet" href="<?php echo $base_url; ?>assets/css/home.css?v=<?php echo file_exists(__DIR__ . '/../assets/css/home.css') ? filemtime(__DIR__ . '/../assets/css/home.css') : '1.0'; ?>">
   <?php elseif ($current_page === 'product' || $current_page === 'quotation'): ?>
     <link rel="stylesheet" href="<?php echo $base_url; ?>assets/css/product.css?v=<?php echo file_exists(__DIR__ . '/../assets/css/product.css') ? filemtime(__DIR__ . '/../assets/css/product.css') : '1.0'; ?>">
+  <?php elseif ($current_page === 'products'): ?>
+    <link rel="stylesheet" href="<?php echo $base_url; ?>assets/css/products.css?v=<?php echo file_exists(__DIR__ . '/../assets/css/products.css') ? filemtime(__DIR__ . '/../assets/css/products.css') : '1.0'; ?>">
   <?php endif; ?>
 </head>
 <body>
@@ -199,101 +201,163 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
           </li>
 
           <!-- Products Mega Menu Link -->
-          <li class="nav-bar-item has-mega <?php echo ($current_page === 'product') ? 'is-active' : ''; ?>" id="productsNavItem">
-            <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php" class="nav-bar-link" id="productsMenuTrigger" aria-haspopup="true" aria-expanded="false">
+          <li class="nav-bar-item has-mega <?php echo ($current_page === 'products' || $current_page === 'product') ? 'is-active' : ''; ?>" id="productsNavItem">
+            <a href="<?php echo $base_url; ?>products.php" class="nav-bar-link" id="productsMenuTrigger" aria-haspopup="true" aria-expanded="false">
               <span>Products</span>
               <svg class="nav-arrow-icon" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
             </a>
 
-            <!-- 3-Column Mega Menu Panel -->
+            <!-- 3-Column Mega Menu Panel: STRICTLY SHOWING LISTED CATEGORIES -->
             <div class="mega-menu-card" id="productsMegaMenuCard" aria-label="Products Catalog Menu">
               <div class="mega-menu-inner">
                 
-                <!-- Column 1: Drill Categories -->
+                <!-- Column 1: Listed Categories -->
                 <div class="mega-column mega-col-categories">
+                  <div class="mega-subseries-heading" style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:0.8px;padding:4px 12px 8px;">Listed Categories</div>
                   <ul class="mega-list">
-                    <li class="mega-item is-active-cat">
-                      <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php" class="mega-item-link">
-                        <span>HSS Parallel Shank Twist Drills</span>
+                    <li class="mega-item is-active-cat" data-target="cat-drills">
+                      <a href="<?php echo $base_url; ?>products.php?cat=twist_drills" class="mega-item-link">
+                        <span>HSS Twist Drills</span>
                         <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
                       </a>
                     </li>
-                    <li class="mega-item">
-                      <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php" class="mega-item-link">
-                        <span>Taper Shank Drills</span>
+                    <li class="mega-item" data-target="cat-highperf">
+                      <a href="<?php echo $base_url; ?>products.php?cat=high_performance" class="mega-item-link">
+                        <span>Cobalt &amp; TiN Coated</span>
                         <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
                       </a>
                     </li>
-                    <li class="mega-item">
-                      <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php" class="mega-item-link">
-                        <span>Special Purpose Drills</span>
+                    <li class="mega-item" data-target="cat-cutting">
+                      <a href="<?php echo $base_url; ?>products.php?cat=cutting_tools" class="mega-item-link">
+                        <span>Milling &amp; Tool Bits</span>
                         <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
                       </a>
                     </li>
-                    <li class="mega-item">
-                      <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php" class="mega-item-link">
-                        <span>Step Drills</span>
+                    <li class="mega-item" data-target="cat-power">
+                      <a href="<?php echo $base_url; ?>products.php?cat=power_tools" class="mega-item-link">
+                        <span>Power &amp; Workshop</span>
                         <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
                       </a>
                     </li>
-                    <li class="mega-item">
-                      <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php" class="mega-item-link">
-                        <span>Carbide Drills</span>
-                        <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                      </a>
-                    </li>
-                    <li class="mega-item">
-                      <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php" class="mega-item-link">
-                        <span>Industrial Tooling</span>
-                        <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                    <li class="mega-item" style="margin-top:8px;padding-top:8px;border-top:1px solid #F1F5F9;">
+                      <a href="<?php echo $base_url; ?>products.php" class="mega-item-link" style="color:var(--color-primary);font-weight:700;">
+                        <span>All Products Space &rarr;</span>
                       </a>
                     </li>
                   </ul>
                 </div>
 
-                <!-- Column 2: Specific Series Under HSS Parallel Shank -->
+                <!-- Column 2: Specific Listed Products for the Category -->
                 <div class="mega-column mega-col-subseries">
-                  <div class="mega-subseries-heading">HSS Parallel Shank Twist Drills</div>
-                  <ul class="mega-list">
-                    <li class="mega-item is-active-sub">
-                      <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php" class="mega-item-link">
-                        <span>Jobber Series</span>
-                        <span class="active-arrow-red">&rarr;</span>
-                      </a>
-                    </li>
-                    <li class="mega-item">
-                      <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php" class="mega-item-link">
-                        <span>Stub Series</span>
-                        <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                      </a>
-                    </li>
-                    <li class="mega-item">
-                      <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php" class="mega-item-link">
-                        <span>Long Series</span>
-                        <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                      </a>
-                    </li>
-                    <li class="mega-item">
-                      <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php" class="mega-item-link">
-                        <span>Extra Long Series</span>
-                        <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                      </a>
-                    </li>
-                    <li class="mega-item">
-                      <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php" class="mega-item-link">
-                        <span>Centre Drills</span>
-                        <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                      </a>
-                    </li>
-                  </ul>
+                  
+                  <!-- Group 1: HSS Twist Drills -->
+                  <div class="mega-products-group" id="group-cat-drills">
+                    <div class="mega-subseries-heading">HSS Twist Drills</div>
+                    <ul class="mega-list">
+                      <li class="mega-item is-active-sub">
+                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php" class="mega-item-link">
+                          <span>Jobber Series Drills</span>
+                          <span class="active-arrow-red">&rarr;</span>
+                        </a>
+                      </li>
+                      <li class="mega-item">
+                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php?series=taper" class="mega-item-link">
+                          <span>Taper Shank Morse Taper</span>
+                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                        </a>
+                      </li>
+                      <li class="mega-item">
+                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php?variant=forgeline" class="mega-item-link">
+                          <span>FORGELINE Cast Iron Drills</span>
+                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <!-- Group 2: Cobalt & TiN Coated -->
+                  <div class="mega-products-group" id="group-cat-highperf" style="display:none;">
+                    <div class="mega-subseries-heading">Cobalt &amp; TiN Coated</div>
+                    <ul class="mega-list">
+                      <li class="mega-item">
+                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php?variant=ninja" class="mega-item-link">
+                          <span>NINJA M35 Cobalt Drills</span>
+                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                        </a>
+                      </li>
+                      <li class="mega-item">
+                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php?variant=panther" class="mega-item-link">
+                          <span>PANTHER CNC Split-Point</span>
+                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                        </a>
+                      </li>
+                      <li class="mega-item">
+                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php?variant=itm_std_tin" class="mega-item-link">
+                          <span>ITM STD. TiN Gold Coated</span>
+                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <!-- Group 3: Milling & Tool Bits -->
+                  <div class="mega-products-group" id="group-cat-cutting" style="display:none;">
+                    <div class="mega-subseries-heading">Milling &amp; Tool Bits</div>
+                    <ul class="mega-list">
+                      <li class="mega-item">
+                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php?series=annular" class="mega-item-link">
+                          <span>Annular Core Broaching Cutters</span>
+                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                        </a>
+                      </li>
+                      <li class="mega-item">
+                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php?series=milling" class="mega-item-link">
+                          <span>Industrial Milling Cutters</span>
+                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                        </a>
+                      </li>
+                      <li class="mega-item">
+                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php?series=toolbits" class="mega-item-link">
+                          <span>HSS Ground Tool Bits</span>
+                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <!-- Group 4: Power & Workshop Tools -->
+                  <div class="mega-products-group" id="group-cat-power" style="display:none;">
+                    <div class="mega-subseries-heading">Power &amp; Workshop Tools</div>
+                    <ul class="mega-list">
+                      <li class="mega-item">
+                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php?series=hathyar" class="mega-item-link">
+                          <span>HATHYAR Concrete Masonry Bits</span>
+                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                        </a>
+                      </li>
+                      <li class="mega-item">
+                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php?series=hammer" class="mega-item-link">
+                          <span>Hammer &amp; Impact Drills</span>
+                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                        </a>
+                      </li>
+                      <li class="mega-item">
+                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php?series=cutting_machines" class="mega-item-link">
+                          <span>High-Speed Metal Cut-off Machines</span>
+                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+
                 </div>
 
                 <!-- Column 3: Featured Visual Card -->
                 <div class="mega-column mega-col-featured">
-                  <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php" class="mega-featured-card-link" title="Explore Jobber Series Drill Programme">
+                  <a href="<?php echo $base_url; ?>products.php" class="mega-featured-card-link" title="Explore Products Catalogue">
                     <img 
                       src="<?php echo $base_url; ?>assets/images/products/mega_menu_featured_card.png" 
-                      alt="Precision Holes Stronger Tomorrow - Birla Precision Jobber Series" 
+                      alt="Precision Holes Stronger Tomorrow - Birla Precision Tooling Catalogue" 
                       class="mega-featured-card-img"
                     >
                   </a>
@@ -328,7 +392,8 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
       </div>
       <ul class="mobile-nav-list">
         <li><a href="<?php echo $base_url; ?>index.php">HOME</a></li>
-        <li><a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php" style="color:var(--color-primary);font-weight:700;">PRODUCTS: HSS Parallel Shank (Jobber Series)</a></li>
+        <li><a href="<?php echo $base_url; ?>products.php" style="color:var(--color-primary);font-weight:700;">ALL PRODUCTS CATALOGUE</a></li>
+        <li><a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php">HSS Parallel Shank (Jobber Series)</a></li>
         <li><a href="<?php echo $base_url; ?>index.php#collection">COLLECTION LIST</a></li>
         <li><a href="<?php echo $base_url; ?>index.php#about">ABOUT BIRLA PRECISION (SINCE 1937)</a></li>
         <li><a href="<?php echo $base_url; ?>index.php#catalogue">APRIL 2026 PRICE LIST</a></li>

@@ -180,8 +180,11 @@ include __DIR__ . '/includes/header.php';
 <section class="collection-list-section" id="collection" aria-label="Collection List">
   <div class="container">
     
-    <div class="collection-header" data-aos="fade-up">
-      <h2 class="collection-title">COLLECTION LIST</h2>
+    <div class="collection-header" data-aos="fade-up" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <h2 class="collection-title" style="margin:0;">COLLECTION LIST</h2>
+      <a href="products.php" class="btn btn-secondary" style="font-size:0.85rem;padding:8px 18px;border-radius:6px;text-decoration:none;font-weight:600;">
+        Explore All Products &rarr;
+      </a>
     </div>
 
     <!-- 10-Item Grid (5 columns on desktop matching screenshots) -->
