@@ -27,39 +27,11 @@ if (window.__bptl_product_js_initialized) {
     var allVariantsMap = {};
 
     // ==========================================================================
-    // MOQ LOOKUP HELPER
+    // MOQ & PACKAGING HELPER
     // ==========================================================================
 
     function getMoqForDiameter(diaStr) {
-      if (!diaStr) return 100;
-      var cleanStr = String(diaStr).replace(/mm|inch|"/gi, '').trim();
-      var parsedFloat = parseFloat(cleanStr);
-
-      // Search in loaded API catalogue sizes
-      if (allSizesData && allSizesData.length > 0) {
-        for (var i = 0; i < allSizesData.length; i++) {
-          var row = allSizesData[i];
-          if (row && row.mm && Math.abs(parseFloat(row.mm) - parsedFloat) < 0.001) {
-            if (row.moq) return parseInt(row.moq, 10);
-          }
-          if (row && row.inch) {
-            var rowInchClean = String(row.inch).replace(/"/g, '').trim();
-            if (rowInchClean === cleanStr) {
-              if (row.moq) return parseInt(row.moq, 10);
-            }
-          }
-        }
-      }
-
-      // Standard April 2026 Price List packaging rules by diameter range
-      if (!isNaN(parsedFloat)) {
-        if (parsedFloat <= 5.0) return 200;
-        if (parsedFloat <= 10.0) return 100;
-        if (parsedFloat <= 13.0) return 50;
-        if (parsedFloat <= 16.5) return 20;
-        return 10;
-      }
-      return 100;
+      return 1;
     }
 
     // Quotation items state (starts empty on first visit; user adds sizes using Step 1)
@@ -79,21 +51,14 @@ if (window.__bptl_product_js_initialized) {
       quotationItems = [];
     }
 
-    // Strictly enforce that NO item in quotationItems has quantity less than its MOQ or non-multiple of 10
+    // Enforce positive quantity on quotation items
     function enforceMoqOnQuotationItems() {
       var changed = false;
       quotationItems.forEach(function (it) {
-        var itemMoq = getMoqForDiameter(it.size);
-        if (it.moq !== itemMoq) {
-          it.moq = itemMoq;
-          changed = true;
-        }
+        it.moq = 1;
         var curQty = parseInt(it.qty, 10);
-        if (isNaN(curQty) || curQty < itemMoq) {
-          it.qty = itemMoq;
-          changed = true;
-        } else if (curQty % 10 !== 0) {
-          it.qty = Math.ceil(curQty / 10) * 10;
+        if (isNaN(curQty) || curQty < 1) {
+          it.qty = 1;
           changed = true;
         }
       });
@@ -137,15 +102,18 @@ if (window.__bptl_product_js_initialized) {
     var quotationTableBody = document.getElementById('quotationTableBody');
     var quotationEmptyState = document.getElementById('quotationEmptyState');
     var clearAllSizesBtn = document.getElementById('clearAllSizesBtn');
-    var heroRequestQuotationBtn = document.getElementById('heroRequestQuotationBtn');
+    var heroAddToCartBtn = document.getElementById('heroAddToCartBtn') || document.getElementById('heroRequestQuotationBtn');
+    var heroRequestQuotationBtn = heroAddToCartBtn;
 
     // Enquiry Section Elements
+    var enquirySection = document.getElementById('enquiry');
     var enquiryForm = document.getElementById('productEnquiryForm');
     var enquiryDiaInput = document.getElementById('enquiryDiaInput');
     var enquiryVariantInput = document.getElementById('enquiryVariantInput');
     var enquiryQuantityInput = document.getElementById('enquiryQuantityInput');
     var enquiryMoqNotice = document.getElementById('enquiryMoqNotice');
     var enquiryPriceBasisInput = document.getElementById('enquiryPriceBasisInput');
+    var enquiryAddressInput = document.getElementById('enquiryAddressInput');
     var enquiryMessageInput = document.getElementById('enquiryMessageInput');
     var enquiryCartSummaryBox = document.getElementById('enquiryCartSummaryBox');
     var enquirySummaryCount = document.getElementById('enquirySummaryCount');
@@ -172,22 +140,22 @@ if (window.__bptl_product_js_initialized) {
     var currentFullImgUrl = galleryMainImage ? galleryMainImage.src : '';
     var currentCaption = 'HSS Parallel Shank Jobber Series';
 
-    // Update MOQ badge in Step 1 based on current selected/typed diameter
+    // Hide MOQ badge in Step 1 and maintain valid stepper constraints
     function updateStepMoqBadge(sizeStr) {
-      if (!stepMoqBadge) return;
-      var moq = getMoqForDiameter(sizeStr);
-      stepMoqBadge.textContent = 'MOQ: ' + moq + ' pcs';
+      if (stepMoqBadge) {
+        stepMoqBadge.style.display = 'none';
+      }
       if (stepQtyInput) {
         var currentQty = parseInt(stepQtyInput.value, 10);
-        if (isNaN(currentQty) || currentQty < moq) {
-          stepQtyInput.value = moq;
+        if (isNaN(currentQty) || currentQty < 1) {
+          stepQtyInput.value = 10;
         }
-        stepQtyInput.min = moq;
+        stepQtyInput.min = 1;
       }
       if (stepQtyMinus && stepQtyInput) {
         var cur = parseInt(stepQtyInput.value, 10);
-        stepQtyMinus.disabled = (cur <= moq);
-        stepQtyMinus.setAttribute('aria-disabled', cur <= moq ? 'true' : 'false');
+        stepQtyMinus.disabled = (cur <= 1);
+        stepQtyMinus.setAttribute('aria-disabled', cur <= 1 ? 'true' : 'false');
       }
     }
 
@@ -521,16 +489,15 @@ if (window.__bptl_product_js_initialized) {
 
     if (stepQtyMinus && stepQtyInput) {
       stepQtyMinus.addEventListener('click', function () {
-        var activeSize = diaSearchInput ? diaSearchInput.value : '';
-        var activeMoq = getMoqForDiameter(activeSize);
-        var current = parseInt(stepQtyInput.value, 10) || activeMoq;
-        if (current > activeMoq) {
-          var next = Math.max(activeMoq, current - 10);
+        var current = parseInt(stepQtyInput.value, 10) || 1;
+        if (current > 1) {
+          var step = current > 10 ? 10 : 1;
+          var next = Math.max(1, current - step);
           stepQtyInput.value = next;
-          stepQtyMinus.disabled = (next <= activeMoq);
-          stepQtyMinus.setAttribute('aria-disabled', next <= activeMoq ? 'true' : 'false');
+          stepQtyMinus.disabled = (next <= 1);
+          stepQtyMinus.setAttribute('aria-disabled', next <= 1 ? 'true' : 'false');
         } else {
-          stepQtyInput.value = activeMoq;
+          stepQtyInput.value = 1;
           stepQtyMinus.disabled = true;
           stepQtyMinus.setAttribute('aria-disabled', 'true');
         }
@@ -539,14 +506,8 @@ if (window.__bptl_product_js_initialized) {
 
     if (stepQtyPlus && stepQtyInput) {
       stepQtyPlus.addEventListener('click', function () {
-        var activeSize = diaSearchInput ? diaSearchInput.value : '';
-        var activeMoq = getMoqForDiameter(activeSize);
-        var current = parseInt(stepQtyInput.value, 10) || activeMoq;
-        if (current < activeMoq) {
-          stepQtyInput.value = activeMoq;
-        } else {
-          stepQtyInput.value = current + 10;
-        }
+        var current = parseInt(stepQtyInput.value, 10) || 0;
+        stepQtyInput.value = current + (current < 10 ? 1 : 10);
         if (stepQtyMinus) {
           stepQtyMinus.disabled = false;
           stepQtyMinus.setAttribute('aria-disabled', 'false');
@@ -556,18 +517,14 @@ if (window.__bptl_product_js_initialized) {
 
     if (stepQtyInput) {
       function sanitizeStepQty() {
-        var activeSize = diaSearchInput ? diaSearchInput.value : '';
-        var activeMoq = getMoqForDiameter(activeSize);
         var current = parseInt(stepQtyInput.value, 10);
-        if (isNaN(current) || current < activeMoq) {
-          stepQtyInput.value = activeMoq;
-        } else if (current % 10 !== 0) {
-          stepQtyInput.value = Math.ceil(current / 10) * 10;
+        if (isNaN(current) || current < 1) {
+          stepQtyInput.value = 1;
         }
         if (stepQtyMinus) {
           var valNow = parseInt(stepQtyInput.value, 10);
-          stepQtyMinus.disabled = (valNow <= activeMoq);
-          stepQtyMinus.setAttribute('aria-disabled', valNow <= activeMoq ? 'true' : 'false');
+          stepQtyMinus.disabled = (valNow <= 1);
+          stepQtyMinus.setAttribute('aria-disabled', valNow <= 1 ? 'true' : 'false');
         }
       }
 
@@ -597,14 +554,8 @@ if (window.__bptl_product_js_initialized) {
         return;
       }
 
-      var itemMoq = getMoqForDiameter(cleanedSize);
-      var qty = parseInt(stepQtyInput ? stepQtyInput.value : itemMoq, 10) || itemMoq;
-      if (qty < itemMoq) {
-        qty = itemMoq;
-      }
-      if (qty % 10 !== 0) {
-        qty = Math.ceil(qty / 10) * 10;
-      }
+      var qty = parseInt(stepQtyInput ? stepQtyInput.value : 10, 10) || 10;
+      if (qty < 1) qty = 1;
 
       // Check if this size already exists in the quotation table
       var existingIndex = quotationItems.findIndex(function (it) {
@@ -613,30 +564,25 @@ if (window.__bptl_product_js_initialized) {
 
       if (existingIndex !== -1) {
         quotationItems[existingIndex].qty += qty;
-        quotationItems[existingIndex].moq = itemMoq;
-        if (quotationItems[existingIndex].qty < itemMoq) {
-          quotationItems[existingIndex].qty = itemMoq;
-        }
+        quotationItems[existingIndex].moq = 1;
       } else {
         quotationItems.push({
           id: 'user-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
           size: cleanedSize,
           unit: currentUnit,
           qty: qty,
-          moq: itemMoq,
+          moq: 1,
           availability: 'In Stock'
         });
       }
 
-      // Reset input fields to proper default MOQ
+      // Reset input fields
       diaSearchInput.value = '';
-      var nextDefaultSize = currentUnit === 'mm' ? '3.00' : '1/8"';
-      var nextDefaultMoq = getMoqForDiameter(nextDefaultSize);
       if (stepQtyInput) {
-        stepQtyInput.value = nextDefaultMoq;
-        stepQtyInput.min = nextDefaultMoq;
+        stepQtyInput.value = 10;
+        stepQtyInput.min = 1;
       }
-      updateStepMoqBadge(nextDefaultSize);
+      updateStepMoqBadge(currentUnit === 'mm' ? '3.00' : '1/8"');
 
       // Remove active state on popular pills
       if (popularSizesList) {
@@ -674,10 +620,8 @@ if (window.__bptl_product_js_initialized) {
         var rawSize = sizeEl.textContent.trim().replace(/mm|inch/gi, '').trim();
         if (!rawSize) return;
 
-        var itemMoq = getMoqForDiameter(rawSize);
-        var itemQty = qtyInp ? (parseInt(qtyInp.value, 10) || itemMoq) : itemMoq;
-        if (itemQty < itemMoq) itemQty = itemMoq;
-        if (itemQty % 10 !== 0) itemQty = Math.ceil(itemQty / 10) * 10;
+        var itemQty = qtyInp ? (parseInt(qtyInp.value, 10) || 1) : 1;
+        if (itemQty < 1) itemQty = 1;
         if (qtyInp) qtyInp.value = itemQty;
 
         var rowId = (qtyInp && qtyInp.getAttribute('data-id')) ? qtyInp.getAttribute('data-id') : ('row-' + index + '-' + rawSize);
@@ -691,7 +635,7 @@ if (window.__bptl_product_js_initialized) {
           size: rawSize,
           unit: existing ? existing.unit : (currentUnit || 'mm'),
           qty: itemQty,
-          moq: itemMoq,
+          moq: 1,
           availability: existing ? existing.availability : 'In Stock'
         });
       });
@@ -716,15 +660,11 @@ if (window.__bptl_product_js_initialized) {
       if (quotationTable) quotationTable.style.display = 'table';
 
       quotationItems.forEach(function (item, index) {
-        var itemMoq = item.moq || getMoqForDiameter(item.size);
-        item.moq = itemMoq;
-        if (!item.qty || item.qty < itemMoq) {
-          item.qty = itemMoq;
+        item.moq = 1;
+        if (!item.qty || item.qty < 1) {
+          item.qty = 1;
         }
-        if (item.qty % 10 !== 0) {
-          item.qty = Math.ceil(item.qty / 10) * 10;
-        }
-        var isAtMoq = item.qty <= itemMoq;
+        var isAtMin = item.qty <= 1;
 
         var tr = document.createElement('tr');
         tr.innerHTML =
@@ -733,11 +673,10 @@ if (window.__bptl_product_js_initialized) {
           '<td class="td-qty">' +
             '<div class="table-qty-container">' +
               '<div class="table-stepper-box">' +
-                '<button type="button" class="table-step-btn btn-table-minus" data-id="' + item.id + '" aria-label="Decrease quantity"' + (isAtMoq ? ' disabled aria-disabled="true"' : '') + '>&minus;</button>' +
-                '<input type="number" class="table-step-input input-table-qty" data-id="' + item.id + '" value="' + item.qty + '" min="' + itemMoq + '" step="10">' +
+                '<button type="button" class="table-step-btn btn-table-minus" data-id="' + item.id + '" aria-label="Decrease quantity"' + (isAtMin ? ' disabled aria-disabled="true"' : '') + '>&minus;</button>' +
+                '<input type="number" class="table-step-input input-table-qty" data-id="' + item.id + '" value="' + item.qty + '" min="1" step="1">' +
                 '<button type="button" class="table-step-btn btn-table-plus" data-id="' + item.id + '" aria-label="Increase quantity">&plus;</button>' +
               '</div>' +
-              '<span class="table-row-moq">MOQ: ' + itemMoq + ' pcs</span>' +
             '</div>' +
           '</td>' +
           '<td class="td-avail">' +
@@ -757,20 +696,19 @@ if (window.__bptl_product_js_initialized) {
         quotationTableBody.appendChild(tr);
       });
 
-      // Wire up row stepper minus (never allow decrease below MOQ)
+      // Wire up row stepper minus
       var minusBtns = quotationTableBody.querySelectorAll('.btn-table-minus');
       minusBtns.forEach(function (btn) {
         btn.addEventListener('click', function () {
           var id = this.getAttribute('data-id');
           var target = quotationItems.find(function (it) { return it.id === id; });
           if (target) {
-            var itemMoq = target.moq || getMoqForDiameter(target.size);
-            if (target.qty > itemMoq) {
-              target.qty = Math.max(itemMoq, target.qty - 10);
+            if (target.qty > 1) {
+              target.qty = Math.max(1, target.qty - (target.qty > 10 ? 10 : 1));
               var rowInput = quotationTableBody.querySelector('.input-table-qty[data-id="' + id + '"]');
               if (rowInput) rowInput.value = target.qty;
-              this.disabled = (target.qty <= itemMoq);
-              this.setAttribute('aria-disabled', target.qty <= itemMoq ? 'true' : 'false');
+              this.disabled = (target.qty <= 1);
+              this.setAttribute('aria-disabled', target.qty <= 1 ? 'true' : 'false');
               saveQuotationItems();
               syncEnquiryForm();
             }
@@ -785,12 +723,7 @@ if (window.__bptl_product_js_initialized) {
           var id = this.getAttribute('data-id');
           var target = quotationItems.find(function (it) { return it.id === id; });
           if (target) {
-            var itemMoq = target.moq || getMoqForDiameter(target.size);
-            if (target.qty < itemMoq) {
-              target.qty = itemMoq;
-            } else {
-              target.qty += 10;
-            }
+            target.qty += (target.qty < 10 ? 1 : 10);
             var rowInput = quotationTableBody.querySelector('.input-table-qty[data-id="' + id + '"]');
             if (rowInput) rowInput.value = target.qty;
             var rowMinusBtn = quotationTableBody.querySelector('.btn-table-minus[data-id="' + id + '"]');
@@ -809,18 +742,17 @@ if (window.__bptl_product_js_initialized) {
       qtyInputs.forEach(function (inp) {
         var id = inp.getAttribute('data-id');
         var target = quotationItems.find(function (it) { return it.id === id; });
-        var itemMoq = target ? (target.moq || getMoqForDiameter(target.size)) : 100;
 
         inp.addEventListener('input', function () {
           var val = parseInt(this.value, 10);
-          if (!isNaN(val) && val >= itemMoq) {
+          if (!isNaN(val) && val >= 1) {
             if (target) {
               target.qty = val;
             }
             var rowMinusBtn = quotationTableBody.querySelector('.btn-table-minus[data-id="' + id + '"]');
             if (rowMinusBtn) {
-              rowMinusBtn.disabled = (val <= itemMoq);
-              rowMinusBtn.setAttribute('aria-disabled', val <= itemMoq ? 'true' : 'false');
+              rowMinusBtn.disabled = (val <= 1);
+              rowMinusBtn.setAttribute('aria-disabled', val <= 1 ? 'true' : 'false');
             }
             syncEnquiryForm();
           }
@@ -828,10 +760,8 @@ if (window.__bptl_product_js_initialized) {
 
         function commitRowQty() {
           var val = parseInt(inp.value, 10);
-          if (isNaN(val) || val < itemMoq) {
-            val = itemMoq;
-          } else if (val % 10 !== 0) {
-            val = Math.ceil(val / 10) * 10;
+          if (isNaN(val) || val < 1) {
+            val = 1;
           }
           inp.value = val;
           if (target) {
@@ -839,8 +769,8 @@ if (window.__bptl_product_js_initialized) {
           }
           var rowMinusBtn = quotationTableBody.querySelector('.btn-table-minus[data-id="' + id + '"]');
           if (rowMinusBtn) {
-            rowMinusBtn.disabled = (val <= itemMoq);
-            rowMinusBtn.setAttribute('aria-disabled', val <= itemMoq ? 'true' : 'false');
+            rowMinusBtn.disabled = (val <= 1);
+            rowMinusBtn.setAttribute('aria-disabled', val <= 1 ? 'true' : 'false');
           }
           saveQuotationItems();
           syncEnquiryForm();
@@ -919,9 +849,27 @@ if (window.__bptl_product_js_initialized) {
         quotationItems = [];
         renderQuotationTable();
         saveQuotationItems();
-        syncEnquiryForm();
+        try {
+          localStorage.removeItem('birla_cart');
+          localStorage.removeItem('birla_quotation_items');
+        } catch (e) {}
+        if (window.BirlaCart && typeof window.BirlaCart.save === 'function') {
+          window.BirlaCart.save([]);
+        }
+        if (typeof syncEnquiryForm === 'function') {
+          syncEnquiryForm();
+        }
       });
     }
+
+    window.syncQuotationOnCartClear = function () {
+      quotationItems = [];
+      renderQuotationTable();
+      saveQuotationItems();
+      if (typeof syncEnquiryForm === 'function') {
+        syncEnquiryForm();
+      }
+    };
 
     // ==========================================================================
     // 11. NEXT STEP: REQUEST QUOTATION & ENQUIRY SYNC
@@ -938,42 +886,20 @@ if (window.__bptl_product_js_initialized) {
 
       // Ensure all items have moq assigned and qty is valid
       quotationItems.forEach(function (it) {
-        var itemMoq = getMoqForDiameter(it.size);
-        it.moq = itemMoq;
-        if (!it.qty || it.qty < itemMoq) {
-          it.qty = itemMoq;
-        }
-        if (it.qty % 10 !== 0) {
-          it.qty = Math.ceil(it.qty / 10) * 10;
+        it.moq = 1;
+        if (!it.qty || it.qty < 1) {
+          it.qty = 1;
         }
       });
 
-      // 1. Update Enquiry Summary Chip Box
+      // 1. Update Enquiry Summary Chip Box (Contains ONLY what user added to cart)
       if (enquiryCartSummaryBox && enquirySummaryItems) {
         if (itemsCount === 0 && totalPieces === 0) {
-          // If table has no items, check if Step 1 has a selected or active size
-          var activeStepDia = (diaSearchInput && diaSearchInput.value.trim()) ? diaSearchInput.value.trim() : (currentUnit === 'mm' ? '3.00' : '1/8"');
-          var cleanStepDia = activeStepDia.replace(/mm/i, '').replace(/inch/i, '').trim();
-          var stepMoq = getMoqForDiameter(cleanStepDia);
-          var stepQty = parseInt(stepQtyInput ? stepQtyInput.value : stepMoq, 10) || stepMoq;
-          if (stepQty < stepMoq) stepQty = stepMoq;
-          if (stepQty % 10 !== 0) stepQty = Math.ceil(stepQty / 10) * 10;
-
-          enquiryCartSummaryBox.style.display = 'block';
+          enquiryCartSummaryBox.style.display = 'none';
           if (enquirySummaryCount) {
-            enquirySummaryCount.textContent = '1 Size | ' + stepQty + ' pcs';
+            enquirySummaryCount.textContent = '0 Sizes | 0 pcs';
           }
-          enquirySummaryItems.innerHTML =
-            '<div class="enquiry-summary-chip">' +
-              '<div class="chip-main">' +
-                '<strong class="chip-dia">' + escapeHtml(cleanStepDia) + (currentUnit === 'mm' ? ' mm' : '') + '</strong>' +
-                '<span class="chip-variant">HSS Jobber Series</span>' +
-              '</div>' +
-              '<div class="chip-qty-wrap">' +
-                '<span class="chip-qty">' + stepQty + ' pcs</span>' +
-                '<span class="chip-moq-tag">MOQ: ' + stepMoq + ' pcs</span>' +
-              '</div>' +
-            '</div>';
+          enquirySummaryItems.innerHTML = '';
         } else {
           enquiryCartSummaryBox.style.display = 'block';
           if (enquirySummaryCount) {
@@ -981,7 +907,6 @@ if (window.__bptl_product_js_initialized) {
           }
           enquirySummaryItems.innerHTML = '';
           quotationItems.forEach(function (it) {
-            var itemMoq = it.moq || getMoqForDiameter(it.size);
             var chip = document.createElement('div');
             chip.className = 'enquiry-summary-chip';
             chip.innerHTML =
@@ -991,29 +916,24 @@ if (window.__bptl_product_js_initialized) {
               '</div>' +
               '<div class="chip-qty-wrap">' +
                 '<span class="chip-qty">' + it.qty + ' pcs</span>' +
-                '<span class="chip-moq-tag">MOQ: ' + itemMoq + ' pcs</span>' +
               '</div>';
             enquirySummaryItems.appendChild(chip);
           });
         }
       }
 
-      // 2. Update Form Input Values - Always mention ALL varieties and sizes added
+      // 2. Update Form Input Values - Selected diameters without MOQ text
       if (enquiryDiaInput) {
         if (itemsCount > 0) {
           var sizeStrings = quotationItems.map(function (it) {
-            var itemMoq = it.moq || getMoqForDiameter(it.size);
-            return it.size + (it.unit === 'mm' ? ' mm' : '') + ' (' + it.qty + ' pcs, MOQ: ' + itemMoq + ')';
+            return it.size + (it.unit === 'mm' ? ' mm' : '') + ' (' + it.qty + ' pcs)';
           });
           enquiryDiaInput.value = 'HSS Jobber Series (IS:5101) — ' + sizeStrings.join(', ');
         } else {
           var fallbackDia = (diaSearchInput && diaSearchInput.value.trim()) ? diaSearchInput.value.trim() : (currentUnit === 'mm' ? '3.00' : '1/8"');
           var cleanFallback = fallbackDia.replace(/mm/i, '').replace(/inch/i, '').trim();
-          var fallbackMoq = getMoqForDiameter(cleanFallback);
-          var fallbackQty = parseInt(stepQtyInput ? stepQtyInput.value : fallbackMoq, 10) || fallbackMoq;
-          if (fallbackQty < fallbackMoq) fallbackQty = fallbackMoq;
-          if (fallbackQty % 10 !== 0) fallbackQty = Math.ceil(fallbackQty / 10) * 10;
-          enquiryDiaInput.value = 'HSS Jobber Series (IS:5101) — ' + cleanFallback + (currentUnit === 'mm' ? ' mm' : '') + ' (' + fallbackQty + ' pcs, MOQ: ' + fallbackMoq + ')';
+          var fallbackQty = parseInt(stepQtyInput ? stepQtyInput.value : 10, 10) || 10;
+          enquiryDiaInput.value = 'HSS Jobber Series (IS:5101) — ' + cleanFallback + (currentUnit === 'mm' ? ' mm' : '') + ' (' + fallbackQty + ' pcs)';
         }
       }
 
@@ -1022,24 +942,17 @@ if (window.__bptl_product_js_initialized) {
         if (itemsCount > 0) {
           enquiryQuantityInput.value = totalPieces;
         } else {
-          var activeDia = (diaSearchInput && diaSearchInput.value.trim()) ? diaSearchInput.value.trim() : (currentUnit === 'mm' ? '3.00' : '1/8"');
-          var moqVal = getMoqForDiameter(activeDia);
-          var qtyVal = parseInt(stepQtyInput ? stepQtyInput.value : moqVal, 10) || moqVal;
-          enquiryQuantityInput.value = Math.max(qtyVal, moqVal);
+          var qtyVal = parseInt(stepQtyInput ? stepQtyInput.value : 10, 10) || 10;
+          enquiryQuantityInput.value = qtyVal;
         }
       }
 
-      // Update MOQ notice below quantity field
+      // Update notice below quantity field
       if (enquiryMoqNotice) {
         if (itemsCount > 0 && totalPieces > 0) {
-          var moqDetails = quotationItems.map(function (it) {
-            return it.size + (it.unit === 'mm' ? 'mm' : '') + ' (MOQ ' + (it.moq || getMoqForDiameter(it.size)) + ' pcs)';
-          }).join('; ');
-          enquiryMoqNotice.textContent = 'Combined quantity in cart: ' + totalPieces + ' pcs across ' + itemsCount + (itemsCount === 1 ? ' size' : ' sizes') + '. Standard MOQ: ' + moqDetails + '. Multiples of 10 pieces required.';
+          enquiryMoqNotice.textContent = 'Combined quantity in cart: ' + totalPieces + ' pcs across ' + itemsCount + (itemsCount === 1 ? ' size' : ' sizes') + '.';
         } else {
-          var activeDiaForMoq = (diaSearchInput && diaSearchInput.value.trim()) ? diaSearchInput.value.trim() : (currentUnit === 'mm' ? '3.00' : '1/8"');
-          var activeMoq = getMoqForDiameter(activeDiaForMoq);
-          enquiryMoqNotice.textContent = 'Selected size in Step 1: ' + activeDiaForMoq + (currentUnit === 'mm' ? ' mm' : '') + ' (Standard MOQ: ' + activeMoq + ' pcs). Multiples of 10 pieces required.';
+          enquiryMoqNotice.textContent = 'Combined quantity for selected sizes.';
         }
       }
 
@@ -1051,100 +964,45 @@ if (window.__bptl_product_js_initialized) {
         enquiryPriceBasisInput.value = 'Official April 2026 Price List — F.O.R. Destination (Direct ITM Plant Dispatch)';
       }
 
-      // 3. Pre-fill Message Field with complete product specifications & ALL item varieties
-      if (enquiryMessageInput) {
-        var activeSizesList = itemsCount > 0 ? quotationItems : [{
-          size: (diaSearchInput && diaSearchInput.value.trim()) ? diaSearchInput.value.trim().replace(/mm|inch/gi, '').trim() : (currentUnit === 'mm' ? '3.00' : '1/8"'),
-          unit: currentUnit,
-          qty: parseInt(stepQtyInput ? stepQtyInput.value : 200, 10) || 200,
-          moq: getMoqForDiameter((diaSearchInput && diaSearchInput.value.trim()) ? diaSearchInput.value.trim() : '3.00'),
-          availability: 'In Stock'
-        }];
-        var effectivePieces = itemsCount > 0 ? totalPieces : activeSizesList[0].qty;
-        var effectiveCount = activeSizesList.length;
-
-        // Check if user previously added custom application notes
-        var userNotes = '';
-        if (enquiryMessageInput.value) {
-          var splitIdx = enquiryMessageInput.value.indexOf('APPLICATION & MACHINING NOTES:');
-          if (splitIdx !== -1) {
-            var afterSplit = enquiryMessageInput.value.substring(splitIdx + 'APPLICATION & MACHINING NOTES:'.length).trim();
-            if (afterSplit && afterSplit.indexOf('[Please specify') === -1) {
-              userNotes = afterSplit;
-            }
-          }
-        }
-
-        var msgLines = [
-          'PRODUCT DETAILS & TECHNICAL SPECIFICATIONS:',
-          '• Product Line: Birla Precision Technologies / Dagger Brand HSS Parallel Shank Twist Drills (Jobber Series)',
-          '• Standard Specification: IS : 5101 (Conforming to ISO 235 / DIN 338 / BS 328)',
-          '• Material & Metallurgy: Premium High-Speed Steel (M2 Grade Standard)',
-          '• Flute Geometry: Precision CNC Ground Type \'N\' Right Hand Spiral Flutes',
-          '• Point Angle: 118° Standard Conical Relief Point',
-          '• HSN Code: 8207 (Tools, Interchangeable Tools for Hand/Machine Tools)',
-          '• Pricing Unit: Price Per 10 Pieces (Official April 2026 Catalogue Edition)',
-          '• Manufacturing Facilities: Aurangabad & Nashik Plants (ISO 9001 / IATF 16949 Certified)',
-          '',
-          'SELECTED TOOLING SIZES & REQUIRED QUANTITIES (WITH STANDARD MOQ):'
-        ];
-
-        activeSizesList.forEach(function (it, i) {
-          var itemMoq = it.moq || getMoqForDiameter(it.size);
-          msgLines.push(
-            (i + 1) + '. Diameter: ' + it.size + (it.unit === 'mm' ? ' mm' : '') +
-            ' — Required Quantity: ' + it.qty + ' pcs' +
-            ' (Standard MOQ: ' + itemMoq + ' pcs)' +
-            ' — Availability: ' + (it.availability || 'In Stock')
-          );
-        });
-
-        msgLines.push('');
-        msgLines.push('COMMERCIAL & DISPATCH INSTRUCTIONS:');
-        msgLines.push('• Total Required Quantity: ' + effectivePieces + ' pieces across ' + effectiveCount + (effectiveCount === 1 ? ' size' : ' sizes') + '.');
-        msgLines.push('• Supply Terms: Official B2B Quotation requested with applicable volume discount and GST breakdown.');
-        msgLines.push('• Delivery Basis: F.O.R. Destination direct from plant dispatch in standard packaging (Multiples of 10).');
-        msgLines.push('');
-        msgLines.push('APPLICATION & MACHINING NOTES:');
-        if (userNotes) {
-          msgLines.push(userNotes);
-        } else {
-          msgLines.push('[Please specify your workpiece material (e.g. Mild Steel, SS304, Cast Iron), hole depth, machine model, or coating requirements here]');
-        }
-
-        enquiryMessageInput.value = msgLines.join('\n');
-      }
+      // 3. Keep Any remark textarea clean with placeholder - do NOT pre-fill with specs text
+      // User requested to keep the text box empty with placeholder
     }
 
-    if (heroRequestQuotationBtn) {
-      heroRequestQuotationBtn.addEventListener('click', function (e) {
+    // Next Step Button: Add to Cart & Open Cart Drawer
+    if (heroAddToCartBtn) {
+      heroAddToCartBtn.addEventListener('click', function (e) {
         e.preventDefault();
 
         // 1. Sync any visible rows currently in the table DOM into quotationItems
         syncQuotationItemsFromTableDOM();
 
-        // 2. If table is completely empty, auto-commit Step 1 size or default size
+        // 2. If table is completely empty, check if user entered a size in Step 1
         if (quotationItems.length === 0) {
           var currentStepSize = diaSearchInput ? diaSearchInput.value.trim() : '';
           if (!currentStepSize) {
-            currentStepSize = currentUnit === 'mm' ? '3.00' : '1/8"';
-            if (diaSearchInput) diaSearchInput.value = currentStepSize;
+            // STRICTLY do not auto-add any default items!
+            if (diaSearchInput) {
+              diaSearchInput.focus();
+              diaSearchInput.style.borderColor = '#DC2626';
+              setTimeout(function () { diaSearchInput.style.borderColor = ''; }, 1200);
+            }
+            alert('Please select or enter a drill size in Step 1 first.');
+            return;
           }
 
           var cleanSize = currentStepSize.replace(/mm/i, '').replace(/inch/i, '').trim();
-          var itemMoq = getMoqForDiameter(cleanSize);
-          var qty = parseInt(stepQtyInput ? stepQtyInput.value : itemMoq, 10) || itemMoq;
-          if (qty < itemMoq) qty = itemMoq;
-          if (qty % 10 !== 0) qty = Math.ceil(qty / 10) * 10;
+          var qty = parseInt(stepQtyInput ? stepQtyInput.value : 10, 10) || 10;
+          if (qty < 1) qty = 1;
 
           quotationItems.push({
             id: 'user-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
             size: cleanSize,
             unit: currentUnit,
             qty: qty,
-            moq: itemMoq,
+            moq: 1,
             availability: 'In Stock'
           });
+          if (diaSearchInput) diaSearchInput.value = '';
           renderQuotationTable();
         } else {
           // Table already has items. If user typed an active size in Step 1 that isn't added yet, add or update it
@@ -1152,10 +1010,8 @@ if (window.__bptl_product_js_initialized) {
           if (pendingDia) {
             var cleanPending = pendingDia.replace(/mm/i, '').replace(/inch/i, '').trim();
             if (cleanPending) {
-              var pendingMoq = getMoqForDiameter(cleanPending);
-              var pendingQty = parseInt(stepQtyInput ? stepQtyInput.value : pendingMoq, 10) || pendingMoq;
-              if (pendingQty < pendingMoq) pendingQty = pendingMoq;
-              if (pendingQty % 10 !== 0) pendingQty = Math.ceil(pendingQty / 10) * 10;
+              var pendingQty = parseInt(stepQtyInput ? stepQtyInput.value : 10, 10) || 10;
+              if (pendingQty < 1) pendingQty = 1;
 
               var existingPending = quotationItems.find(function (it) {
                 return it.size.toLowerCase() === cleanPending.toLowerCase();
@@ -1168,7 +1024,7 @@ if (window.__bptl_product_js_initialized) {
                   size: cleanPending,
                   unit: currentUnit,
                   qty: pendingQty,
-                  moq: pendingMoq,
+                  moq: 1,
                   availability: 'In Stock'
                 });
               }
@@ -1178,22 +1034,65 @@ if (window.__bptl_product_js_initialized) {
           }
         }
 
-        // 3. Final synchronization and saving
+        // 3. Final synchronization and saving of quotationItems
         syncQuotationItemsFromTableDOM();
         saveQuotationItems();
         syncEnquiryForm();
 
-        // 4. Smooth scroll to enquiry form
-        var enquirySec = document.getElementById('enquiry');
-        if (enquirySec) {
-          enquirySec.scrollIntoView({ behavior: 'smooth' });
-          var nameInput = document.getElementById('enquiryNameInput');
-          if (nameInput) {
-            setTimeout(function () {
-              nameInput.focus();
-            }, 600);
-          }
+        // 4. Synchronize into global shopping cart (birla_cart)
+        var globalCart = [];
+        try {
+          globalCart = JSON.parse(localStorage.getItem('birla_cart') || '[]');
+        } catch (err) {
+          globalCart = [];
         }
+
+        quotationItems.forEach(function (qItem) {
+          var diaClean = qItem.size;
+          var diaLabel = diaClean + (qItem.unit === 'mm' ? ' mm' : '');
+          var existing = globalCart.find(function (c) {
+            return c.dia === diaClean;
+          });
+          if (existing) {
+            existing.qty = qItem.qty;
+          } else {
+            globalCart.push({
+              id: 'cart-' + diaClean + '-' + Date.now(),
+              title: 'HSS Parallel Shank Twist Drills (Jobber Series)',
+              variant: 'itm_std',
+              variantName: 'ITM STD.',
+              dia: diaClean,
+              diaText: diaLabel,
+              unit: qItem.unit || 'mm',
+              qty: qItem.qty,
+              img: 'assets/images/products/gallery_thumb_1.jpg',
+              unitPrice: 0,
+              total: 0
+            });
+          }
+        });
+
+        try {
+          localStorage.setItem('birla_cart', JSON.stringify(globalCart));
+        } catch (err) {}
+
+        // 5. Update cart UI and open Cart Drawer so user can see "Request Quotation" option in cart
+        if (window.BirlaCart && typeof window.BirlaCart.save === 'function') {
+          window.BirlaCart.save(globalCart);
+          if (typeof window.BirlaCart.open === 'function') {
+            window.BirlaCart.open();
+          }
+        } else {
+          var navCartBtn = document.getElementById('navCartBtn');
+          if (navCartBtn) navCartBtn.click();
+        }
+
+        // 6. Visual feedback on button
+        var originalHtml = heroAddToCartBtn.innerHTML;
+        heroAddToCartBtn.innerHTML = '<span>✓ Added to Cart!</span>';
+        setTimeout(function () {
+          heroAddToCartBtn.innerHTML = originalHtml;
+        }, 1500);
       });
     }
 
@@ -1202,22 +1101,26 @@ if (window.__bptl_product_js_initialized) {
       if (Array.isArray(cart) && cart.length > 0) {
         quotationItems = cart.map(function (cItem, idx) {
           var rawSize = String(cItem.dia || cItem.diaText || '3.00').replace(/mm|inch|"/gi, '').trim();
-          var itemMoq = parseInt(cItem.moq, 10) || getMoqForDiameter(rawSize);
-          var itemQty = parseInt(cItem.qty, 10) || itemMoq;
-          if (itemQty < itemMoq) itemQty = itemMoq;
-          if (itemQty % 10 !== 0) itemQty = Math.ceil(itemQty / 10) * 10;
+          var itemQty = parseInt(cItem.qty, 10) || 1;
+          if (itemQty < 1) itemQty = 1;
           return {
             id: 'cart-' + idx + '-' + Date.now(),
             size: rawSize || '3.00',
             unit: (cItem.diaText && cItem.diaText.indexOf('"') !== -1) ? 'inch' : 'mm',
             qty: itemQty,
-            moq: itemMoq,
+            moq: 1,
             availability: 'In Stock'
           };
         });
         renderQuotationTable();
         saveQuotationItems();
         syncEnquiryForm();
+      }
+
+      // Unhide quotation form after user presses Request Quotation in cart
+      var enquirySec = document.getElementById('enquiry');
+      if (enquirySec) {
+        enquirySec.style.display = 'block';
       }
     };
 
@@ -1315,6 +1218,12 @@ if (window.__bptl_product_js_initialized) {
     setUnit('mm');
     renderQuotationTable();
     syncEnquiryForm();
+
+    // Check if page loaded with #enquiry or quote redirect flag
+    if (window.location.hash === '#enquiry' || localStorage.getItem('birla_sync_cart_to_quote') === '1') {
+      try { localStorage.removeItem('birla_sync_cart_to_quote'); } catch (e) {}
+      window.location.replace('../quotation.php');
+    }
 
   });
 }

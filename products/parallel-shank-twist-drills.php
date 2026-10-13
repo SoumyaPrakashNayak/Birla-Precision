@@ -203,11 +203,10 @@ include __DIR__ . '/../includes/header.php';
             <div class="step-control-col qty-col">
               <div class="qty-label-wrap">
                 <label class="control-label" for="stepQtyInput">Quantity (pcs)</label>
-                <span class="qty-moq-badge" id="stepMoqBadge">MOQ: 200 pcs</span>
               </div>
               <div class="qty-stepper-box">
-                <button type="button" class="qty-step-btn" id="stepQtyMinus" aria-label="Decrease quantity" disabled>&minus;</button>
-                <input type="number" id="stepQtyInput" class="qty-step-input" value="200" min="200" step="10">
+                <button type="button" class="qty-step-btn" id="stepQtyMinus" aria-label="Decrease quantity">&minus;</button>
+                <input type="number" id="stepQtyInput" class="qty-step-input" value="10" min="1" step="1">
                 <button type="button" class="qty-step-btn" id="stepQtyPlus" aria-label="Increase quantity">&plus;</button>
               </div>
             </div>
@@ -261,7 +260,7 @@ include __DIR__ . '/../includes/header.php';
                 <tr>
                   <th class="th-sno">S.No.</th>
                   <th class="th-size" id="colHeaderSize">Size (mm)</th>
-                  <th class="th-qty">Quantity (pcs) &amp; MOQ</th>
+                  <th class="th-qty">Quantity (pcs)</th>
                   <th class="th-avail">Availability</th>
                   <th class="th-action">Action</th>
                 </tr>
@@ -286,21 +285,19 @@ include __DIR__ . '/../includes/header.php';
               <div class="next-step-content">
                 <div class="next-step-title">Next Step</div>
                 <p class="next-step-desc">
-                  Click on &ldquo;Request Quotation&rdquo; to send these sizes to us. You can continue browsing and add more sizes from this or other products.
+                  Click on &ldquo;Add to Cart&rdquo; to add these sizes to your cart. You can then request a quotation directly from your cart.
                 </p>
               </div>
             </div>
             <div class="next-step-right">
-              <a href="#enquiry" class="btn-request-quote-main" id="heroRequestQuotationBtn">
+              <button type="button" class="btn-request-quote-main" id="heroAddToCartBtn">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <line x1="16" y1="13" x2="8" y2="13"></line>
-                  <line x1="16" y1="17" x2="8" y2="17"></line>
-                  <polyline points="10 9 9 9 8 9"></polyline>
+                  <circle cx="9" cy="21" r="1"></circle>
+                  <circle cx="20" cy="21" r="1"></circle>
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
                 </svg>
-                <span>Request Quotation &rarr;</span>
-              </a>
+                <span>Add to Cart &rarr;</span>
+              </button>
             </div>
           </div>
 
@@ -313,192 +310,8 @@ include __DIR__ . '/../includes/header.php';
   </div>
 </section>
 
-<!-- ==========================================================================
-     PRODUCT ENQUIRY & OFFICIAL QUOTATION WORKFLOW
-     ========================================================================== -->
-<section class="enquiry-section" id="enquiry">
-  <div class="container">
-    
-    <div class="enquiry-card">
-      <div style="text-align:center;margin-bottom:24px;">
-        <span class="section-eyebrow">Official Quotation Workflow</span>
-        <h2 style="font-family:var(--font-heading);font-size:1.8rem;color:#111;margin-bottom:8px;">
-          Request Official Quotation / Bulk Tooling Enquiry
-        </h2>
-        <p style="font-size:0.9rem;color:#6C757D;">
-          All selected tooling specifications from your cart and configurator are shared below. Multiples of 10 pieces required.
-        </p>
-      </div>
-
-      <!-- Feedback Banner -->
-      <div id="enquiryFeedback" class="form-feedback-message"></div>
-
-      <!-- Selected Items from Configurator / Live Quotation Breakdown -->
-      <div class="enquiry-cart-summary-box" id="enquiryCartSummaryBox" style="display:none;">
-        <div class="enquiry-summary-header">
-          <div class="enquiry-summary-title-wrap">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-            </svg>
-            <span class="enquiry-summary-title">Selected Tooling Specifications to be Quoted:</span>
-          </div>
-          <span class="enquiry-summary-count-badge" id="enquirySummaryCount">0 Sizes | 0 pcs</span>
-        </div>
-        
-        <!-- Live Product Conformance Header -->
-        <div class="enquiry-product-meta-row">
-          <span class="meta-tag"><strong>Product:</strong> HSS Parallel Shank Twist Drills (Jobber Series)</span>
-          <span class="meta-tag"><strong>Standard:</strong> IS : 5101 / ISO 235</span>
-          <span class="meta-tag"><strong>HSN Code:</strong> 8207</span>
-          <span class="meta-tag"><strong>Material:</strong> High-Speed Steel (M2 Grade)</span>
-          <span class="meta-tag"><strong>Dispatch:</strong> ITM Nashik &amp; Aurangabad Plants</span>
-        </div>
-
-        <div class="enquiry-summary-items" id="enquirySummaryItems">
-          <!-- Populated dynamically via JS -->
-        </div>
-      </div>
-
-      <!-- Form -->
-      <form id="productEnquiryForm" method="POST" action="../enquiry_submit.php">
-        
-        <!-- CSRF Token -->
-        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
-
-        <div class="enquiry-form-grid">
-          
-          <!-- Selected Diameter & Product Line (Pre-filled) -->
-          <div class="form-group form-group-full">
-            <label class="form-label" for="enquiryDiaInput">Product Specification &amp; Selected Diameters</label>
-            <input 
-              type="text" 
-              name="metric_dia" id="enquiryDiaInput" class="form-control form-readonly" value="HSS Parallel Shank Twist Drills (Jobber Series) — Conforming to IS : 5101"
-              readonly
-            >
-          </div>
-
-          <!-- Selected Variant (Pre-filled) -->
-          <div class="form-group">
-            <label class="form-label" for="enquiryVariantInput">Selected Variant &amp; Metallurgy</label>
-            <input 
-              type="text" 
-              name="variant_name" 
-              id="enquiryVariantInput" 
-              class="form-control form-readonly" 
-              value="ITM STD. (HSS M2 / Precision Ground Flutes — IS : 5101 | HSN: 8207)"
-              readonly
-            >
-          </div>
-
-          <!-- Quantity (Validated against MOQ & multiple of 10) -->
-          <div class="form-group">
-            <label class="form-label" for="enquiryQuantityInput">Total Required Quantity (Pieces) &amp; MOQ</label>
-            <input 
-              type="number" 
-              name="quantity" id="enquiryQuantityInput" class="form-control" value="" placeholder="Add sizes above or enter total pieces" min="1" required
-            >
-            <small id="enquiryMoqNotice" style="display:block;font-size:0.75rem;color:#78909C;margin-top:4px;">
-              Combined quantity for selected sizes. Standard MOQ applies per diameter as noted.
-            </small>
-          </div>
-
-          <!-- Procurement Basis Reference -->
-          <div class="form-group form-group-full">
-            <label class="form-label" for="enquiryPriceBasisInput">Procurement Basis &amp; Supply Terms</label>
-            <input 
-              type="text" 
-              name="price_basis" 
-              id="enquiryPriceBasisInput" 
-              class="form-control form-readonly" 
-              value="Official April 2026 Price List — F.O.R. Destination (Direct ITM Plant Dispatch)"
-              readonly
-            >
-          </div>
-
-          <!-- Customer Name -->
-          <div class="form-group">
-            <label class="form-label" for="enquiryNameInput">Full Name *</label>
-            <input 
-              type="text" 
-              name="customer_name" 
-              id="enquiryNameInput" 
-              class="form-control" 
-              placeholder="e.g. Rajesh Kumar" 
-              required
-            >
-          </div>
-
-          <!-- Company Name -->
-          <div class="form-group">
-            <label class="form-label" for="enquiryCompanyInput">Company / Organization</label>
-            <input 
-              type="text" 
-              name="company_name" 
-              id="enquiryCompanyInput" 
-              class="form-control" 
-              placeholder="e.g. Apex Precision Engineering Ltd." 
-              required
-            >
-          </div>
-
-          <!-- Email -->
-          <div class="form-group">
-            <label class="form-label" for="enquiryEmailInput">Corporate Email *</label>
-            <input 
-              type="email" 
-              name="email" 
-              id="enquiryEmailInput" 
-              class="form-control" 
-              placeholder="e.g. procurement@apex-eng.com" 
-              required
-            >
-          </div>
-
-          <!-- Phone -->
-          <div class="form-group">
-            <label class="form-label" for="enquiryPhoneInput">Phone / Mobile Number *</label>
-            <input 
-              type="tel" 
-              name="phone" 
-              id="enquiryPhoneInput" 
-              class="form-control" 
-              placeholder="e.g. +91 98200 12345" 
-              required
-            >
-          </div>
-
-          <!-- Message -->
-          <div class="form-group form-group-full">
-            <label class="form-label" for="enquiryMessageInput">Application Requirements / Material Being Machined</label>
-            <textarea 
-              name="message" 
-              id="enquiryMessageInput" 
-              class="form-control" 
-              placeholder="Specify workpiece material, hole depth, CNC machine details, or custom coating preferences..."
-            ></textarea>
-          </div>
-
-          <!-- Submit Button -->
-          <div class="form-group form-group-full" style="text-align:center;margin-top:10px;">
-            <button type="submit" class="btn btn-primary" id="enquirySubmitBtn" style="min-width:280px;">
-              Submit Official Enquiry
-            </button>
-            <p style="font-size:0.75rem;color:#888;margin-top:8px;">
-              By submitting, your request is routed directly to the Birla Precision cutting tools technical sales desk.
-            </p>
-          </div>
-
-        </div>
-
-      </form>
-
-    </div>
-
-  </div>
-</section>
+<!-- Quotation workflow is now hosted on the dedicated page: quotation.php -->
+<div id="enquiry" style="display:none;" aria-hidden="true"></div>
 
 <!-- Gallery Lightbox Modal -->
 <div class="gallery-lightbox-modal" id="galleryLightboxModal" aria-hidden="true" role="dialog">

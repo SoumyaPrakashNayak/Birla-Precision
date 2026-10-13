@@ -246,9 +246,8 @@ document.addEventListener('DOMContentLoaded', function () {
       var list = data ? JSON.parse(data) : [];
       if (Array.isArray(list)) {
         list.forEach(function (item) {
-          var itemMoq = parseInt(item.moq, 10) || 10;
-          if (!item.qty || item.qty < itemMoq) {
-            item.qty = itemMoq;
+          if (!item.qty || item.qty < 1) {
+            item.qty = 1;
           }
         });
       }
@@ -274,16 +273,14 @@ document.addEventListener('DOMContentLoaded', function () {
       var existing = cart.find(function (it) {
         return it.dia === item.dia && it.variant === item.variant;
       });
-      var itemMoq = parseInt(item.moq, 10) || 10;
-      var itemQty = parseInt(item.qty, 10) || itemMoq;
-      if (itemQty < itemMoq) itemQty = itemMoq;
+      var itemQty = parseInt(item.qty, 10) || 1;
+      if (itemQty < 1) itemQty = 1;
       if (existing) {
         existing.qty += itemQty;
-        existing.moq = itemMoq;
         existing.total = (existing.unitPrice || 0) * existing.qty;
       } else {
         item.qty = itemQty;
-        item.moq = itemMoq;
+        item.moq = 1;
         cart.push(item);
       }
       saveCart(cart);
@@ -347,6 +344,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (cartDrawerCount) {
       cartDrawerCount.textContent = totalLineItems + (totalLineItems === 1 ? ' Product' : ' Products') + ' (' + totalPieces + ' pcs)';
+    }
+
+    var cartClearAllBtn = document.getElementById('cartClearAllBtn');
+    if (cartClearAllBtn) {
+      cartClearAllBtn.style.display = cart.length > 0 ? 'inline-block' : 'none';
+      if (!cartClearAllBtn._wired) {
+        cartClearAllBtn._wired = true;
+        cartClearAllBtn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          if (confirm('Clear all items from your cart?')) {
+            try {
+              localStorage.removeItem('birla_cart');
+              localStorage.removeItem('birla_quotation_items');
+            } catch (err) {}
+            saveCart([]);
+            if (typeof window.syncQuotationOnCartClear === 'function') {
+              window.syncQuotationOnCartClear();
+            }
+          }
+        });
+      }
     }
 
     // Render Drawer contents matching Image 2 Reference Design
@@ -424,7 +442,7 @@ document.addEventListener('DOMContentLoaded', function () {
               '<div class="cart-qty-ctrl-group">' +
                 '<span class="cart-qty-ctrl-label">Quantity to Quote:</span>' +
                 '<div class="cart-stepper-box">' +
-                  '<button type="button" class="cart-step-btn cart-step-minus" data-index="' + index + '" aria-label="Decrease quantity"' + (item.qty <= moq ? ' disabled aria-disabled="true"' : '') + '>&minus;</button>' +
+                  '<button type="button" class="cart-step-btn cart-step-minus" data-index="' + index + '" aria-label="Decrease quantity"' + (item.qty <= 1 ? ' disabled aria-disabled="true"' : '') + '>&minus;</button>' +
                   '<input type="text" class="cart-step-input" data-index="' + index + '" value="' + item.qty + '">' +
                   '<button type="button" class="cart-step-btn cart-step-plus" data-index="' + index + '" aria-label="Increase quantity">&plus;</button>' +
                 '</div>' +
@@ -445,8 +463,8 @@ document.addEventListener('DOMContentLoaded', function () {
               '</div>' +
               '<div class="order-info-grid">' +
                 '<div class="order-info-col">' +
-                  '<span class="info-label">Minimum Order Quantity (MOQ)</span>' +
-                  '<span class="info-val">' + moq + ' pcs</span>' +
+                  '<span class="info-label">Order Unit</span>' +
+                  '<span class="info-val">Precision Drill (Pieces)</span>' +
                 '</div>' +
                 '<div class="order-info-col">' +
                   '<span class="info-label">Order Multiple</span>' +
@@ -476,16 +494,15 @@ document.addEventListener('DOMContentLoaded', function () {
           });
         });
 
-        // Add interactive handlers for - and + steppers inside cart (multiples of 10)
+        // Add interactive handlers for - and + steppers inside cart
         var minusBtns = cartItemsList.querySelectorAll('.cart-step-minus');
         minusBtns.forEach(function (btn) {
           btn.addEventListener('click', function () {
             var idx = parseInt(btn.getAttribute('data-index'), 10);
             var currentCart = getCart();
             if (!currentCart[idx]) return;
-            var itemMoq = parseInt(currentCart[idx].moq, 10) || 10;
-            if (currentCart[idx].qty > itemMoq) {
-              var newQty = Math.max(itemMoq, currentCart[idx].qty - 10);
+            if (currentCart[idx].qty > 1) {
+              var newQty = Math.max(1, currentCart[idx].qty - (currentCart[idx].qty > 10 ? 10 : 1));
               currentCart[idx].qty = newQty;
               currentCart[idx].total = (currentCart[idx].unitPrice || 0) * newQty;
               saveCart(currentCart);
@@ -512,9 +529,8 @@ document.addEventListener('DOMContentLoaded', function () {
             var idx = parseInt(this.getAttribute('data-index'), 10);
             var currentCart = getCart();
             if (!currentCart[idx]) return;
-            var itemMoq = parseInt(currentCart[idx].moq, 10) || 10;
             var val = parseInt(this.value, 10);
-            if (isNaN(val) || val < itemMoq) val = itemMoq;
+            if (isNaN(val) || val < 1) val = 1;
             var rem = val % 10;
             if (rem !== 0) val = Math.ceil(val / 10) * 10;
             currentCart[idx].qty = val;
@@ -738,27 +754,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     closeCartDrawer();
 
-    var isProductPage = window.location.pathname.indexOf('/parallel-shank-twist-drills.php') !== -1;
+    var isSubfolder = window.location.pathname.indexOf('/products/') !== -1;
+    var targetUrl = (isSubfolder ? '../' : './') + 'quotation.php';
+    window.location.href = targetUrl;
+  }
 
-    if (isProductPage) {
-      if (typeof window.syncCartToEnquiryForm === 'function') {
-        window.syncCartToEnquiryForm(cart);
-      }
+  // Ensure any link pointing to #enquiry reveals the enquiry section
+  document.querySelectorAll('a[href*="#enquiry"]').forEach(function (link) {
+    link.addEventListener('click', function () {
       var enquirySec = document.getElementById('enquiry');
       if (enquirySec) {
-        enquirySec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        setTimeout(function () {
-          var nameInp = document.getElementById('enquiryNameInput');
-          if (nameInp) nameInp.focus();
-        }, 500);
+        enquirySec.style.display = 'block';
       }
-    } else {
-      try {
-        localStorage.setItem('birla_sync_cart_to_quote', '1');
-      } catch (e) {}
-      window.location.href = resolveAssetUrl('products/parallel-shank-twist-drills.php#enquiry');
-    }
-  }
+    });
+  });
 
   if (cartBuyNowBtn) {
     cartBuyNowBtn.addEventListener('click', function (e) {

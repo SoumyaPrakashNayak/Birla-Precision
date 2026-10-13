@@ -39,17 +39,18 @@ $new_csrf_token = $_SESSION['csrf_token'];
 session_write_close();
 
 // 2. Extract and Sanitize Inputs
-$customer_name = trim(filter_input(INPUT_POST, 'customer_name', FILTER_DEFAULT) ?? '');
-$company_name  = trim(filter_input(INPUT_POST, 'company_name', FILTER_DEFAULT) ?? '');
-$email         = trim(filter_input(INPUT_POST, 'email', FILTER_DEFAULT) ?? '');
-$phone         = trim(filter_input(INPUT_POST, 'phone', FILTER_DEFAULT) ?? '');
-$metric_dia    = trim(filter_input(INPUT_POST, 'metric_dia', FILTER_DEFAULT) ?? '');
-$inch_equiv    = trim(filter_input(INPUT_POST, 'inch_equiv', FILTER_DEFAULT) ?? '');
-$gauge_number  = trim(filter_input(INPUT_POST, 'gauge_number', FILTER_DEFAULT) ?? '');
-$variant_name  = trim(filter_input(INPUT_POST, 'variant_name', FILTER_DEFAULT) ?? '');
-$quantity_raw  = filter_input(INPUT_POST, 'quantity', FILTER_VALIDATE_INT);
-$price_basis   = trim(filter_input(INPUT_POST, 'price_basis', FILTER_DEFAULT) ?? 'April 2026 Price List Per 10 Pcs');
-$message       = trim(filter_input(INPUT_POST, 'message', FILTER_DEFAULT) ?? '');
+$customer_name = trim($_POST['customer_name'] ?? filter_input(INPUT_POST, 'customer_name', FILTER_DEFAULT) ?? '');
+$company_name  = trim($_POST['company_name'] ?? filter_input(INPUT_POST, 'company_name', FILTER_DEFAULT) ?? '');
+$email         = trim($_POST['email'] ?? filter_input(INPUT_POST, 'email', FILTER_DEFAULT) ?? '');
+$phone         = trim($_POST['phone'] ?? filter_input(INPUT_POST, 'phone', FILTER_DEFAULT) ?? '');
+$address       = trim($_POST['address'] ?? filter_input(INPUT_POST, 'address', FILTER_DEFAULT) ?? '');
+$metric_dia    = trim($_POST['metric_dia'] ?? filter_input(INPUT_POST, 'metric_dia', FILTER_DEFAULT) ?? '');
+$inch_equiv    = trim($_POST['inch_equiv'] ?? filter_input(INPUT_POST, 'inch_equiv', FILTER_DEFAULT) ?? '');
+$gauge_number  = trim($_POST['gauge_number'] ?? filter_input(INPUT_POST, 'gauge_number', FILTER_DEFAULT) ?? '');
+$variant_name  = trim($_POST['variant_name'] ?? filter_input(INPUT_POST, 'variant_name', FILTER_DEFAULT) ?? '');
+$quantity_raw  = filter_var($_POST['quantity'] ?? filter_input(INPUT_POST, 'quantity', FILTER_DEFAULT), FILTER_VALIDATE_INT);
+$price_basis   = trim($_POST['price_basis'] ?? filter_input(INPUT_POST, 'price_basis', FILTER_DEFAULT) ?? 'April 2026 Price List Per 10 Pcs');
+$message       = trim($_POST['message'] ?? filter_input(INPUT_POST, 'message', FILTER_DEFAULT) ?? '');
 $product_family= 'HSS Parallel Shank Twist Drills — Jobber Series';
 
 // 3. Validation
@@ -60,7 +61,7 @@ if (empty($customer_name) || mb_strlen($customer_name) < 2) {
 }
 
 if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    $errors['email'] = 'A valid corporate or personal email address is required.';
+    $errors['email'] = 'A valid email address is required.';
 }
 
 // Phone validation (digits, plus, hyphen, parentheses, min 7 digits)
@@ -91,16 +92,8 @@ if (!empty($errors)) {
     exit;
 }
 
-// 4. Check MOQ rule
-$target_size = get_size_by_diameter($metric_dia);
-$standard_moq = $target_size ? (int)$target_size['moq'] : 100;
-$moq_status = 'Meets or exceeds standard MOQ';
-if ($quantity_raw < $standard_moq) {
-    $moq_status = 'Below standard MOQ of ' . $standard_moq . ' pcs (Subject to small-quantity surcharge)';
-}
-if ($quantity_raw % 10 !== 0) {
-    $moq_status .= ' | Note: Multiples of 10 recommended as per IS : 5101 packaging standard.';
-}
+// 4. Packaging status
+$moq_status = 'Standard Packaging Order';
 
 // 5. Generate Reference ID
 $enquiry_ref = 'BPTL-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
@@ -109,6 +102,9 @@ $ip_address = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
 // 6. Database Storage with mysqli prepared statement
 $db_saved = false;
 $mysqli = get_db_connection();
+
+// Combine address with message for robust DB storage
+$db_message = ($address ? "Address: " . $address . ($message ? "\n\nRemarks: " . $message : "") : $message);
 
 if ($mysqli) {
     $stmt = $mysqli->prepare("
@@ -133,7 +129,7 @@ if ($mysqli) {
             $company_name,
             $email,
             $phone,
-            $message,
+            $db_message,
             $ip_address,
             $status
         );
@@ -161,6 +157,7 @@ $enquiry_record = [
     'company_name' => $company_name,
     'email' => $email,
     'phone' => $phone,
+    'address' => $address,
     'message' => $message,
     'ip_address' => $ip_address,
     'db_saved' => $db_saved

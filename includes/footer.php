@@ -34,7 +34,7 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
             <li><a href="<?php echo $base_url; ?>index.php#about" class="footer-link">About Company & Heritage</a></li>
             <li><a href="<?php echo $base_url; ?>index.php#applications" class="footer-link">Industrial Applications</a></li>
             <li><a href="<?php echo $base_url; ?>index.php#catalogue" class="footer-link">April 2026 Price List</a></li>
-            <li><a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php#enquiry" class="footer-link">Request Updated Quote</a></li>
+            <li><a href="<?php echo $base_url; ?>quotation.php" class="footer-link">Request Updated Quote</a></li>
           </ul>
         </div>
 
@@ -134,6 +134,9 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
         </div>
       </div>
       <div class="cart-header-right-col">
+        <button type="button" class="btn-clear-cart-drawer" id="cartClearAllBtn" title="Clear all items from cart" style="background:none;border:none;color:#E2E8F0;font-size:0.75rem;cursor:pointer;padding:4px 8px;border-radius:4px;background:rgba(255,255,255,0.08);margin-right:8px;">
+          Clear Cart
+        </button>
         <span class="cart-header-tagline">PRECISION TOOLS<br>FOR INDUSTRY</span>
         <button type="button" class="cart-drawer-close" id="cartDrawerClose" aria-label="Close Cart">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -153,7 +156,7 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
           </svg>
         </div>
         <h4>Your Cart is Empty</h4>
-        <p>Explore our HSS Parallel Shank Twist Drills (Jobber Series) catalogue and add required diameters based on Minimum Order Quantities (MOQ).</p>
+        <p>Explore our HSS Parallel Shank Twist Drills (Jobber Series) catalogue and add required drill sizes to your cart.</p>
         <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php" class="btn btn-primary" style="margin-top:12px;">
           Configure Jobber Drills &rarr;
         </a>
@@ -622,7 +625,7 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
               <h5>Large Order or Custom Requirement?</h5>
             </div>
             <p class="custom-card-desc">Contact our sales team for special pricing and customized solutions.</p>
-            <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php#enquiry" class="btn-custom-quote">
+            <a href="<?php echo $base_url; ?>quotation.php" class="btn-custom-quote">
               <span>Request &amp; Quotation</span>
               <span class="btn-arrow">&rarr;</span>
             </a>
@@ -791,7 +794,7 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
               <span>OR</span>
             </div>
 
-            <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php#enquiry" class="btn-dealership-apply">
+            <a href="<?php echo $base_url; ?>quotation.php" class="btn-dealership-apply">
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 21h18M9 8h1m-1 4h1m-1 4h1m4-8h1m-1 4h1m-1 4h1M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path>
               </svg>
@@ -802,7 +805,7 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
               </svg>
             </a>
 
-            <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php#enquiry" class="portal-partner-banner">
+            <a href="<?php echo $base_url; ?>quotation.php" class="portal-partner-banner">
               <div class="partner-banner-icon">
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
                   <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>

@@ -34,7 +34,7 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
   <link rel="stylesheet" href="<?php echo $base_url; ?>assets/css/aos.css">
   <?php if ($current_page === 'home'): ?>
     <link rel="stylesheet" href="<?php echo $base_url; ?>assets/css/home.css?v=<?php echo file_exists(__DIR__ . '/../assets/css/home.css') ? filemtime(__DIR__ . '/../assets/css/home.css') : '1.0'; ?>">
-  <?php elseif ($current_page === 'product'): ?>
+  <?php elseif ($current_page === 'product' || $current_page === 'quotation'): ?>
     <link rel="stylesheet" href="<?php echo $base_url; ?>assets/css/product.css?v=<?php echo file_exists(__DIR__ . '/../assets/css/product.css') ? filemtime(__DIR__ . '/../assets/css/product.css') : '1.0'; ?>">
   <?php endif; ?>
 </head>
@@ -158,7 +158,7 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
             <span class="nav-cart-badge" id="navCartBadge" style="display:none;">0</span>
           </button>
 
-          <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php#enquiry" class="quick-enquiry-link" title="Quick Enquiry">
+          <a href="<?php echo $base_url; ?>quotation.php" class="quick-enquiry-link" title="Quick Enquiry">
             <svg class="quick-enquiry-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
               <polyline points="14 2 14 8 20 8"></polyline>
@@ -169,7 +169,7 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
             <span class="quick-enquiry-text">Quick Enquiry</span>
           </a>
 
-          <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php#enquiry" class="btn-request-quote">
+          <a href="<?php echo $base_url; ?>quotation.php" class="btn-request-quote">
             <span>Request Quote</span>
             <span class="btn-arrow">&rarr;</span>
           </a>
@@ -310,7 +310,7 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
 
           <!-- Contact -->
           <li class="nav-bar-item">
-            <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php#enquiry" class="nav-bar-link">Contact</a>
+            <a href="<?php echo $base_url; ?>quotation.php" class="nav-bar-link">Contact</a>
           </li>
 
         </ul>
@@ -332,7 +332,7 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
         <li><a href="<?php echo $base_url; ?>index.php#collection">COLLECTION LIST</a></li>
         <li><a href="<?php echo $base_url; ?>index.php#about">ABOUT BIRLA PRECISION (SINCE 1937)</a></li>
         <li><a href="<?php echo $base_url; ?>index.php#catalogue">APRIL 2026 PRICE LIST</a></li>
-        <li><a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php#enquiry">REQUEST QUOTE &amp; CONTACT</a></li>
+        <li><a href="<?php echo $base_url; ?>quotation.php">REQUEST QUOTE &amp; CONTACT</a></li>
       </ul>
       <div style="margin-top:24px;padding-top:20px;border-top:1px solid #E5E7EB;color:#555;font-size:0.85rem;">
         <p style="margin-bottom:6px;"><strong style="color:#25292D;">Direct Support:</strong> +91 253 2352315</p>

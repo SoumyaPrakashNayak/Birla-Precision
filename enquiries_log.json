@@ -74,5 +74,25 @@
         "message": "PRODUCT DETAILS & TECHNICAL SPECIFICATIONS:\r\n\u2022 Product Line: Birla Precision Technologies / Dagger Brand HSS Parallel Shank Twist Drills (Jobber Series)\r\n\u2022 Standard Specification: IS : 5101 (Conforming to ISO 235 / DIN 338 / BS 328)\r\n\u2022 Material & Metallurgy: Premium High-Speed Steel (M2 Grade Standard)\r\n\u2022 Flute Geometry: Precision CNC Ground Type 'N' Right Hand Spiral Flutes\r\n\u2022 Point Angle: 118\u00b0 Standard Conical Relief Point\r\n\u2022 HSN Code: 8207 (Tools, Interchangeable Tools for Hand/Machine Tools)\r\n\u2022 Pricing Unit: Price Per 10 Pieces (Official April 2026 Catalogue Edition)\r\n\u2022 Manufacturing Facilities: Aurangabad & Nashik Plants (ISO 9001 / IATF 16949 Certified)\r\n\r\nSELECTED TOOLING SIZES & REQUIRED QUANTITIES (WITH STANDARD MOQ):\r\n1. Diameter: 12.00 mm \u2014 Required Quantity: 200 pcs (Standard MOQ: 50 pcs) \u2014 Availability: In Stock\r\n2. Diameter: 11.00 mm \u2014 Required Quantity: 100 pcs (Standard MOQ: 50 pcs) \u2014 Availability: In Stock\r\n3. Diameter: 0.30 mm \u2014 Required Quantity: 50 pcs (Standard MOQ: 200 pcs) \u2014 Availability: In Stock\r\n\r\nCOMMERCIAL & DISPATCH INSTRUCTIONS:\r\n\u2022 Total Required Quantity: 350 pieces across 3 sizes.\r\n\u2022 Supply Terms: Official B2B Quotation requested with applicable volume discount and GST breakdown.\r\n\u2022 Delivery Basis: F.O.R. Destination direct from plant dispatch in standard packaging (Multiples of 10).\r\n\r\nAPPLICATION & MACHINING NOTES:\r\n[Please specify your workpiece material (e.g. Mild Steel, SS304, Cast Iron), hole depth, machine model, or coating requirements here]",
         "ip_address": "::1",
         "db_saved": false
+    },
+    {
+        "enquiry_ref": "BPTL-20261013-AD6718",
+        "timestamp": "2026-10-13T10:18:52+02:00",
+        "product_family": "HSS Parallel Shank Twist Drills \u2014 Jobber Series",
+        "metric_dia": "HSS Jobber Series (IS:5101) \u2014 3.00 mm (20 pcs), 5.00 mm (30 pcs)",
+        "inch_equiv": "",
+        "gauge_number": "",
+        "variant_name": "ITM STD. (HSS M2 / Precision Ground Flutes)",
+        "quantity": 50,
+        "moq_status": "Standard Packaging Order",
+        "price_basis": "Official April 2026 Price List \u2014 F.O.R. Destination",
+        "customer_name": "Abhijeet Sharma",
+        "company_name": "Birla Engineering",
+        "email": "abhijeet@birla-precision.com",
+        "phone": "+91 98200 12345",
+        "address": "Plot 45, MIDC Industrial Area, Nashik 422007",
+        "message": "Please provide express delivery quotation.",
+        "ip_address": "127.0.0.1",
+        "db_saved": false
     }
 ]
