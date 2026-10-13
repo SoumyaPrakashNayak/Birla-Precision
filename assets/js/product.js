@@ -248,35 +248,45 @@ if (window.__bptl_product_js_initialized) {
     }
 
     // ==========================================================================
-    // 3. LOAD CATALOGUE DATA FROM API
+    // 3. LOAD CATALOGUE DATA FROM API OR INLINE DYNAMIC PRODUCT SIZES
     // ==========================================================================
 
-    fetch('../api/get_product_data.php?action=all')
-      .then(function (res) { return res.json(); })
-      .then(function (json) {
-        if (json && json.status === 'success') {
-          allSizesData = json.sizes || [];
-          allVariantsMap = json.variants || {};
+    function initCatalogueSizes(sizes, variants) {
+      allSizesData = sizes || [];
+      allVariantsMap = variants || {};
 
-          // Re-enforce MOQ constraints with dynamic catalogue sizes
-          enforceMoqOnQuotationItems();
-          renderDropdownSizes();
-          var initialSize = diaSearchInput && diaSearchInput.value ? diaSearchInput.value : (currentUnit === 'mm' ? '3.00' : '1/8"');
-          updateStepMoqBadge(initialSize);
-          renderQuotationTable();
-          saveQuotationItems();
-          syncEnquiryForm();
-        }
-      })
-      .catch(function (err) {
-        console.warn('Could not fetch dynamic API data, using fallback sizes:', err);
-      });
+      // Re-enforce MOQ constraints with dynamic catalogue sizes
+      enforceMoqOnQuotationItems();
+      renderDropdownSizes();
+      var initialSize = diaSearchInput && diaSearchInput.value ? diaSearchInput.value : (currentUnit === 'mm' ? (allSizesData[0] ? (allSizesData[0].mm || allSizesData[0].size_mm || '3.00') : '3.00') : '1/8"');
+      updateStepMoqBadge(initialSize);
+      renderQuotationTable();
+      saveQuotationItems();
+      syncEnquiryForm();
+    }
+
+    if (window.__BPTL_CURRENT_PRODUCT_SIZES && Array.isArray(window.__BPTL_CURRENT_PRODUCT_SIZES) && window.__BPTL_CURRENT_PRODUCT_SIZES.length > 0) {
+      initCatalogueSizes(window.__BPTL_CURRENT_PRODUCT_SIZES, window.__BPTL_CURRENT_VARIANTS || {});
+    } else {
+      fetch('../api/get_product_data.php?action=all')
+        .then(function (res) { return res.json(); })
+        .then(function (json) {
+          if (json && json.status === 'success') {
+            initCatalogueSizes(json.sizes || [], json.variants || {});
+          }
+        })
+        .catch(function (err) {
+          console.warn('Could not fetch dynamic API data, using fallback sizes:', err);
+        });
+    }
 
     // ==========================================================================
     // 4. METRIC / INCH UNIT TOGGLE
     // ==========================================================================
 
-    var metricPopularSizes = ['2.00', '3.00', '4.00', '5.00', '6.00', '8.00', '10.00', '12.00'];
+    var metricPopularSizes = (window.__BPTL_CURRENT_POPULAR_SIZES && window.__BPTL_CURRENT_POPULAR_SIZES.length > 0)
+      ? window.__BPTL_CURRENT_POPULAR_SIZES
+      : ['2.00', '3.00', '4.00', '5.00', '6.00', '8.00', '10.00', '12.00'];
     var inchPopularSizes = ['1/16"', '1/8"', '3/16"', '1/4"', '5/16"', '3/8"', '7/16"', '1/2"'];
 
     function setUnit(unit) {
@@ -1058,14 +1068,14 @@ if (window.__bptl_product_js_initialized) {
           } else {
             globalCart.push({
               id: 'cart-' + diaClean + '-' + Date.now(),
-              title: 'HSS Parallel Shank Twist Drills (Jobber Series)',
-              variant: 'itm_std',
-              variantName: 'ITM STD.',
+              title: (window.__BPTL_CURRENT_PRODUCT_TITLE || 'HSS Parallel Shank Twist Drills (Jobber Series)'),
+              variant: (window.__BPTL_CURRENT_PRODUCT_VARIANT || 'itm_std'),
+              variantName: (window.__BPTL_CURRENT_PRODUCT_VARIANT_NAME || 'ITM STD.'),
               dia: diaClean,
               diaText: diaLabel,
               unit: qItem.unit || 'mm',
               qty: qItem.qty,
-              img: 'assets/images/products/gallery_thumb_1.jpg',
+              img: (window.__BPTL_CURRENT_PRODUCT_IMG || 'assets/images/products/gallery_thumb_1.jpg'),
               unitPrice: 0,
               total: 0
             });

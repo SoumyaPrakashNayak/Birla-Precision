@@ -99,24 +99,22 @@ $moq_status = 'Standard Packaging Order';
 $enquiry_ref = 'BPTL-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
 $ip_address = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
 
-// 6. Database Storage with mysqli prepared statement
-$db_saved = false;
-$mysqli = get_db_connection();
+require_once __DIR__ . '/includes/db.php';
 
-// Combine address with message for robust DB storage
+// 6. Database Storage with PDO prepared statement (Hostinger MySQL / SQLite)
+$db_saved = false;
 $db_message = ($address ? "Address: " . $address . ($message ? "\n\nRemarks: " . $message : "") : $message);
 
-if ($mysqli) {
-    $stmt = $mysqli->prepare("
-        INSERT INTO enquiries 
-        (enquiry_ref, product_family, metric_dia, inch_equiv, gauge_number, variant_name, quantity, price_basis, customer_name, company_name, email, phone, message, ip_address, status) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ");
-    
-    if ($stmt) {
+try {
+    $pdo = get_db();
+    if ($pdo) {
+        $stmt = $pdo->prepare("
+            INSERT INTO enquiries 
+            (enquiry_ref, product_family, metric_dia, inch_equiv, gauge_number, variant_name, quantity, price_basis, customer_name, company_name, email, phone, address, message, ip_address, status) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ");
         $status = 'New';
-        $stmt->bind_param(
-            'ssssssissssssss',
+        $res = $stmt->execute([
             $enquiry_ref,
             $product_family,
             $metric_dia,
@@ -129,16 +127,17 @@ if ($mysqli) {
             $company_name,
             $email,
             $phone,
-            $db_message,
+            $address,
+            $message,
             $ip_address,
             $status
-        );
-        
-        if ($stmt->execute()) {
+        ]);
+        if ($res) {
             $db_saved = true;
         }
-        $stmt->close();
     }
+} catch (Throwable $e) {
+    // Database save failed, will be captured in json audit log below
 }
 
 // Fallback audit log (ensures zero data loss even in offline mode)
@@ -174,6 +173,7 @@ echo json_encode([
     'status' => 'success',
     'message' => 'Enquiry submitted successfully! A technical tooling specialist from Birla Precision will contact you with an official quotation.',
     'reference_number' => $enquiry_ref,
+    'reference_id' => $enquiry_ref,
     'details' => [
         'customer' => htmlspecialchars($customer_name, ENT_QUOTES, 'UTF-8'),
         'company' => htmlspecialchars($company_name, ENT_QUOTES, 'UTF-8'),

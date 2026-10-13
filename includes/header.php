@@ -7,11 +7,41 @@
  * - 3-Tier Navbar with 3-Column Mega Menu
  */
 
+require_once __DIR__ . '/db.php';
+
 if (!isset($current_page)) {
     $current_page = 'home';
 }
 
 $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
+
+// Fetch dynamic products and group into navigation categories
+$nav_products = get_all_products();
+$nav_categories = [];
+foreach ($nav_products as $p_item) {
+    $cat_slug = !empty($p_item['category']) ? $p_item['category'] : 'twist_drills';
+    $cat_name = !empty($p_item['category_name']) ? $p_item['category_name'] : 'HSS Twist Drills';
+    if (!isset($nav_categories[$cat_slug])) {
+        $nav_categories[$cat_slug] = [
+            'name' => $cat_name,
+            'slug' => $cat_slug,
+            'products' => []
+        ];
+    }
+    $nav_categories[$cat_slug]['products'][] = $p_item;
+}
+
+if (empty($nav_categories)) {
+    $nav_categories = [
+        'twist_drills' => [
+            'name' => 'HSS Twist Drills',
+            'slug' => 'twist_drills',
+            'products' => [
+                ['title' => 'Jobber Series Drills', 'slug' => 'parallel-shank-twist-drills']
+            ]
+        ]
+    ];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -215,30 +245,20 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
                 <div class="mega-column mega-col-categories">
                   <div class="mega-subseries-heading" style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:0.8px;padding:4px 12px 8px;">Listed Categories</div>
                   <ul class="mega-list">
-                    <li class="mega-item is-active-cat" data-target="cat-drills">
-                      <a href="<?php echo $base_url; ?>products.php?cat=twist_drills" class="mega-item-link">
-                        <span>HSS Twist Drills</span>
-                        <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                      </a>
-                    </li>
-                    <li class="mega-item" data-target="cat-highperf">
-                      <a href="<?php echo $base_url; ?>products.php?cat=high_performance" class="mega-item-link">
-                        <span>Cobalt &amp; TiN Coated</span>
-                        <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                      </a>
-                    </li>
-                    <li class="mega-item" data-target="cat-cutting">
-                      <a href="<?php echo $base_url; ?>products.php?cat=cutting_tools" class="mega-item-link">
-                        <span>Milling &amp; Tool Bits</span>
-                        <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                      </a>
-                    </li>
-                    <li class="mega-item" data-target="cat-power">
-                      <a href="<?php echo $base_url; ?>products.php?cat=power_tools" class="mega-item-link">
-                        <span>Power &amp; Workshop</span>
-                        <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                      </a>
-                    </li>
+                    <?php 
+                    $cat_idx = 0;
+                    foreach ($nav_categories as $c_slug => $c_data): 
+                        $target_key = 'cat-' . preg_replace('/[^a-zA-Z0-9_-]/', '', $c_slug);
+                        $is_active_cat = ($cat_idx === 0) ? 'is-active-cat' : '';
+                        $cat_idx++;
+                    ?>
+                      <li class="mega-item <?= $is_active_cat ?>" data-target="<?= $target_key ?>">
+                        <a href="<?php echo $base_url; ?>products.php?cat=<?= urlencode($c_slug); ?>" class="mega-item-link">
+                          <span><?= htmlspecialchars($c_data['name']); ?></span>
+                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                        </a>
+                      </li>
+                    <?php endforeach; ?>
                     <li class="mega-item" style="margin-top:8px;padding-top:8px;border-top:1px solid #F1F5F9;">
                       <a href="<?php echo $base_url; ?>products.php" class="mega-item-link" style="color:var(--color-primary);font-weight:700;">
                         <span>All Products Space &rarr;</span>
@@ -249,107 +269,35 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
 
                 <!-- Column 2: Specific Listed Products for the Category -->
                 <div class="mega-column mega-col-subseries">
-                  
-                  <!-- Group 1: HSS Twist Drills -->
-                  <div class="mega-products-group" id="group-cat-drills">
-                    <div class="mega-subseries-heading">HSS Twist Drills</div>
-                    <ul class="mega-list">
-                      <li class="mega-item is-active-sub">
-                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php" class="mega-item-link">
-                          <span>Jobber Series Drills</span>
-                          <span class="active-arrow-red">&rarr;</span>
-                        </a>
-                      </li>
-                      <li class="mega-item">
-                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php?series=taper" class="mega-item-link">
-                          <span>Taper Shank Morse Taper</span>
-                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                        </a>
-                      </li>
-                      <li class="mega-item">
-                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php?variant=forgeline" class="mega-item-link">
-                          <span>FORGELINE Cast Iron Drills</span>
-                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <!-- Group 2: Cobalt & TiN Coated -->
-                  <div class="mega-products-group" id="group-cat-highperf" style="display:none;">
-                    <div class="mega-subseries-heading">Cobalt &amp; TiN Coated</div>
-                    <ul class="mega-list">
-                      <li class="mega-item">
-                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php?variant=ninja" class="mega-item-link">
-                          <span>NINJA M35 Cobalt Drills</span>
-                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                        </a>
-                      </li>
-                      <li class="mega-item">
-                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php?variant=panther" class="mega-item-link">
-                          <span>PANTHER CNC Split-Point</span>
-                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                        </a>
-                      </li>
-                      <li class="mega-item">
-                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php?variant=itm_std_tin" class="mega-item-link">
-                          <span>ITM STD. TiN Gold Coated</span>
-                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <!-- Group 3: Milling & Tool Bits -->
-                  <div class="mega-products-group" id="group-cat-cutting" style="display:none;">
-                    <div class="mega-subseries-heading">Milling &amp; Tool Bits</div>
-                    <ul class="mega-list">
-                      <li class="mega-item">
-                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php?series=annular" class="mega-item-link">
-                          <span>Annular Core Broaching Cutters</span>
-                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                        </a>
-                      </li>
-                      <li class="mega-item">
-                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php?series=milling" class="mega-item-link">
-                          <span>Industrial Milling Cutters</span>
-                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                        </a>
-                      </li>
-                      <li class="mega-item">
-                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php?series=toolbits" class="mega-item-link">
-                          <span>HSS Ground Tool Bits</span>
-                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-
-                  <!-- Group 4: Power & Workshop Tools -->
-                  <div class="mega-products-group" id="group-cat-power" style="display:none;">
-                    <div class="mega-subseries-heading">Power &amp; Workshop Tools</div>
-                    <ul class="mega-list">
-                      <li class="mega-item">
-                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php?series=hathyar" class="mega-item-link">
-                          <span>HATHYAR Concrete Masonry Bits</span>
-                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                        </a>
-                      </li>
-                      <li class="mega-item">
-                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php?series=hammer" class="mega-item-link">
-                          <span>Hammer &amp; Impact Drills</span>
-                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                        </a>
-                      </li>
-                      <li class="mega-item">
-                        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php?series=cutting_machines" class="mega-item-link">
-                          <span>High-Speed Metal Cut-off Machines</span>
-                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                        </a>
-                      </li>
-                    </ul>
-                  </div>
-
+                  <?php 
+                  $cat_idx = 0;
+                  foreach ($nav_categories as $c_slug => $c_data): 
+                      $target_key = 'cat-' . preg_replace('/[^a-zA-Z0-9_-]/', '', $c_slug);
+                      $grp_style = ($cat_idx === 0) ? '' : 'style="display:none;"';
+                      $cat_idx++;
+                  ?>
+                    <div class="mega-products-group" id="group-<?= $target_key ?>" <?= $grp_style ?>>
+                      <div class="mega-subseries-heading"><?= htmlspecialchars($c_data['name']); ?></div>
+                      <ul class="mega-list">
+                        <?php 
+                        $prod_idx = 0;
+                        foreach ($c_data['products'] as $p_item): 
+                            $prod_active = ($prod_idx === 0) ? 'is-active-sub' : '';
+                            $prod_idx++;
+                            $p_url = ($p_item['slug'] === 'parallel-shank-twist-drills')
+                                ? $base_url . 'products/parallel-shank-twist-drills.php'
+                                : $base_url . 'products/view.php?slug=' . urlencode($p_item['slug']);
+                        ?>
+                          <li class="mega-item <?= $prod_active ?>">
+                            <a href="<?= $p_url ?>" class="mega-item-link">
+                              <span><?= htmlspecialchars($p_item['title']); ?></span>
+                              <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                            </a>
+                          </li>
+                        <?php endforeach; ?>
+                      </ul>
+                    </div>
+                  <?php endforeach; ?>
                 </div>
 
                 <!-- Column 3: Featured Visual Card -->
@@ -393,7 +341,14 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
       <ul class="mobile-nav-list">
         <li><a href="<?php echo $base_url; ?>index.php">HOME</a></li>
         <li><a href="<?php echo $base_url; ?>products.php" style="color:var(--color-primary);font-weight:700;">ALL PRODUCTS CATALOGUE</a></li>
-        <li><a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php">HSS Parallel Shank (Jobber Series)</a></li>
+        <?php foreach ($nav_products as $p_item): ?>
+          <?php 
+            $p_url = ($p_item['slug'] === 'parallel-shank-twist-drills')
+                ? $base_url . 'products/parallel-shank-twist-drills.php'
+                : $base_url . 'products/view.php?slug=' . urlencode($p_item['slug']);
+          ?>
+          <li><a href="<?= $p_url ?>"><?= htmlspecialchars($p_item['title']); ?></a></li>
+        <?php endforeach; ?>
         <li><a href="<?php echo $base_url; ?>index.php#collection">COLLECTION LIST</a></li>
         <li><a href="<?php echo $base_url; ?>index.php#about">ABOUT BIRLA PRECISION (SINCE 1937)</a></li>
         <li><a href="<?php echo $base_url; ?>index.php#catalogue">APRIL 2026 PRICE LIST</a></li>

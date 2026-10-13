@@ -6,6 +6,7 @@
  */
 
 require_once __DIR__ . '/includes/data.php';
+require_once __DIR__ . '/includes/db.php';
 
 $current_page = 'home';
 $page_title = 'Birla Precision Technologies | Dagger Brand Industrial Tooling';
@@ -14,72 +15,44 @@ $page_description = 'Official industrial portal of Birla Precision Technologies 
 $family = get_product_family();
 $variants = get_product_variants();
 
+// Fetch dynamic homepage sections from database
+$hero_slides = get_site_sections('hero');
+$feature_tiles = get_site_sections('feature_tiles');
+$collection_items = get_site_sections('collections');
+
 include __DIR__ . '/includes/header.php';
 ?>
 
 <!-- ==========================================================================
-     SECTION 2: FULL-WIDTH HERO CAROUSEL (iBELL Screenshot 1 & 2 Layout)
+     SECTION 2: FULL-WIDTH HERO CAROUSEL (Dynamic Database Driven)
      ========================================================================== -->
 <section class="hero-carousel-section" id="heroCarousel" aria-label="Featured Promotions">
   <div class="hero-carousel-track">
-    
-    <!-- Slide 1: Exact Match for Design Reference (HSS Twist Drills - Trusted for Precision) -->
-    <div class="hero-slide is-active" aria-label="HSS Twist Drills - Trusted for Precision">
-      <img src="assets/images/hero/hero_twist_drills_precision.jpg" alt="High Speed Steel Twist Drills by Birla Precision" class="hero-slide-bg">
-      <div class="hero-slide-dark-overlay"></div>
-      <div class="container hero-slide-dark-content">
-        <div class="hero-dark-text-box">
-          <span class="hero-eyebrow-red">HSS TWIST DRILLS</span>
-          <h2 class="hero-dark-heading hero-trusted-heading">
-            <span class="trusted-word">Trusted</span> for Precision
-          </h2>
-          <p class="hero-dark-subheading">High-performance cutting tools for aerospace, automotive and heavy fabrication.</p>
-          <a href="products/parallel-shank-twist-drills.php" class="btn btn-primary hero-explore-btn">
-            Explore Jobber Series &rarr;
-          </a>
+    <?php foreach ($hero_slides as $idx => $slide): ?>
+      <div class="hero-slide <?= $idx === 0 ? 'is-active' : '' ?>" aria-label="<?= strip_tags($slide['title']) ?>">
+        <img src="<?= htmlspecialchars($slide['image_url']) ?>" alt="<?= strip_tags($slide['title']) ?>" class="hero-slide-bg" onerror="this.src='assets/images/hero/hero_twist_drills_precision.jpg'">
+        <div class="hero-slide-dark-overlay"></div>
+        <div class="container hero-slide-dark-content">
+          <div class="hero-dark-text-box">
+            <?php if (!empty($slide['eyebrow'])): ?>
+              <span class="hero-eyebrow-red"><?= htmlspecialchars($slide['eyebrow']) ?></span>
+            <?php endif; ?>
+            <h2 class="hero-dark-heading hero-trusted-heading">
+              <?= $slide['title'] ?>
+            </h2>
+            <?php if (!empty($slide['subtitle'])): ?>
+              <p class="hero-dark-subheading"><?= htmlspecialchars($slide['subtitle']) ?></p>
+            <?php endif; ?>
+            <a href="<?= htmlspecialchars($slide['link_url'] ?? 'products/parallel-shank-twist-drills.php') ?>" class="btn btn-primary hero-explore-btn">
+              Explore Jobber Series &rarr;
+            </a>
+          </div>
         </div>
       </div>
-    </div>
-
-    <!-- Slide 2: High Precision CNC Machining -->
-    <div class="hero-slide" aria-label="Industrial High Precision CNC Machining">
-      <img src="assets/images/hero/hero_industrial_precision.jpg" alt="Industrial CNC Precision Machining Center" class="hero-slide-bg">
-      <div class="hero-slide-dark-overlay"></div>
-      <div class="container hero-slide-dark-content">
-        <div class="hero-dark-text-box">
-          <span class="hero-eyebrow-red">DAGGER BRAND &bull; SINCE 1937</span>
-          <h2 class="hero-dark-heading hero-trusted-heading">
-            <span class="trusted-word">Precision</span> That Drives Performance
-          </h2>
-          <p class="hero-dark-subheading">Engineered tooling solutions for demanding industrial applications across 50+ countries.</p>
-          <a href="products/parallel-shank-twist-drills.php" class="btn btn-primary hero-explore-btn">
-            Explore All Variants &rarr;
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Slide 3: Automated Drill Manufacturing Line -->
-    <div class="hero-slide" aria-label="Automated Precision Grinding & Drill Manufacturing">
-      <img src="assets/images/hero/hero_drill_manufacturing.jpg" alt="Robotic Automated Drill Manufacturing Line" class="hero-slide-bg">
-      <div class="hero-slide-dark-overlay"></div>
-      <div class="container hero-slide-dark-content">
-        <div class="hero-dark-text-box">
-          <span class="hero-eyebrow-red">INDIAN TOOL MANUFACTURERS</span>
-          <h2 class="hero-dark-heading hero-trusted-heading">
-            <span class="trusted-word">Pioneering</span> Industrial Drills
-          </h2>
-          <p class="hero-dark-subheading">Precision HSS Parallel Shank Twist Drills conforming strictly to IS : 5101 standards.</p>
-          <a href="products/parallel-shank-twist-drills.php" class="btn btn-primary hero-explore-btn">
-            View Jobber Series &rarr;
-          </a>
-        </div>
-      </div>
-    </div>
-
+    <?php endforeach; ?>
   </div>
 
-  <!-- Carousel Navigation Controls — Larger Single Arrow without Circle/Hover Effect (Image 3) -->
+  <!-- Carousel Navigation Controls -->
   <button class="carousel-btn carousel-btn-prev" aria-label="Previous Slide">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="16 3 7 12 16 21"></polyline>
@@ -91,82 +64,82 @@ include __DIR__ . '/includes/header.php';
     </svg>
   </button>
 
-  <!-- 3 Carousel Indicators at Bottom Center (matching iBELL screenshots) -->
+  <!-- Carousel Indicators matching slide count -->
   <div class="carousel-indicators">
-    <button class="carousel-dot is-active" data-slide-to="0" aria-label="Slide 1" aria-current="true"></button>
-    <button class="carousel-dot" data-slide-to="1" aria-label="Slide 2"></button>
-    <button class="carousel-dot" data-slide-to="2" aria-label="Slide 3"></button>
+    <?php foreach ($hero_slides as $idx => $slide): ?>
+      <button class="carousel-dot <?= $idx === 0 ? 'is-active' : '' ?>" data-slide-to="<?= $idx ?>" aria-label="Slide <?= $idx + 1 ?>" <?= $idx === 0 ? 'aria-current="true"' : '' ?>></button>
+    <?php endforeach; ?>
   </div>
 </section>
 
 <!-- ==========================================================================
-     SECTION 2: LARGE ASYMMETRICAL FEATURE TILES (iBELL Style)
+     SECTION 2: LARGE ASYMMETRICAL FEATURE TILES (Dynamic Database Driven)
      ========================================================================== -->
 <section class="feature-tiles-section" aria-label="Feature Equipment Tiles">
   <div class="container">
     
     <div class="tiles-wrapper">
       
-      <!-- Row 1: Wide Left (CHAIN SAWS) + Narrow Right (DRIVERS & DRILLS) -->
+      <!-- Row 1: Wide Left + Narrow Right -->
       <div class="tiles-row tiles-row-1">
-        
-        <!-- Tile 1: Wide Left - CHAIN SAWS -->
-        <a href="products/parallel-shank-twist-drills.php" class="feature-tile" data-aos="fade-right" data-aos-duration="600" aria-label="Chain Saws">
-          <img src="assets/images/tiles/tile_chainsaws.jpg" alt="Professional Chain Saws" class="tile-bg-image" loading="lazy">
-          <div class="tile-overlay"></div>
-          <div class="tile-caption">
-            <h3 class="tile-label">CHAIN SAWS</h3>
-            <span class="tile-subtext">
-              Heavy Duty Industrial Reference
-              <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
-            </span>
-          </div>
-        </a>
+        <?php if (isset($feature_tiles[0])): $t1 = $feature_tiles[0]; ?>
+          <a href="<?= htmlspecialchars($t1['link_url'] ?? 'products/parallel-shank-twist-drills.php') ?>" class="feature-tile" data-aos="fade-right" data-aos-duration="600" aria-label="<?= htmlspecialchars($t1['title']) ?>">
+            <img src="<?= htmlspecialchars($t1['image_url']) ?>" alt="<?= htmlspecialchars($t1['title']) ?>" class="tile-bg-image" loading="lazy">
+            <div class="tile-overlay"></div>
+            <div class="tile-caption">
+              <h3 class="tile-label"><?= htmlspecialchars($t1['title']) ?></h3>
+              <span class="tile-subtext">
+                <?= htmlspecialchars($t1['subtitle']) ?>
+                <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+              </span>
+            </div>
+          </a>
+        <?php endif; ?>
 
-        <!-- Tile 2: Narrow Right - DRIVERS & DRILLS -->
-        <a href="products/parallel-shank-twist-drills.php" class="feature-tile" data-aos="fade-left" data-aos-duration="600" aria-label="Drivers and Drills">
-          <img src="assets/images/tiles/tile_drivers_drills.jpg" alt="Industrial Drivers and Drills" class="tile-bg-image" loading="lazy">
-          <div class="tile-overlay"></div>
-          <div class="tile-caption">
-            <h3 class="tile-label">DRIVERS &amp; DRILLS</h3>
-            <span class="tile-subtext">
-              High-Torque Performance
-              <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
-            </span>
-          </div>
-        </a>
-
+        <?php if (isset($feature_tiles[1])): $t2 = $feature_tiles[1]; ?>
+          <a href="<?= htmlspecialchars($t2['link_url'] ?? 'products/parallel-shank-twist-drills.php') ?>" class="feature-tile" data-aos="fade-left" data-aos-duration="600" aria-label="<?= htmlspecialchars($t2['title']) ?>">
+            <img src="<?= htmlspecialchars($t2['image_url']) ?>" alt="<?= htmlspecialchars($t2['title']) ?>" class="tile-bg-image" loading="lazy">
+            <div class="tile-overlay"></div>
+            <div class="tile-caption">
+              <h3 class="tile-label"><?= htmlspecialchars($t2['title']) ?></h3>
+              <span class="tile-subtext">
+                <?= htmlspecialchars($t2['subtitle']) ?>
+                <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+              </span>
+            </div>
+          </a>
+        <?php endif; ?>
       </div>
 
-      <!-- Row 2: Narrow Left (CUTTING TOOLS) + Wide Right (POWER TOOLS) -->
+      <!-- Row 2: Narrow Left + Wide Right -->
       <div class="tiles-row tiles-row-2">
-        
-        <!-- Tile 3: Narrow Left - CUTTING TOOLS -->
-        <a href="products/parallel-shank-twist-drills.php" class="feature-tile" data-aos="fade-right" data-aos-duration="600" aria-label="Cutting Tools">
-          <img src="assets/images/tiles/tile_cutting_tools.jpg" alt="Industrial Cutting Tools" class="tile-bg-image" loading="lazy">
-          <div class="tile-overlay"></div>
-          <div class="tile-caption">
-            <h3 class="tile-label">CUTTING TOOLS</h3>
-            <span class="tile-subtext">
-              Precision High-Speed Steel
-              <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
-            </span>
-          </div>
-        </a>
+        <?php if (isset($feature_tiles[2])): $t3 = $feature_tiles[2]; ?>
+          <a href="<?= htmlspecialchars($t3['link_url'] ?? 'products/parallel-shank-twist-drills.php') ?>" class="feature-tile" data-aos="fade-right" data-aos-duration="600" aria-label="<?= htmlspecialchars($t3['title']) ?>">
+            <img src="<?= htmlspecialchars($t3['image_url']) ?>" alt="<?= htmlspecialchars($t3['title']) ?>" class="tile-bg-image" loading="lazy">
+            <div class="tile-overlay"></div>
+            <div class="tile-caption">
+              <h3 class="tile-label"><?= htmlspecialchars($t3['title']) ?></h3>
+              <span class="tile-subtext">
+                <?= htmlspecialchars($t3['subtitle']) ?>
+                <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+              </span>
+            </div>
+          </a>
+        <?php endif; ?>
 
-        <!-- Tile 4: Wide Right - POWER TOOLS -->
-        <a href="products/parallel-shank-twist-drills.php" class="feature-tile" data-aos="fade-left" data-aos-duration="600" aria-label="Power Tools">
-          <img src="assets/images/tiles/tile_power_tools.jpg" alt="Industrial Power Tools" class="tile-bg-image" loading="lazy">
-          <div class="tile-overlay"></div>
-          <div class="tile-caption">
-            <h3 class="tile-label">POWER TOOLS</h3>
-            <span class="tile-subtext">
-              Metal Fabrication &amp; Grinding
-              <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
-            </span>
-          </div>
-        </a>
-
+        <?php if (isset($feature_tiles[3])): $t4 = $feature_tiles[3]; ?>
+          <a href="<?= htmlspecialchars($t4['link_url'] ?? 'products/parallel-shank-twist-drills.php') ?>" class="feature-tile" data-aos="fade-left" data-aos-duration="600" aria-label="<?= htmlspecialchars($t4['title']) ?>">
+            <img src="<?= htmlspecialchars($t4['image_url']) ?>" alt="<?= htmlspecialchars($t4['title']) ?>" class="tile-bg-image" loading="lazy">
+            <div class="tile-overlay"></div>
+            <div class="tile-caption">
+              <h3 class="tile-label"><?= htmlspecialchars($t4['title']) ?></h3>
+              <span class="tile-subtext">
+                <?= htmlspecialchars($t4['subtitle']) ?>
+                <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+              </span>
+            </div>
+          </a>
+        <?php endif; ?>
       </div>
 
     </div>
@@ -175,7 +148,7 @@ include __DIR__ . '/includes/header.php';
 </section>
 
 <!-- ==========================================================================
-     SECTION 3: COLLECTION LIST (iBELL Screenshots 3 & 4 Exact Reproduction)
+     SECTION 3: COLLECTION LIST (Dynamic Database Driven)
      ========================================================================== -->
 <section class="collection-list-section" id="collection" aria-label="Collection List">
   <div class="container">
@@ -187,94 +160,21 @@ include __DIR__ . '/includes/header.php';
       </a>
     </div>
 
-    <!-- 10-Item Grid (5 columns on desktop matching screenshots) -->
+    <!-- Dynamic Collection Grid -->
     <div class="collection-grid">
-      
-      <!-- 1. Brush Cutters -->
-      <a href="products/parallel-shank-twist-drills.php" class="collection-card" data-aos="fade-up" data-aos-delay="50">
-        <div class="collection-img-box">
-          <img src="assets/images/collections/brush_cutters.png" alt="Brush Cutters" class="collection-img" loading="lazy">
-        </div>
-        <h3 class="collection-item-title">Brush Cutters</h3>
-      </a>
-
-      <!-- 2. One Power Series -->
-      <a href="products/parallel-shank-twist-drills.php" class="collection-card" data-aos="fade-up" data-aos-delay="100">
-        <div class="collection-img-box">
-          <img src="assets/images/collections/one_power_series.png" alt="One Power Series" class="collection-img" loading="lazy">
-        </div>
-        <h3 class="collection-item-title">One Power Series</h3>
-      </a>
-
-      <!-- 3. Concrete Vibrators -->
-      <a href="products/parallel-shank-twist-drills.php" class="collection-card" data-aos="fade-up" data-aos-delay="150">
-        <div class="collection-img-box">
-          <img src="assets/images/collections/concrete_vibrators.png" alt="Concrete Vibrators" class="collection-img" loading="lazy">
-        </div>
-        <h3 class="collection-item-title">Concrete Vibrators</h3>
-      </a>
-
-      <!-- 4. Hammer & Impact Drills -->
-      <a href="products/parallel-shank-twist-drills.php" class="collection-card" data-aos="fade-up" data-aos-delay="200">
-        <div class="collection-img-box">
-          <img src="assets/images/collections/hammer_impact_drills.png" alt="Hammer & Impact Drills" class="collection-img" loading="lazy">
-        </div>
-        <h3 class="collection-item-title">Hammer &amp; Impact Drills</h3>
-      </a>
-
-      <!-- 5. Tool Kits -->
-      <a href="products/parallel-shank-twist-drills.php" class="collection-card" data-aos="fade-up" data-aos-delay="250">
-        <div class="collection-img-box">
-          <img src="assets/images/collections/tool_kits.png" alt="Tool Kits" class="collection-img" loading="lazy">
-        </div>
-        <h3 class="collection-item-title">Tool Kits</h3>
-      </a>
-
-      <!-- 6. Laser Measures -->
-      <a href="products/parallel-shank-twist-drills.php" class="collection-card" data-aos="fade-up" data-aos-delay="300">
-        <div class="collection-img-box">
-          <img src="assets/images/collections/laser_measures.png" alt="Laser Measures" class="collection-img" loading="lazy">
-        </div>
-        <h3 class="collection-item-title">Laser Measures</h3>
-      </a>
-
-      <!-- 7. Cutting Machines -->
-      <a href="products/parallel-shank-twist-drills.php" class="collection-card" data-aos="fade-up" data-aos-delay="350">
-        <div class="collection-img-box">
-          <img src="assets/images/collections/cutting_machines.png" alt="Cutting Machines" class="collection-img" loading="lazy">
-        </div>
-        <h3 class="collection-item-title">Cutting Machines</h3>
-      </a>
-
-      <!-- 8. Screw Drivers -->
-      <a href="products/parallel-shank-twist-drills.php" class="collection-card" data-aos="fade-up" data-aos-delay="400">
-        <div class="collection-img-box">
-          <img src="assets/images/collections/screw_drivers.png" alt="Screw Drivers" class="collection-img" loading="lazy">
-        </div>
-        <h3 class="collection-item-title">Screw Drivers</h3>
-      </a>
-
-      <!-- 9. Wood Working Tools -->
-      <a href="products/parallel-shank-twist-drills.php" class="collection-card" data-aos="fade-up" data-aos-delay="450">
-        <div class="collection-img-box">
-          <img src="assets/images/collections/wood_working_tools.png" alt="Wood Working Tools" class="collection-img" loading="lazy">
-        </div>
-        <h3 class="collection-item-title">Wood Working Tools</h3>
-      </a>
-
-      <!-- 10. Angle Grinders -->
-      <a href="products/parallel-shank-twist-drills.php" class="collection-card" data-aos="fade-up" data-aos-delay="500">
-        <div class="collection-img-box">
-          <img src="assets/images/collections/angle_grinders.png" alt="Angle Grinders" class="collection-img" loading="lazy">
-        </div>
-        <h3 class="collection-item-title">Angle Grinders</h3>
-      </a>
-
+      <?php foreach ($collection_items as $cidx => $col): ?>
+        <a href="<?= htmlspecialchars($col['link_url'] ?? 'products/parallel-shank-twist-drills.php') ?>" class="collection-card" data-aos="fade-up" data-aos-delay="<?= min(500, ($cidx + 1) * 50) ?>">
+          <div class="collection-img-box">
+            <img src="<?= htmlspecialchars($col['image_url']) ?>" alt="<?= htmlspecialchars($col['title']) ?>" class="collection-img" loading="lazy" onerror="this.src='assets/images/brand/dagger_brand_logo.png'">
+          </div>
+          <h3 class="collection-item-title"><?= htmlspecialchars($col['title']) ?></h3>
+        </a>
+      <?php endforeach; ?>
     </div>
 
-    <!-- Red "view more" Button matching screenshots 3 & 4 -->
+    <!-- Red "view more" Button -->
     <div class="collection-actions" data-aos="fade-up">
-      <a href="products/parallel-shank-twist-drills.php" class="btn-view-more">
+      <a href="products.php" class="btn-view-more">
         view more
       </a>
     </div>

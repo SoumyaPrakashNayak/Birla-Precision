@@ -321,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function () {
         chip.innerHTML =
           '<div class="chip-main">' +
             '<strong class="chip-dia">' + escapeHtml(diaLabel) + '</strong>' +
-            '<span class="chip-variant">HSS Jobber Series</span>' +
+            '<span class="chip-variant">' + escapeHtml(it.title || it.productTitle || 'HSS Jobber Series') + '</span>' +
           '</div>' +
           '<div class="chip-qty-wrap">' +
             '<span class="chip-qty">' + (it.qty || 1) + ' pcs</span>' +
@@ -332,11 +332,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 2. Pre-fill Diameters and Total Quantity
     if (enquiryDiaInput) {
+      var productNames = [];
       var diaList = cart.map(function (it) {
+        var pName = it.title || it.productTitle || 'HSS Jobber Series';
+        if (productNames.indexOf(pName) === -1) productNames.push(pName);
         var label = it.diaText || (it.dia ? (it.dia + (it.unit === 'inch' ? '' : ' mm')) : 'Drill');
         return label + ' (' + (it.qty || 1) + ' pcs)';
       });
-      enquiryDiaInput.value = 'HSS Jobber Series (IS:5101) — ' + diaList.join(', ');
+      var prodHeader = productNames.join(' / ');
+      enquiryDiaInput.value = prodHeader + ' — ' + diaList.join(', ');
     }
 
     if (enquiryQuantityInput) {
@@ -418,12 +422,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 '</p>' +
                 '<div style="display:inline-block;background:#F1F5F9;border:1px dashed #CBD5E1;padding:10px 24px;border-radius:8px;margin:16px auto 28px;">' +
                   '<span style="font-size:0.8rem;color:#64748B;display:block;">Official Reference Code</span>' +
-                  '<strong style="font-size:1.15rem;color:#DC2626;letter-spacing:1px;">' + escapeHtml(data.reference_id || 'BPTL-QUOTE-REC') + '</strong>' +
+                  '<strong style="font-size:1.15rem;color:#DC2626;letter-spacing:1px;">' + escapeHtml(data.reference_number || data.reference_id || 'BPTL-QUOTE-REC') + '</strong>' +
                 '</div>' +
-                '<div style="margin-top:8px;">' +
-                  '<a href="products/parallel-shank-twist-drills.php" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;font-size:0.95rem;border-radius:6px;">' +
-                    '<span>Return to Catalogue & Configurator</span>' +
+                '<div style="margin-top:8px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">' +
+                  '<a href="products.php" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;font-size:0.95rem;border-radius:6px;">' +
+                    '<span>Return to Products Space</span>' +
                     '<span>&rarr;</span>' +
+                  '</a>' +
+                  '<a href="products/parallel-shank-twist-drills.php" class="btn btn-secondary" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;font-size:0.95rem;border-radius:6px;background:#F1F5F9;color:#334155;border:1px solid #CBD5E1;">' +
+                    '<span>Jobber Configurator</span>' +
                   '</a>' +
                 '</div>' +
               '</div>';

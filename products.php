@@ -13,165 +13,58 @@ $is_subfolder = false;
 $page_title = 'Industrial Cutting Tools & Products Space | Birla Precision Technologies';
 $page_description = 'Comprehensive industrial cutting tools catalogue: HSS Parallel Shank Twist Drills, M35 Cobalt, Taper Shank, Carbide Drills, Annular Cutters, and Tooling Systems by Birla Precision & Dagger Brand.';
 
-// Complete catalogue of listed products
-$products_catalog = [
-    [
-        'id' => 'jobber-drills',
-        'title' => 'HSS Parallel Shank Twist Drills (Jobber Series)',
-        'standard' => 'IS : 5101 / ISO 235 / DIN 338',
-        'category' => 'twist_drills',
-        'category_name' => 'HSS Twist Drills',
-        'badge' => 'FLAGSHIP PRODUCT',
-        'badge_class' => 'badge-red',
-        'image' => 'assets/images/collections/jobber_drills.png',
-        'description' => 'Precision CNC ground twist drills engineered for high-concentricity metal drilling in general engineering, automotive, and fabrication. Available in 262 standardized diameters.',
-        'features' => ['262 Standard Sizes', '0.30mm – 22.22mm', 'M2 High-Speed Steel', '118° Point Angle'],
-        'url' => 'products/parallel-shank-twist-drills.php'
-    ],
-    [
-        'id' => 'ninja-cobalt',
-        'title' => 'NINJA M35 Cobalt Heavy-Duty Jobber Drills',
-        'standard' => 'IS : 5101 / 5% Cobalt Alloyed M35',
-        'category' => 'high_performance',
-        'category_name' => 'Cobalt & High Performance',
-        'badge' => 'M35 COBALT',
-        'badge_class' => 'badge-red',
-        'image' => 'assets/images/collections/ninja_cobalt.png',
-        'description' => 'Engineered with 5% Cobalt alloy for superior red hardness and heat resistance. Optimized for drilling stainless steel (SS304/316), heat-treated alloys, and high-tensile steels.',
-        'features' => ['5% Cobalt M35 Alloy', 'High Heat Resistance', 'Stainless Steel Drilling', 'Heavy Web Geometry'],
-        'url' => 'products/parallel-shank-twist-drills.php?variant=ninja'
-    ],
-    [
-        'id' => 'panther-cnc',
-        'title' => 'PANTHER High-Precision Split-Point Drills',
-        'standard' => 'IS : 5101 / Aerospace CNC Point',
-        'category' => 'high_performance',
-        'category_name' => 'Cobalt & High Performance',
-        'badge' => 'CNC SPLIT POINT',
-        'badge_class' => 'badge-charcoal',
-        'image' => 'assets/images/collections/panther_drills.png',
-        'description' => 'Manufactured on 5-axis CNC grinders with a specialized 135° split-point geometry. Eliminates walking on curved surfaces and significantly reduces thrust force on CNC machining centers.',
-        'features' => ['135° Split Point', 'Self-Centering', 'Low Thrust Force', 'CNC Machining Grade'],
-        'url' => 'products/parallel-shank-twist-drills.php?variant=panther'
-    ],
-    [
-        'id' => 'tin-coated',
-        'title' => 'ITM STD. TiN Gold Coated Production Drills',
-        'standard' => 'IS : 5101 / Titanium Nitride Coated',
-        'category' => 'high_performance',
-        'category_name' => 'Cobalt & High Performance',
-        'badge' => 'TIN GOLD COATED',
-        'badge_class' => 'badge-gold',
-        'image' => 'assets/images/collections/tin_coated_drills.png',
-        'description' => 'Titanium Nitride (TiN) physical vapor deposition ceramic coating provides ultra-low surface friction, thermal barrier protection, and up to 3x longer tool life in mass production.',
-        'features' => ['TiN Ceramic Coating', 'Ultra-Low Friction', '3x Tool Life', 'High-Speed Drilling'],
-        'url' => 'products/parallel-shank-twist-drills.php?variant=itm_std_tin'
-    ],
-    [
-        'id' => 'taper-shank',
-        'title' => 'HSS Taper Shank Twist Drills (Morse Taper)',
-        'standard' => 'IS : 5103 / ISO 235 / DIN 345',
-        'category' => 'twist_drills',
-        'category_name' => 'HSS Twist Drills',
-        'badge' => 'MORSE TAPER',
-        'badge_class' => 'badge-charcoal',
-        'image' => 'assets/images/collections/taper_shank.png',
-        'description' => 'Heavy-duty industrial drills featuring precision Morse Taper shanks (MT1 to MT6) for direct spindle mounting on radial drills, pillar presses, and lathe tailstocks.',
-        'features' => ['MT1 to MT6 Shanks', 'Diameters 3mm – 100mm', 'Tough M2 Steel', 'Direct Spindle Mount'],
-        'url' => 'products/parallel-shank-twist-drills.php?series=taper'
-    ],
-    [
-        'id' => 'forgeline',
-        'title' => 'FORGELINE Heavy Web Cast Iron & Forged Drills',
-        'standard' => 'IS : 5101 / Reinforced Core Web',
-        'category' => 'twist_drills',
-        'category_name' => 'HSS Twist Drills',
-        'badge' => 'CAST & FORGED',
-        'badge_class' => 'badge-charcoal',
-        'image' => 'assets/images/collections/forgeline_drills.png',
-        'description' => 'Features an extra-heavy web construction and rugged cutting edge geometry designed to resist breakout and premature wear when drilling forged steel billets and ductile cast iron.',
-        'features' => ['Reinforced Core Web', 'Breakout Resistant', 'Forged Steel Drilling', 'Ductile Iron Geometry'],
-        'url' => 'products/parallel-shank-twist-drills.php?variant=forgeline'
-    ],
-    [
-        'id' => 'annular-cutters',
-        'title' => 'Industrial Annular Cutters & Broaching Drills',
-        'standard' => 'Weldon Shank / Magnetic Core Standards',
-        'category' => 'cutting_tools',
-        'category_name' => 'Milling & Core Cutters',
-        'badge' => 'CORE CUTTERS',
-        'badge_class' => 'badge-charcoal',
-        'image' => 'assets/images/collections/annular_cutters.png',
-        'description' => 'Hollow core annular cutters for magnetic base drills. Cut only the periphery of the hole, creating accurate, burr-free holes in heavy structural beams with minimal energy consumption.',
-        'features' => ['Weldon 19mm Shank', 'Burr-Free Holes', 'Structural Steel', 'Depth 30mm & 50mm'],
-        'url' => 'products/parallel-shank-twist-drills.php?series=annular'
-    ],
-    [
-        'id' => 'milling-cutters',
-        'title' => 'Industrial HSS Milling Cutters & Reamers',
-        'standard' => 'IS : 6251 / ISO 2584 / DIN 844',
-        'category' => 'cutting_tools',
-        'category_name' => 'Milling & Core Cutters',
-        'badge' => 'PRECISION MILLING',
-        'badge_class' => 'badge-charcoal',
-        'image' => 'assets/images/collections/milling_cutters.png',
-        'description' => 'Complete range of side and face cutters, cylindrical cutters, slot drills, and hand/machine reamers for precision metal removal on universal and horizontal milling machines.',
-        'features' => ['Side & Face Cutters', 'HSS-E / Cobalt', 'Slot Drills', 'Precision Bore Reamers'],
-        'url' => 'products/parallel-shank-twist-drills.php?series=milling'
-    ],
-    [
-        'id' => 'hss-tool-bits',
-        'title' => 'HSS Ground Tool Bits & Cutoff Parting Blades',
-        'standard' => 'IS : 7291 / M2 & M42 Cobalt Specification',
-        'category' => 'cutting_tools',
-        'category_name' => 'Milling & Core Cutters',
-        'badge' => 'TOOL BITS',
-        'badge_class' => 'badge-charcoal',
-        'image' => 'assets/images/collections/hss_tool_bits.png',
-        'description' => 'Precision hardened and ground square, round, and rectangular lathe tool bits. Heat-treated to 64–67 HRC for high wear resistance during turning, boring, and parting operations.',
-        'features' => ['64–67 HRC Hardness', 'Square & Round Profiles', 'M2 & M42 Cobalt', 'Parting Off Blades'],
-        'url' => 'products/parallel-shank-twist-drills.php?series=toolbits'
-    ],
-    [
-        'id' => 'hathyar-masonry',
-        'title' => 'HATHYAR SDS-Plus Concrete & Masonry Drills',
-        'standard' => 'Tungsten Carbide Tipped (TCT)',
-        'category' => 'power_tools',
-        'category_name' => 'Power & Workshop Tools',
-        'badge' => 'CARBIDE TIPPED',
-        'badge_class' => 'badge-green',
-        'image' => 'assets/images/collections/hathyar_drills.png',
-        'description' => 'Tungsten carbide tipped percussion and rotary drill bits designed for fast drilling in reinforced concrete, stone, and brickwork with dust removal flutes.',
-        'features' => ['TCT Carbide Tips', 'SDS-Plus Shank', 'Reinforced Concrete', 'Optimized Dust Flute'],
-        'url' => 'products/parallel-shank-twist-drills.php?series=hathyar'
-    ],
-    [
-        'id' => 'hammer-drills',
-        'title' => 'Heavy Duty Hammer & Rotary Impact Drills',
-        'standard' => 'Industrial Workshop Power Tooling',
-        'category' => 'power_tools',
-        'category_name' => 'Power & Workshop Tools',
-        'badge' => 'POWER TOOLING',
-        'badge_class' => 'badge-charcoal',
-        'image' => 'assets/images/collections/hammer_impact_drills.png',
-        'description' => 'High-torque impact drills and heavy rotary hammer machines engineered for continuous operation in construction sites and metal fabrication workshops.',
-        'features' => ['High-Torque Motor', 'Variable Speed Drive', 'Reverse Rotation', 'Ergonomic Grip'],
-        'url' => 'products/parallel-shank-twist-drills.php?series=hammer'
-    ],
-    [
-        'id' => 'cutting-machines',
-        'title' => 'High-Speed Metal Abrasive Cut-off Machines',
-        'standard' => 'Heavy Fabrication Workshop Equipment',
-        'category' => 'power_tools',
-        'category_name' => 'Power & Workshop Tools',
-        'badge' => 'FABRICATION',
-        'badge_class' => 'badge-charcoal',
-        'image' => 'assets/images/collections/cutting_machines.png',
-        'description' => 'Heavy-duty 14-inch chop saws and abrasive cutoff machinery designed for rapid, clean section cutting of pipes, angles, channels, and solid bars.',
-        'features' => ['355mm Wheel Capacity', 'Heavy Metal Clamping', 'Spark Deflector Guard', 'Quick Lock Vise'],
-        'url' => 'products/parallel-shank-twist-drills.php?series=cutting_machines'
-    ]
-];
+require_once __DIR__ . '/includes/db.php';
+
+// Complete catalogue of listed products (Dynamic from Database)
+$db_products = get_all_products();
+$products_catalog = [];
+
+if (!empty($db_products)) {
+    foreach ($db_products as $p) {
+        $features = [];
+        if (!empty($p['features_json'])) {
+            $features = json_decode($p['features_json'], true) ?: [];
+        }
+
+        // Dedicated URL logic
+        $url = ($p['slug'] === 'parallel-shank-twist-drills')
+            ? 'products/parallel-shank-twist-drills.php'
+            : 'products/view.php?id=' . $p['id'];
+
+        $products_catalog[] = [
+            'id' => $p['slug'],
+            'title' => $p['title'],
+            'standard' => $p['standard'],
+            'category' => $p['category'],
+            'category_name' => $p['category_name'],
+            'badge' => $p['badge'],
+            'badge_class' => $p['badge_class'] ?: 'badge-red',
+            'image' => $p['image'],
+            'description' => $p['description'],
+            'features' => $features,
+            'url' => $url
+        ];
+    }
+}
+
+// Fallback to static catalogue if DB is empty
+if (empty($products_catalog)) {
+    $products_catalog = [
+        [
+            'id' => 'jobber-drills',
+            'title' => 'HSS Parallel Shank Twist Drills (Jobber Series)',
+            'standard' => 'IS : 5101 / ISO 235 / DIN 338',
+            'category' => 'twist_drills',
+            'category_name' => 'HSS Twist Drills',
+            'badge' => 'FLAGSHIP PRODUCT',
+            'badge_class' => 'badge-red',
+            'image' => 'assets/images/collections/jobber_drills.png',
+            'description' => 'Precision CNC ground twist drills engineered for high-concentricity metal drilling in general engineering, automotive, and fabrication. Available in 262 standardized diameters.',
+            'features' => ['262 Standard Sizes', '0.30mm – 22.22mm', 'M2 High-Speed Steel', '118° Point Angle'],
+            'url' => 'products/parallel-shank-twist-drills.php'
+        ]
+    ];
+}
 
 include __DIR__ . '/includes/header.php';
 ?>

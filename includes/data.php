@@ -211,17 +211,21 @@ function get_db_connection() {
     // Prevent unhandled exception from halting script if MySQL service is inactive
     mysqli_report(MYSQLI_REPORT_OFF);
     
-    $host = '127.0.0.1';
-    $user = 'root';
-    $pass = '';
-    $db   = 'birla_precision';
-    
-    $mysqli = @new mysqli($host, $user, $pass, $db);
-    if ($mysqli->connect_errno) {
-        // Return null gracefully if connection fails
-        return null;
+    // 1. Attempt Hostinger Production MySQL
+    $mysqli = @new mysqli('127.0.0.1', 'u641661223_DRILLMAC', 'fi7Qo2uF', 'u641661223_DRILLMAC');
+    if (!$mysqli->connect_errno) {
+        $mysqli->set_charset('utf8mb4');
+        return $mysqli;
     }
     
-    $mysqli->set_charset('utf8mb4');
-    return $mysqli;
+    // 2. Attempt Local Development MySQL (XAMPP default)
+    $mysqli = @new mysqli('127.0.0.1', 'root', '', 'birla_precision');
+    if (!$mysqli->connect_errno) {
+        $mysqli->set_charset('utf8mb4');
+        return $mysqli;
+    }
+    
+    // Return null gracefully if neither MySQL server is reachable
+    $mysqli = null;
+    return null;
 }
