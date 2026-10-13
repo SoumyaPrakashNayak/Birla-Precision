@@ -35,19 +35,6 @@ $recent_enquiries = $pdo->query("SELECT * FROM enquiries ORDER BY id DESC LIMIT 
   </div>
 </div>
 
-<!-- Database Connectivity Status Banner -->
-<div class="admin-alert <?= $db_driver === 'mysql' ? 'admin-alert-success' : 'admin-alert-success' ?>" style="margin-bottom: 24px;">
-  <div>
-    <strong>Database Engine:</strong> 
-    <?php if ($db_driver === 'mysql'): ?>
-      Hostinger MySQL Connected (<code>u641661223_DRILLMAC</code>)
-    <?php else: ?>
-      Active Local Engine (<code>database/birla_precision.sqlite</code>). Seamlessly connects to Hostinger MySQL (<code>u641661223_DRILLMAC</code>) when deployed to server.
-    <?php endif; ?>
-  </div>
-  <span class="admin-badge admin-badge-active">Online</span>
-</div>
-
 <!-- Stats Grid -->
 <div class="admin-stats-grid">
   <div class="admin-stat-card">
