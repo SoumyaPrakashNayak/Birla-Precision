@@ -10,29 +10,54 @@ $driver = get_db_driver();
 $message = '';
 $error = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_credentials'])) {
+    $new_user = trim($_POST['username'] ?? '');
     $cur_pass = trim($_POST['current_password'] ?? '');
     $new_pass = trim($_POST['new_password'] ?? '');
     $cnf_pass = trim($_POST['confirm_password'] ?? '');
 
-    if (empty($cur_pass) || empty($new_pass)) {
-        $error = 'Please enter both current and new passwords.';
-    } elseif ($new_pass !== $cnf_pass) {
-        $error = 'New password and confirmation do not match.';
-    } elseif (strlen($new_pass) < 6) {
-        $error = 'New password must be at least 6 characters long.';
+    if (empty($cur_pass)) {
+        $error = 'Current password is required to make changes.';
+    } elseif (empty($new_user)) {
+        $error = 'Username cannot be empty.';
     } else {
         $stmt = $pdo->prepare("SELECT * FROM admins WHERE id = ?");
         $stmt->execute([(int)$_SESSION['bptl_admin_id']]);
         $user = $stmt->fetch();
 
-        if ($user && password_verify($cur_pass, $user['password_hash'])) {
-            $new_hash = password_hash($new_pass, PASSWORD_BCRYPT);
-            $stmt = $pdo->prepare("UPDATE admins SET password_hash = ? WHERE id = ?");
-            $stmt->execute([$new_hash, $user['id']]);
-            $message = 'Password changed successfully.';
-        } else {
+        if (!$user || !password_verify($cur_pass, $user['password_hash'])) {
             $error = 'Current password is incorrect.';
+        } else {
+            // Check if username already used by another admin
+            $chk = $pdo->prepare("SELECT id FROM admins WHERE username = ? AND id != ?");
+            $chk->execute([$new_user, (int)$user['id']]);
+            if ($chk->fetch()) {
+                $error = 'Username "' . htmlspecialchars($new_user) . '" is already taken.';
+            } else {
+                $update_pass = false;
+                if (!empty($new_pass)) {
+                    if ($new_pass !== $cnf_pass) {
+                        $error = 'New password and confirmation do not match.';
+                    } elseif (strlen($new_pass) < 6) {
+                        $error = 'New password must be at least 6 characters long.';
+                    } else {
+                        $update_pass = true;
+                    }
+                }
+
+                if (!$error) {
+                    if ($update_pass) {
+                        $new_hash = password_hash($new_pass, PASSWORD_BCRYPT);
+                        $stmt = $pdo->prepare("UPDATE admins SET username = ?, password_hash = ? WHERE id = ?");
+                        $stmt->execute([$new_user, $new_hash, $user['id']]);
+                    } else {
+                        $stmt = $pdo->prepare("UPDATE admins SET username = ? WHERE id = ?");
+                        $stmt->execute([$new_user, $user['id']]);
+                    }
+                    $_SESSION['bptl_admin_user'] = $new_user;
+                    $message = 'Admin credentials updated successfully.';
+                }
+            }
         }
     }
 }
@@ -99,33 +124,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
     </div>
   </div>
 
-  <!-- Change Password Card -->
+  <!-- Change Credentials Card -->
   <div class="admin-card">
     <div class="admin-card-header">
-      <h2 class="admin-card-title">Change Admin Password</h2>
+      <h2 class="admin-card-title">Admin Account Credentials</h2>
     </div>
 
     <form method="POST">
-      <input type="hidden" name="change_password" value="1">
+      <input type="hidden" name="change_credentials" value="1">
 
       <div class="admin-form-group">
-        <label class="admin-label" for="current_password">Current Password</label>
-        <input type="password" id="current_password" name="current_password" class="admin-input" required>
+        <label class="admin-label" for="username">Admin Username</label>
+        <input 
+          type="text" 
+          id="username" 
+          name="username" 
+          class="admin-input" 
+          required 
+          value="<?= htmlspecialchars($_SESSION['bptl_admin_user'] ?? 'admin') ?>"
+        >
       </div>
 
       <div class="admin-form-group">
-        <label class="admin-label" for="new_password">New Password</label>
-        <input type="password" id="new_password" name="new_password" class="admin-input" required minlength="6">
+        <label class="admin-label" for="current_password">Current Password (Required)</label>
+        <input type="password" id="current_password" name="current_password" class="admin-input" required placeholder="Enter current password to confirm">
+      </div>
+
+      <div class="admin-form-group">
+        <label class="admin-label" for="new_password">New Password (Leave blank to keep current password)</label>
+        <input type="password" id="new_password" name="new_password" class="admin-input" minlength="6" placeholder="Optional — minimum 6 characters">
       </div>
 
       <div class="admin-form-group">
         <label class="admin-label" for="confirm_password">Confirm New Password</label>
-        <input type="password" id="confirm_password" name="confirm_password" class="admin-input" required minlength="6">
+        <input type="password" id="confirm_password" name="confirm_password" class="admin-input" minlength="6" placeholder="Re-enter new password">
       </div>
 
       <div style="margin-top:20px;">
         <button type="submit" class="admin-btn admin-btn-primary">
-          Update Password &rarr;
+          Update Credentials &rarr;
         </button>
       </div>
     </form>
