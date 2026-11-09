@@ -15,29 +15,30 @@ if (!isset($current_page)) {
 
 $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
 
-// Fetch dynamic products and group into navigation categories
+// Fetch dynamic categories tree with subcategories and products
+$nav_categories_tree = get_categories_tree(true);
 $nav_products = get_all_products();
-$nav_categories = [];
-foreach ($nav_products as $p_item) {
-    $cat_slug = !empty($p_item['category']) ? $p_item['category'] : 'twist_drills';
-    $cat_name = !empty($p_item['category_name']) ? $p_item['category_name'] : 'HSS Twist Drills';
-    if (!isset($nav_categories[$cat_slug])) {
-        $nav_categories[$cat_slug] = [
-            'name' => $cat_name,
-            'slug' => $cat_slug,
-            'products' => []
-        ];
-    }
-    $nav_categories[$cat_slug]['products'][] = $p_item;
-}
 
-if (empty($nav_categories)) {
-    $nav_categories = [
-        'twist_drills' => [
+if (empty($nav_categories_tree)) {
+    $nav_categories_tree = [
+        [
+            'id' => 1,
             'name' => 'HSS Twist Drills',
             'slug' => 'twist_drills',
-            'products' => [
-                ['title' => 'Jobber Series Drills', 'slug' => 'parallel-shank-twist-drills']
+            'image' => 'assets/images/products/mega_menu_featured_card.png',
+            'subcategories' => [
+                [
+                    'id' => 1,
+                    'name' => 'HSS Parallel Shank Twist Drills (Jobber Series)',
+                    'slug' => 'jobber-series',
+                    'products' => [
+                        ['title' => 'HSS Parallel Shank Twist Drills (Jobber Series)', 'slug' => 'parallel-shank-twist-drills']
+                    ]
+                ]
+            ],
+            'direct_products' => [],
+            'all_products' => [
+                ['title' => 'HSS Parallel Shank Twist Drills (Jobber Series)', 'slug' => 'parallel-shank-twist-drills']
             ]
         ]
     ];
@@ -72,10 +73,10 @@ if (empty($nav_categories)) {
 </head>
 <body>
 
-  <!-- Site Header (Exact replica of specified design) -->
+  <!-- Site Header -->
   <header class="site-header" id="siteHeader">
 
-    <!-- 1. Main Header Row (White #FFFFFF) -->
+    <!-- Main Header Bar -->
     <div class="header-main-row">
       <div class="container header-main-inner">
         
@@ -90,39 +91,169 @@ if (empty($nav_categories)) {
           </a>
         </div>
 
-        <!-- Center Search Pill Container -->
-        <div class="header-search-wrap">
-          <form class="search-pill-container" id="headerSearchForm" action="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php" method="GET">
+        <!-- Center Navigation Links (Home, Products, About Us, Contact) -->
+        <nav class="header-nav-center" aria-label="Main Navigation">
+          <ul class="nav-menu-bar">
             
-            <div class="search-category-pill">
-              <span>Jobber Series</span>
-              <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
-            </div>
+            <!-- Home Link -->
+            <li class="nav-bar-item <?php echo ($current_page === 'home') ? 'is-active' : ''; ?>">
+              <a href="<?php echo $base_url; ?>index.php" class="nav-bar-link">Home</a>
+            </li>
 
-            <div class="search-input-box">
-              <svg class="search-glass-icon" viewBox="0 0 24 24">
-                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-              </svg>
-              <input 
-                type="text" 
-                name="dia" 
-                id="headerSearchInput" 
-                class="search-text-field" 
-                placeholder="What are you looking for? (e.g. 6.80 mm, 1/4 inch...)" 
-                autocomplete="off"
-              >
-            </div>
+            <!-- Products Mega Menu Link (Fully Dynamic Categories, Subcategories & Products) -->
+            <li class="nav-bar-item has-mega <?php echo ($current_page === 'products' || $current_page === 'product') ? 'is-active' : ''; ?>" id="productsNavItem">
+              <a href="<?php echo $base_url; ?>products.php" class="nav-bar-link" id="productsMenuTrigger" aria-haspopup="true" aria-expanded="false">
+                <span>Products</span>
+                <svg class="nav-arrow-icon" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+              </a>
 
-            <button type="submit" class="search-submit-red-btn" aria-label="Search Drills">
-              <svg viewBox="0 0 24 24">
-                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-              </svg>
-            </button>
+              <!-- 3-Column Mega Menu Panel -->
+              <div class="mega-menu-card" id="productsMegaMenuCard" aria-label="Products Catalog Menu">
+                <div class="mega-menu-inner">
+                  
+                  <!-- Column 1: Listed Categories (Dynamic) -->
+                  <div class="mega-column mega-col-categories">
+                    <div class="mega-subseries-heading" style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:0.8px;padding:4px 12px 8px;">Listed Categories</div>
+                    <ul class="mega-list">
+                      <?php 
+                      $cat_idx = 0;
+                      foreach ($nav_categories_tree as $c_item): 
+                          $target_key = 'cat-' . preg_replace('/[^a-zA-Z0-9_-]/', '', $c_item['slug'] ?: (string)$c_item['id']);
+                          $is_active_cat = ($cat_idx === 0) ? 'is-active-cat' : '';
+                          $cat_idx++;
+                      ?>
+                        <li class="mega-item <?= $is_active_cat ?>" data-target="<?= $target_key ?>">
+                          <a href="<?php echo $base_url; ?>products.php?cat=<?= urlencode($c_item['slug']); ?>" class="mega-item-link">
+                            <span><?= htmlspecialchars($c_item['name']); ?></span>
+                            <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                          </a>
+                        </li>
+                      <?php endforeach; ?>
+                      <li class="mega-item" style="margin-top:8px;padding-top:8px;border-top:1px solid #F1F5F9;">
+                        <a href="<?php echo $base_url; ?>products.php" class="mega-item-link" style="color:var(--color-primary);font-weight:700;">
+                          <span>All Products Space &rarr;</span>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
 
-          </form>
-        </div>
+                  <!-- Column 2: Specific Subcategories & Products for the Category -->
+                  <div class="mega-column mega-col-subseries">
+                    <?php 
+                    $cat_idx = 0;
+                    foreach ($nav_categories_tree as $c_item): 
+                        $target_key = 'cat-' . preg_replace('/[^a-zA-Z0-9_-]/', '', $c_item['slug'] ?: (string)$c_item['id']);
+                        $grp_style = ($cat_idx === 0) ? '' : 'style="display:none;"';
+                        $cat_idx++;
+                    ?>
+                      <div class="mega-products-group" id="group-<?= $target_key ?>" <?= $grp_style ?>>
+                        <div class="mega-subseries-heading"><?= htmlspecialchars($c_item['name']); ?></div>
+                        <ul class="mega-list">
+                          <?php 
+                          $has_subs = !empty($c_item['subcategories']);
+                          $sub_idx = 0;
 
-        <!-- Right Action Items: Login Profile, Shopping Cart, Quick Enquiry & Request Quote -->
+                          if ($has_subs):
+                            foreach ($c_item['subcategories'] as $s_item):
+                              $sub_idx++;
+                              $sub_active = ($sub_idx === 1) ? 'is-active-sub' : '';
+                              // Destination URL logic
+                              $first_prod = !empty($s_item['products']) ? $s_item['products'][0] : null;
+                              if ($first_prod && $first_prod['slug'] === 'parallel-shank-twist-drills') {
+                                  $s_url = $base_url . 'products/parallel-shank-twist-drills.php';
+                              } elseif ($first_prod) {
+                                  $s_url = $base_url . 'products/view.php?slug=' . urlencode($first_prod['slug']);
+                              } else {
+                                  $s_url = $base_url . 'products.php?subcat=' . urlencode($s_item['slug']);
+                              }
+                          ?>
+                              <li class="mega-item <?= $sub_active ?>">
+                                <a href="<?= $s_url ?>" class="mega-item-link" title="<?= htmlspecialchars($s_item['name']) ?>">
+                                  <span><?= htmlspecialchars($s_item['name']); ?></span>
+                                  <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                                </a>
+                              </li>
+                            <?php endforeach; ?>
+                          <?php endif; ?>
+
+                          <?php 
+                          // If there are subcategories, only show direct products that do NOT belong to any subcategory
+                          // If there are no subcategories, show all direct products
+                          $direct_to_show = [];
+                          if (!empty($c_item['direct_products'])) {
+                            foreach ($c_item['direct_products'] as $p_item) {
+                              if ($has_subs && !empty($p_item['subcategory_id'])) {
+                                continue; // already represented by its subcategory
+                              }
+                              $direct_to_show[] = $p_item;
+                            }
+                          }
+                          if (!empty($direct_to_show)):
+                            foreach ($direct_to_show as $p_item):
+                              $p_url = ($p_item['slug'] === 'parallel-shank-twist-drills')
+                                  ? $base_url . 'products/parallel-shank-twist-drills.php'
+                                  : $base_url . 'products/view.php?slug=' . urlencode($p_item['slug']);
+                          ?>
+                              <li class="mega-item">
+                                <a href="<?= $p_url ?>" class="mega-item-link" title="<?= htmlspecialchars($p_item['title']) ?>">
+                                  <span><?= htmlspecialchars($p_item['title']); ?></span>
+                                  <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                                </a>
+                              </li>
+                            <?php endforeach; ?>
+                          <?php endif; ?>
+
+                          <?php if (empty($c_item['subcategories']) && empty($direct_to_show)): ?>
+                            <li class="mega-item" style="padding:10px 12px;color:#94A3B8;font-size:13px;">
+                              No products listed under this category yet.
+                            </li>
+                          <?php endif; ?>
+                        </ul>
+                      </div>
+                    <?php endforeach; ?>
+                  </div>
+
+                  <!-- Column 3: Featured Visual Card (Dynamic per Category) -->
+                  <div class="mega-column mega-col-featured">
+                    <?php 
+                    $cat_idx = 0;
+                    foreach ($nav_categories_tree as $c_item): 
+                        $target_key = 'cat-' . preg_replace('/[^a-zA-Z0-9_-]/', '', $c_item['slug'] ?: (string)$c_item['id']);
+                        $card_style = ($cat_idx === 0) ? '' : 'style="display:none;"';
+                        $cat_idx++;
+                        $card_img = !empty($c_item['image']) ? $base_url . $c_item['image'] : $base_url . 'assets/images/products/mega_menu_featured_card.png';
+                    ?>
+                      <div class="mega-featured-card-wrapper" id="feat-<?= $target_key ?>" <?= $card_style ?>>
+                        <a href="<?php echo $base_url; ?>products.php?cat=<?= urlencode($c_item['slug']); ?>" class="mega-featured-card-link" title="Explore <?= htmlspecialchars($c_item['name']); ?>">
+                          <img 
+                            src="<?= htmlspecialchars($card_img) ?>" 
+                            alt="<?= htmlspecialchars($c_item['name']); ?> - Birla Precision" 
+                            class="mega-featured-card-img"
+                            onerror="this.src='<?php echo $base_url; ?>assets/images/products/mega_menu_featured_card.png'"
+                          >
+                        </a>
+                      </div>
+                    <?php endforeach; ?>
+                  </div>
+
+                </div>
+              </div>
+            </li>
+
+            <!-- About Us -->
+            <li class="nav-bar-item">
+              <a href="<?php echo $base_url; ?>index.php#about" class="nav-bar-link">About Us</a>
+            </li>
+
+            <!-- Contact -->
+            <li class="nav-bar-item">
+              <a href="<?php echo $base_url; ?>quotation.php" class="nav-bar-link">Contact</a>
+            </li>
+
+          </ul>
+        </nav>
+
+        <!-- Right Action Items: Login Profile & Shopping Cart Only -->
         <div class="header-action-group">
           
           <!-- User Profile / LOGIN matching Image 2 reference design -->
@@ -190,22 +321,6 @@ if (empty($nav_categories)) {
             <span class="nav-cart-badge" id="navCartBadge" style="display:none;">0</span>
           </button>
 
-          <a href="<?php echo $base_url; ?>quotation.php" class="quick-enquiry-link" title="Quick Enquiry">
-            <svg class="quick-enquiry-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
-            <span class="quick-enquiry-text">Quick Enquiry</span>
-          </a>
-
-          <a href="<?php echo $base_url; ?>quotation.php" class="btn-request-quote">
-            <span>Request Quote</span>
-            <span class="btn-arrow">&rarr;</span>
-          </a>
-
           <!-- Mobile Toggle Button -->
           <button class="nav-mobile-toggle" id="mobileMenuOpen" aria-label="Open Navigation Menu">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -220,115 +335,6 @@ if (empty($nav_categories)) {
       </div>
     </div>
 
-    <!-- 3. Navigation Links Row (White #FFFFFF, bottom border) -->
-    <nav class="header-nav-row" aria-label="Main Navigation">
-      <div class="container">
-        <ul class="nav-menu-bar">
-          
-          <!-- Home Link (Active with Red Text & Pill Indicator) -->
-          <li class="nav-bar-item <?php echo ($current_page === 'home') ? 'is-active' : ''; ?>">
-            <a href="<?php echo $base_url; ?>index.php" class="nav-bar-link">Home</a>
-          </li>
-
-          <!-- Products Mega Menu Link -->
-          <li class="nav-bar-item has-mega <?php echo ($current_page === 'products' || $current_page === 'product') ? 'is-active' : ''; ?>" id="productsNavItem">
-            <a href="<?php echo $base_url; ?>products.php" class="nav-bar-link" id="productsMenuTrigger" aria-haspopup="true" aria-expanded="false">
-              <span>Products</span>
-              <svg class="nav-arrow-icon" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
-            </a>
-
-            <!-- 3-Column Mega Menu Panel: STRICTLY SHOWING LISTED CATEGORIES -->
-            <div class="mega-menu-card" id="productsMegaMenuCard" aria-label="Products Catalog Menu">
-              <div class="mega-menu-inner">
-                
-                <!-- Column 1: Listed Categories -->
-                <div class="mega-column mega-col-categories">
-                  <div class="mega-subseries-heading" style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:0.8px;padding:4px 12px 8px;">Listed Categories</div>
-                  <ul class="mega-list">
-                    <?php 
-                    $cat_idx = 0;
-                    foreach ($nav_categories as $c_slug => $c_data): 
-                        $target_key = 'cat-' . preg_replace('/[^a-zA-Z0-9_-]/', '', $c_slug);
-                        $is_active_cat = ($cat_idx === 0) ? 'is-active-cat' : '';
-                        $cat_idx++;
-                    ?>
-                      <li class="mega-item <?= $is_active_cat ?>" data-target="<?= $target_key ?>">
-                        <a href="<?php echo $base_url; ?>products.php?cat=<?= urlencode($c_slug); ?>" class="mega-item-link">
-                          <span><?= htmlspecialchars($c_data['name']); ?></span>
-                          <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                        </a>
-                      </li>
-                    <?php endforeach; ?>
-                    <li class="mega-item" style="margin-top:8px;padding-top:8px;border-top:1px solid #F1F5F9;">
-                      <a href="<?php echo $base_url; ?>products.php" class="mega-item-link" style="color:var(--color-primary);font-weight:700;">
-                        <span>All Products Space &rarr;</span>
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-
-                <!-- Column 2: Specific Listed Products for the Category -->
-                <div class="mega-column mega-col-subseries">
-                  <?php 
-                  $cat_idx = 0;
-                  foreach ($nav_categories as $c_slug => $c_data): 
-                      $target_key = 'cat-' . preg_replace('/[^a-zA-Z0-9_-]/', '', $c_slug);
-                      $grp_style = ($cat_idx === 0) ? '' : 'style="display:none;"';
-                      $cat_idx++;
-                  ?>
-                    <div class="mega-products-group" id="group-<?= $target_key ?>" <?= $grp_style ?>>
-                      <div class="mega-subseries-heading"><?= htmlspecialchars($c_data['name']); ?></div>
-                      <ul class="mega-list">
-                        <?php 
-                        $prod_idx = 0;
-                        foreach ($c_data['products'] as $p_item): 
-                            $prod_active = ($prod_idx === 0) ? 'is-active-sub' : '';
-                            $prod_idx++;
-                            $p_url = ($p_item['slug'] === 'parallel-shank-twist-drills')
-                                ? $base_url . 'products/parallel-shank-twist-drills.php'
-                                : $base_url . 'products/view.php?slug=' . urlencode($p_item['slug']);
-                        ?>
-                          <li class="mega-item <?= $prod_active ?>">
-                            <a href="<?= $p_url ?>" class="mega-item-link">
-                              <span><?= htmlspecialchars($p_item['title']); ?></span>
-                              <svg class="chevron-arrow" viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-                            </a>
-                          </li>
-                        <?php endforeach; ?>
-                      </ul>
-                    </div>
-                  <?php endforeach; ?>
-                </div>
-
-                <!-- Column 3: Featured Visual Card -->
-                <div class="mega-column mega-col-featured">
-                  <a href="<?php echo $base_url; ?>products.php" class="mega-featured-card-link" title="Explore Products Catalogue">
-                    <img 
-                      src="<?php echo $base_url; ?>assets/images/products/mega_menu_featured_card.png" 
-                      alt="Precision Holes Stronger Tomorrow - Birla Precision Tooling Catalogue" 
-                      class="mega-featured-card-img"
-                    >
-                  </a>
-                </div>
-
-              </div>
-            </div>
-          </li>
-
-          <!-- About Us -->
-          <li class="nav-bar-item">
-            <a href="<?php echo $base_url; ?>index.php#about" class="nav-bar-link">About Us</a>
-          </li>
-
-          <!-- Contact -->
-          <li class="nav-bar-item">
-            <a href="<?php echo $base_url; ?>quotation.php" class="nav-bar-link">Contact</a>
-          </li>
-
-        </ul>
-      </div>
-    </nav>
-
   </header>
 
   <!-- Mobile Navigation Drawer -->
@@ -341,18 +347,28 @@ if (empty($nav_categories)) {
       <ul class="mobile-nav-list">
         <li><a href="<?php echo $base_url; ?>index.php">HOME</a></li>
         <li><a href="<?php echo $base_url; ?>products.php" style="color:var(--color-primary);font-weight:700;">ALL PRODUCTS CATALOGUE</a></li>
-        <?php foreach ($nav_products as $p_item): ?>
-          <?php 
-            $p_url = ($p_item['slug'] === 'parallel-shank-twist-drills')
-                ? $base_url . 'products/parallel-shank-twist-drills.php'
-                : $base_url . 'products/view.php?slug=' . urlencode($p_item['slug']);
-          ?>
-          <li><a href="<?= $p_url ?>"><?= htmlspecialchars($p_item['title']); ?></a></li>
+        <?php foreach ($nav_categories_tree as $c_item): ?>
+          <li style="margin-top:10px;padding-top:10px;border-top:1px solid #F1F5F9;">
+            <a href="<?php echo $base_url; ?>products.php?cat=<?= urlencode($c_item['slug']); ?>" style="font-weight:700;color:#1E293B;">
+              📁 <?= htmlspecialchars(strtoupper($c_item['name'])); ?>
+            </a>
+          </li>
+          <?php if (!empty($c_item['subcategories'])): ?>
+            <?php foreach ($c_item['subcategories'] as $s_item): ?>
+              <?php 
+                $first_prod = !empty($s_item['products']) ? $s_item['products'][0] : null;
+                $s_url = ($first_prod && $first_prod['slug'] === 'parallel-shank-twist-drills')
+                    ? $base_url . 'products/parallel-shank-twist-drills.php'
+                    : ($first_prod ? $base_url . 'products/view.php?slug=' . urlencode($first_prod['slug']) : $base_url . 'products.php?subcat=' . urlencode($s_item['slug']));
+              ?>
+              <li style="padding-left:16px;">
+                <a href="<?= $s_url ?>"><?= htmlspecialchars($s_item['name']); ?></a>
+              </li>
+            <?php endforeach; ?>
+          <?php endif; ?>
         <?php endforeach; ?>
-        <li><a href="<?php echo $base_url; ?>index.php#collection">COLLECTION LIST</a></li>
-        <li><a href="<?php echo $base_url; ?>index.php#about">ABOUT BIRLA PRECISION (SINCE 1937)</a></li>
-        <li><a href="<?php echo $base_url; ?>index.php#catalogue">APRIL 2026 PRICE LIST</a></li>
-        <li><a href="<?php echo $base_url; ?>quotation.php">REQUEST QUOTE &amp; CONTACT</a></li>
+        <li style="margin-top:10px;padding-top:10px;border-top:1px solid #F1F5F9;"><a href="<?php echo $base_url; ?>index.php#about">ABOUT BIRLA PRECISION (SINCE 1937)</a></li>
+        <li><a href="<?php echo $base_url; ?>quotation.php">CONTACT</a></li>
       </ul>
       <div style="margin-top:24px;padding-top:20px;border-top:1px solid #E5E7EB;color:#555;font-size:0.85rem;">
         <p style="margin-bottom:6px;"><strong style="color:#25292D;">Direct Support:</strong> +91 253 2352315</p>

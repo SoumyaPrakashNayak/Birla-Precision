@@ -96,13 +96,19 @@ document.addEventListener('DOMContentLoaded', function () {
       // Interactive Mega Menu Category Switcher (Strictly Listed Categories)
       var megaCatItems = productsNavItem.querySelectorAll('.mega-col-categories .mega-item[data-target]');
       var megaGroups = productsNavItem.querySelectorAll('.mega-col-subseries .mega-products-group');
+      var megaFeatCards = productsNavItem.querySelectorAll('.mega-col-featured .mega-featured-card-wrapper');
       megaCatItems.forEach(function (catItem) {
         catItem.addEventListener('mouseenter', function () {
-          var targetId = 'group-' + this.getAttribute('data-target');
+          var targetAttr = this.getAttribute('data-target');
+          var targetId = 'group-' + targetAttr;
+          var featId = 'feat-' + targetAttr;
           megaCatItems.forEach(function (ci) { ci.classList.remove('is-active-cat'); });
           this.classList.add('is-active-cat');
           megaGroups.forEach(function (grp) {
             grp.style.display = (grp.id === targetId) ? 'block' : 'none';
+          });
+          megaFeatCards.forEach(function (card) {
+            card.style.display = (card.id === featId) ? 'block' : 'none';
           });
         });
       });

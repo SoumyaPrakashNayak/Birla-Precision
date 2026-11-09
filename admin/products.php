@@ -22,10 +22,15 @@ if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])
     }
 }
 
-// Fetch all products with their sizes count (using correlated subquery for universal MySQL ONLY_FULL_GROUP_BY compatibility)
+// Fetch all products with their sizes count and category/subcategory names
 $products = $pdo->query("
-    SELECT p.*, (SELECT COUNT(*) FROM product_sizes WHERE product_id = p.id) AS size_count 
+    SELECT p.*, 
+           c.name AS cat_title,
+           sub.name AS subcat_title,
+           (SELECT COUNT(*) FROM product_sizes WHERE product_id = p.id) AS size_count 
     FROM products p 
+    LEFT JOIN categories c ON p.category_id = c.id
+    LEFT JOIN categories sub ON p.subcategory_id = sub.id
     ORDER BY p.sort_order ASC, p.id ASC
 ")->fetchAll();
 ?>
@@ -94,7 +99,12 @@ $products = $pdo->query("
                 </div>
               </td>
               <td>
-                <span class="admin-badge admin-badge-gray"><?= htmlspecialchars($p['category_name'] ?? 'HSS Twist Drills') ?></span>
+                <span class="admin-badge admin-badge-gray"><?= htmlspecialchars($p['cat_title'] ?? ($p['category_name'] ?? 'HSS Twist Drills')) ?></span>
+                <?php if (!empty($p['subcat_title'])): ?>
+                  <div style="font-size:11.5px;color:#4338CA;margin-top:3px;font-weight:600;">
+                    ↳ <?= htmlspecialchars($p['subcat_title']) ?>
+                  </div>
+                <?php endif; ?>
               </td>
               <td>
                 <span class="admin-badge admin-badge-red"><?= (int)$p['size_count'] ?> sizes</span>

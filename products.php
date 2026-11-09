@@ -86,13 +86,15 @@ include __DIR__ . '/includes/header.php';
 <section class="products-toolbar-section">
   <div class="container products-toolbar-layout">
     
-    <!-- Category Filter Tabs -->
+    <?php
+      $tab_categories = get_categories(0, true);
+    ?>
+    <!-- Category Filter Tabs (Dynamic from Database) -->
     <div class="category-filter-tabs" id="categoryTabs" role="tablist">
       <button type="button" class="cat-tab-btn is-active" data-cat="all">All Products (<?php echo count($products_catalog); ?>)</button>
-      <button type="button" class="cat-tab-btn" data-cat="twist_drills">HSS Twist Drills</button>
-      <button type="button" class="cat-tab-btn" data-cat="high_performance">Cobalt &amp; TiN</button>
-      <button type="button" class="cat-tab-btn" data-cat="cutting_tools">Milling &amp; Tool Bits</button>
-      <button type="button" class="cat-tab-btn" data-cat="power_tools">Power &amp; Workshop</button>
+      <?php foreach ($tab_categories as $tc): ?>
+        <button type="button" class="cat-tab-btn" data-cat="<?php echo htmlspecialchars($tc['slug']); ?>"><?php echo htmlspecialchars($tc['name']); ?></button>
+      <?php endforeach; ?>
     </div>
 
     <!-- Live Search Box -->

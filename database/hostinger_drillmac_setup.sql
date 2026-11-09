@@ -30,7 +30,21 @@ CREATE TABLE IF NOT EXISTS `site_sections` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 3. Products Table
+-- 3. Categories Table (Hierarchy: Main Categories & Subcategories)
+CREATE TABLE IF NOT EXISTS `categories` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `parent_id` INT DEFAULT NULL,
+  `name` VARCHAR(150) NOT NULL,
+  `slug` VARCHAR(150) NOT NULL UNIQUE,
+  `description` TEXT DEFAULT NULL,
+  `image` VARCHAR(255) DEFAULT NULL,
+  `sort_order` INT DEFAULT 0,
+  `is_active` INT DEFAULT 1,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_parent_id` (`parent_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 4. Products Table
 CREATE TABLE IF NOT EXISTS `products` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `slug` VARCHAR(120) NOT NULL UNIQUE,
@@ -40,6 +54,8 @@ CREATE TABLE IF NOT EXISTS `products` (
   `brand` VARCHAR(100) DEFAULT 'Dagger Brand / Birla Precision',
   `category` VARCHAR(100) DEFAULT 'twist_drills',
   `category_name` VARCHAR(100) DEFAULT 'HSS Twist Drills',
+  `category_id` INT DEFAULT NULL,
+  `subcategory_id` INT DEFAULT NULL,
   `badge` VARCHAR(100) DEFAULT NULL,
   `badge_class` VARCHAR(50) DEFAULT 'badge-red',
   `description` TEXT DEFAULT NULL,
@@ -52,7 +68,7 @@ CREATE TABLE IF NOT EXISTS `products` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 4. Product Sizes Table
+-- 5. Product Sizes Table
 CREATE TABLE IF NOT EXISTS `product_sizes` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `product_id` INT NOT NULL,

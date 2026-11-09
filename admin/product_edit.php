@@ -34,11 +34,19 @@ if ($product_id > 0) {
 $error = '';
 $message = '';
 
+$all_top_cats = get_categories(0, false);
+$all_sub_cats = array_filter(get_categories(null, false), function($c) { return !empty($c['parent_id']); });
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $title         = trim($_POST['title'] ?? '');
-    $slug          = trim($_POST['slug'] ?? '');
-    $category      = trim($_POST['category'] ?? 'twist_drills');
-    $category_name = trim($_POST['category_name'] ?? 'HSS Twist Drills');
+    $title          = trim($_POST['title'] ?? '');
+    $slug           = trim($_POST['slug'] ?? '');
+    $category_id    = !empty($_POST['category_id']) ? (int)$_POST['category_id'] : null;
+    $subcategory_id = !empty($_POST['subcategory_id']) ? (int)$_POST['subcategory_id'] : null;
+
+    // Lookup Category info to keep backward compatibility columns in sync
+    $cat_rec = $category_id ? get_category_by_id_or_slug($category_id) : null;
+    $category      = $cat_rec ? $cat_rec['slug'] : trim($_POST['category'] ?? 'twist_drills');
+    $category_name = $cat_rec ? $cat_rec['name'] : trim($_POST['category_name'] ?? 'HSS Twist Drills');
     $standard      = trim($_POST['standard'] ?? 'IS : 5101 / ISO 235');
     $hsn_code      = trim($_POST['hsn_code'] ?? '8207');
     $brand         = trim($_POST['brand'] ?? 'Dagger Brand / Birla Precision');
@@ -129,14 +137,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmt = $pdo->prepare("
                         UPDATE products 
                         SET slug = ?, title = ?, standard = ?, hsn_code = ?, brand = ?, 
-                            category = ?, category_name = ?, badge = ?, badge_class = ?, 
+                            category = ?, category_name = ?, category_id = ?, subcategory_id = ?, badge = ?, badge_class = ?, 
                             description = ?, full_details = ?, image = ?, gallery_json = ?, 
                             features_json = ?, is_active = ?, sort_order = ?
                         WHERE id = ?
                     ");
                     $stmt->execute([
                         $slug, $title, $standard, $hsn_code, $brand,
-                        $category, $category_name, $badge, $badge_class,
+                        $category, $category_name, $category_id, $subcategory_id, $badge, $badge_class,
                         $description, $full_details, $image_path, $gallery_json,
                         $features_json, $is_active, $sort_order, $product['id']
                     ]);
@@ -145,12 +153,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Insert new product
                     $stmt = $pdo->prepare("
                         INSERT INTO products 
-                        (slug, title, standard, hsn_code, brand, category, category_name, badge, badge_class, description, full_details, image, gallery_json, features_json, is_active, sort_order) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        (slug, title, standard, hsn_code, brand, category, category_name, category_id, subcategory_id, badge, badge_class, description, full_details, image, gallery_json, features_json, is_active, sort_order) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ");
                     $stmt->execute([
                         $slug, $title, $standard, $hsn_code, $brand,
-                        $category, $category_name, $badge, $badge_class,
+                        $category, $category_name, $category_id, $subcategory_id, $badge, $badge_class,
                         $description, $full_details, $image_path, $gallery_json,
                         $features_json, $is_active, $sort_order
                     ]);
@@ -421,31 +429,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       <!-- Category & Classification -->
       <div class="admin-card">
-        <h2 class="admin-card-title" style="margin-bottom:14px;">Category Classification</h2>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <h2 class="admin-card-title" style="margin:0;">Category Classification</h2>
+          <a href="category_edit.php" target="_blank" style="font-size:12px;color:var(--admin-primary);text-decoration:none;font-weight:600;">+ New Category</a>
+        </div>
+
+        <?php
+          $cur_cat_id = (int)($_POST['category_id'] ?? ($product['category_id'] ?? 0));
+          $cur_sub_id = (int)($_POST['subcategory_id'] ?? ($product['subcategory_id'] ?? 0));
+          $cur_cat_slug = $_POST['category'] ?? ($product['category'] ?? '');
+        ?>
 
         <div class="admin-form-group">
-          <label class="admin-label" for="category">Category Filter Key</label>
-          <select id="category" name="category" class="admin-select">
-            <?php
-              $cur_cat = $_POST['category'] ?? ($product['category'] ?? 'twist_drills');
-            ?>
-            <option value="twist_drills" <?= $cur_cat === 'twist_drills' ? 'selected' : '' ?>>HSS Twist Drills (twist_drills)</option>
-            <option value="high_performance" <?= $cur_cat === 'high_performance' ? 'selected' : '' ?>>Cobalt &amp; High Performance (high_performance)</option>
-            <option value="cutting_tools" <?= $cur_cat === 'cutting_tools' ? 'selected' : '' ?>>Milling &amp; Core Cutters (cutting_tools)</option>
-            <option value="power_tools" <?= $cur_cat === 'power_tools' ? 'selected' : '' ?>>Industrial Power Tools (power_tools)</option>
+          <label class="admin-label" for="category_id">Main Category *</label>
+          <select id="category_id" name="category_id" class="admin-select" onchange="filterSubcategoryOptions(this.value)">
+            <option value="">-- Select Main Category --</option>
+            <?php foreach ($all_top_cats as $tc): ?>
+              <?php 
+                $is_sel = ($cur_cat_id === (int)$tc['id']) || (empty($cur_cat_id) && $cur_cat_slug === $tc['slug']);
+              ?>
+              <option value="<?= $tc['id'] ?>" <?= $is_sel ? 'selected' : '' ?>>
+                <?= htmlspecialchars($tc['name']) ?> (<?= htmlspecialchars($tc['slug']) ?>)
+              </option>
+            <?php endforeach; ?>
           </select>
+          <span class="admin-help">Main categories appear in column 1 ("Listed Categories") of the mega dropdown.</span>
         </div>
 
         <div class="admin-form-group">
-          <label class="admin-label" for="category_name">Category Display Label</label>
-          <input 
-            type="text" 
-            id="category_name" 
-            name="category_name" 
-            class="admin-input" 
-            value="<?= htmlspecialchars($_POST['category_name'] ?? ($product['category_name'] ?? 'HSS Twist Drills')) ?>"
-          >
+          <label class="admin-label" for="subcategory_id">Subcategory (Optional)</label>
+          <select id="subcategory_id" name="subcategory_id" class="admin-select">
+            <option value="">-- None (Direct Main Category Product) --</option>
+            <?php foreach ($all_sub_cats as $sc): ?>
+              <option 
+                value="<?= $sc['id'] ?>" 
+                data-parent="<?= $sc['parent_id'] ?>" 
+                <?= ($cur_sub_id === (int)$sc['id']) ? 'selected' : '' ?>
+              >
+                <?= htmlspecialchars($sc['name']) ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+          <span class="admin-help">If chosen, this product is grouped under this subcategory in column 2 of the mega dropdown.</span>
         </div>
+
+        <script>
+        function filterSubcategoryOptions(selectedParentId) {
+          var subSelect = document.getElementById('subcategory_id');
+          if (!subSelect) return;
+          var opts = subSelect.querySelectorAll('option[data-parent]');
+          opts.forEach(function(opt) {
+            var pId = opt.getAttribute('data-parent');
+            if (!selectedParentId || pId === selectedParentId) {
+              opt.style.display = '';
+            } else {
+              opt.style.display = 'none';
+              if (opt.selected) {
+                subSelect.value = '';
+              }
+            }
+          });
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+          var mainCat = document.getElementById('category_id');
+          if (mainCat && mainCat.value) {
+            filterSubcategoryOptions(mainCat.value);
+          }
+        });
+        </script>
 
         <div class="admin-form-group">
           <label class="admin-label" for="badge">Product Badge (Optional)</label>

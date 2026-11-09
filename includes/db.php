@@ -129,7 +129,22 @@ function init_db_schema(PDO $pdo, $driver) {
         )
     ");
 
-    // 3. Products Table
+    // 3. Categories Table (Supports Hierarchy: Top-level Categories & Subcategories)
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS categories (
+            id {$auto_id},
+            parent_id INT DEFAULT NULL,
+            name VARCHAR(150) NOT NULL,
+            slug VARCHAR(150) NOT NULL UNIQUE,
+            description TEXT DEFAULT NULL,
+            image VARCHAR(255) DEFAULT NULL,
+            sort_order INT DEFAULT 0,
+            is_active INT DEFAULT 1,
+            created_at {$dt_now}
+        )
+    ");
+
+    // 4. Products Table
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS products (
             id {$auto_id},
@@ -140,6 +155,8 @@ function init_db_schema(PDO $pdo, $driver) {
             brand VARCHAR(100) DEFAULT 'Dagger Brand / Birla Precision',
             category VARCHAR(100) DEFAULT 'twist_drills',
             category_name VARCHAR(100) DEFAULT 'HSS Twist Drills',
+            category_id INT DEFAULT NULL,
+            subcategory_id INT DEFAULT NULL,
             badge VARCHAR(100) DEFAULT NULL,
             badge_class VARCHAR(50) DEFAULT 'badge-red',
             description TEXT DEFAULT NULL,
@@ -153,7 +170,25 @@ function init_db_schema(PDO $pdo, $driver) {
         )
     ");
 
-    // 4. Product Sizes Table
+    // Ensure category_id and subcategory_id exist on products table if table was created previously
+    if ($is_sqlite) {
+        $p_cols = $pdo->query("PRAGMA table_info(products)")->fetchAll(PDO::FETCH_COLUMN, 1);
+        if (!in_array('category_id', $p_cols)) {
+            $pdo->exec("ALTER TABLE products ADD COLUMN category_id INT DEFAULT NULL");
+        }
+        if (!in_array('subcategory_id', $p_cols)) {
+            $pdo->exec("ALTER TABLE products ADD COLUMN subcategory_id INT DEFAULT NULL");
+        }
+    } else {
+        try {
+            $pdo->exec("ALTER TABLE products ADD COLUMN category_id INT DEFAULT NULL");
+        } catch (Throwable $e) {}
+        try {
+            $pdo->exec("ALTER TABLE products ADD COLUMN subcategory_id INT DEFAULT NULL");
+        } catch (Throwable $e) {}
+    }
+
+    // 5. Product Sizes Table
     if ($is_sqlite) {
         $cols = $pdo->query("PRAGMA table_info(product_sizes)")->fetchAll(PDO::FETCH_COLUMN, 1);
         if (!empty($cols) && !in_array('product_id', $cols)) {
@@ -219,6 +254,12 @@ function init_db_schema(PDO $pdo, $driver) {
     $products_count = (int)$pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
     if ($products_count === 0) {
         seed_default_products($pdo);
+    }
+
+    // Seed Default Categories & Subcategories if none exist
+    $categories_count = (int)$pdo->query("SELECT COUNT(*) FROM categories")->fetchColumn();
+    if ($categories_count === 0) {
+        seed_default_categories($pdo);
     }
 }
 
@@ -579,3 +620,232 @@ function get_product_by_id_or_slug($id_or_slug) {
         return null;
     }
 }
+
+/**
+ * Seed initial Categories & Subcategories hierarchy and link default products
+ */
+function seed_default_categories(PDO $pdo) {
+    try {
+        $stmt = $pdo->prepare("
+            INSERT INTO categories (parent_id, name, slug, description, image, sort_order, is_active)
+            VALUES (?, ?, ?, ?, ?, ?, 1)
+        ");
+
+        // 1. Top-Level: HSS Twist Drills
+        $stmt->execute([
+            null,
+            'HSS Twist Drills',
+            'twist_drills',
+            'Precision High-Speed Steel cutting tools manufactured conforming to IS:5101, ISO 235 and DIN 338.',
+            'assets/images/products/mega_menu_featured_card.png',
+            1
+        ]);
+        $cat_twist_drills_id = (int)$pdo->lastInsertId();
+
+        // 2. Top-Level: Cobalt & High Performance
+        $stmt->execute([
+            null,
+            'Cobalt & High Performance',
+            'high_performance',
+            'Premium M35 5% Cobalt alloy and TiN gold coated production drills for stainless steel and high-tensile alloys.',
+            'assets/images/collections/ninja_cobalt.png',
+            2
+        ]);
+        $cat_high_perf_id = (int)$pdo->lastInsertId();
+
+        // Subcategories under HSS Twist Drills
+        $stmt->execute([
+            $cat_twist_drills_id,
+            'HSS Parallel Shank Twist Drills (Jobber Series)',
+            'jobber-series',
+            'Standard parallel shank twist drills in 262 standard sizes from 0.30mm to 22.22mm.',
+            'assets/images/collections/jobber_drills.png',
+            1
+        ]);
+        $sub_jobber_id = (int)$pdo->lastInsertId();
+
+        $stmt->execute([
+            $cat_twist_drills_id,
+            'HSS Taper Shank Twist Drills (Morse Taper)',
+            'morse-taper',
+            'Direct spindle mount drills featuring precision Morse Tapers MT1 through MT6.',
+            'assets/images/collections/taper_shank.png',
+            2
+        ]);
+        $sub_taper_id = (int)$pdo->lastInsertId();
+
+        $stmt->execute([
+            $cat_twist_drills_id,
+            'FORGELINE Heavy Web Cast Iron GOLD & Forged Drills',
+            'forgeline-series',
+            'Extra-heavy web drills engineered for forged billets and ductile cast iron breakout resistance.',
+            'assets/images/collections/forgeline_drills.png',
+            3
+        ]);
+        $sub_forge_id = (int)$pdo->lastInsertId();
+
+        // Subcategories under Cobalt & High Performance
+        $stmt->execute([
+            $cat_high_perf_id,
+            'NINJA M35 Cobalt Heavy-Duty Jobber Drills',
+            'ninja-cobalt-series',
+            '5% Cobalt alloyed high-speed steel drills for tough stainless steel applications.',
+            'assets/images/collections/ninja_cobalt.png',
+            1
+        ]);
+        $sub_ninja_id = (int)$pdo->lastInsertId();
+
+        $stmt->execute([
+            $cat_high_perf_id,
+            'PANTHER High-Precision Split-Point Drills',
+            'panther-series',
+            '135-degree split-point self-centering drills for CNC machining centers.',
+            'assets/images/collections/panther_drills.png',
+            2
+        ]);
+        $sub_panther_id = (int)$pdo->lastInsertId();
+
+        $stmt->execute([
+            $cat_high_perf_id,
+            'ITM STD. TiN Gold Coated Production Drills',
+            'tin-gold-series',
+            'Titanium Nitride coated drills providing 3x tool life in repetitive high-speed production.',
+            'assets/images/collections/tin_coated_drills.png',
+            3
+        ]);
+        $sub_tin_id = (int)$pdo->lastInsertId();
+
+        // Link existing products to categories and subcategories
+        $link_map = [
+            'parallel-shank-twist-drills' => [$cat_twist_drills_id, $sub_jobber_id, 'HSS Twist Drills', 'twist_drills'],
+            'taper-shank'                 => [$cat_twist_drills_id, $sub_taper_id, 'HSS Twist Drills', 'twist_drills'],
+            'forgeline'                   => [$cat_twist_drills_id, $sub_forge_id, 'HSS Twist Drills', 'twist_drills'],
+            'ninja-cobalt'                => [$cat_high_perf_id, $sub_ninja_id, 'Cobalt & High Performance', 'high_performance'],
+            'panther-cnc'                 => [$cat_high_perf_id, $sub_panther_id, 'Cobalt & High Performance', 'high_performance'],
+            'tin-coated'                  => [$cat_high_perf_id, $sub_tin_id, 'Cobalt & High Performance', 'high_performance'],
+        ];
+
+        $upd_stmt = $pdo->prepare("UPDATE products SET category_id = ?, subcategory_id = ?, category_name = ?, category = ? WHERE slug = ?");
+        foreach ($link_map as $p_slug => $d) {
+            $upd_stmt->execute([$d[0], $d[1], $d[2], $d[3], $p_slug]);
+        }
+    } catch (Throwable $e) {
+        // Seeding error logged or ignored safely
+    }
+}
+
+/**
+ * Procedural helper to fetch categories
+ * @param int|string|null $parent_id null = all, 0 or 'top' = top-level only, int = children of parent_id
+ * @param bool $only_active
+ * @return array
+ */
+function get_categories($parent_id = null, $only_active = true) {
+    try {
+        $pdo = get_db();
+        $sql = "SELECT c.*, 
+                    p.name AS parent_name,
+                    (SELECT COUNT(*) FROM products WHERE category_id = c.id OR subcategory_id = c.id) AS product_count,
+                    (SELECT COUNT(*) FROM categories WHERE parent_id = c.id) AS subcategory_count
+                FROM categories c
+                LEFT JOIN categories p ON c.parent_id = p.id
+                WHERE 1=1";
+        $params = [];
+
+        if ($only_active) {
+            $sql .= " AND c.is_active = 1";
+        }
+
+        if ($parent_id === 0 || $parent_id === 'top') {
+            $sql .= " AND (c.parent_id IS NULL OR c.parent_id = 0)";
+        } elseif ($parent_id !== null) {
+            $sql .= " AND c.parent_id = ?";
+            $params[] = (int)$parent_id;
+        }
+
+        $sql .= " ORDER BY c.sort_order ASC, c.id ASC";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    } catch (Throwable $e) {
+        return [];
+    }
+}
+
+/**
+ * Procedural helper to fetch category by ID or Slug
+ */
+function get_category_by_id_or_slug($id_or_slug) {
+    try {
+        $pdo = get_db();
+        if (is_numeric($id_or_slug)) {
+            $stmt = $pdo->prepare("SELECT c.*, p.name AS parent_name FROM categories c LEFT JOIN categories p ON c.parent_id = p.id WHERE c.id = ?");
+            $stmt->execute([(int)$id_or_slug]);
+        } else {
+            $stmt = $pdo->prepare("SELECT c.*, p.name AS parent_name FROM categories c LEFT JOIN categories p ON c.parent_id = p.id WHERE c.slug = ?");
+            $stmt->execute([$id_or_slug]);
+        }
+        return $stmt->fetch() ?: null;
+    } catch (Throwable $e) {
+        return null;
+    }
+}
+
+/**
+ * Fetch full hierarchical tree of categories, subcategories, and linked products
+ */
+function get_categories_tree($only_active = true) {
+    try {
+        $top_cats = get_categories(0, $only_active);
+        $all_products = get_all_products();
+
+        // Index products by category_id, subcategory_id, and category slug
+        $products_by_cat = [];
+        $products_by_sub = [];
+        foreach ($all_products as $p) {
+            if (!empty($p['category_id'])) {
+                $products_by_cat[(string)$p['category_id']][] = $p;
+            }
+            if (!empty($p['category'])) {
+                $products_by_cat[(string)$p['category']][] = $p;
+            }
+            if (!empty($p['subcategory_id'])) {
+                $products_by_sub[(string)$p['subcategory_id']][] = $p;
+            }
+        }
+
+        foreach ($top_cats as &$top) {
+            $subs = get_categories($top['id'], $only_active);
+            foreach ($subs as &$sub) {
+                $sub['products'] = $products_by_sub[(string)$sub['id']] ?? [];
+            }
+            unset($sub);
+            $top['subcategories'] = $subs;
+
+            // Direct products for this category
+            $top['direct_products'] = $products_by_cat[(string)$top['id']] ?? ($products_by_cat[(string)$top['slug']] ?? []);
+
+            // All products (including under subcategories)
+            $all_for_top = $top['direct_products'];
+            foreach ($subs as $sub) {
+                if (!empty($sub['products'])) {
+                    foreach ($sub['products'] as $sp) {
+                        $all_for_top[] = $sp;
+                    }
+                }
+            }
+            // De-duplicate by ID
+            $unique_prods = [];
+            foreach ($all_for_top as $p) {
+                $unique_prods[$p['id']] = $p;
+            }
+            $top['all_products'] = array_values($unique_prods);
+        }
+        unset($top);
+
+        return $top_cats;
+    } catch (Throwable $e) {
+        return [];
+    }
+}
+

@@ -8,6 +8,8 @@ $pdo = get_db();
 
 // Fetch summary metrics
 $count_products = (int)$pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
+$count_categories = (int)$pdo->query("SELECT COUNT(*) FROM categories WHERE parent_id IS NULL OR parent_id = 0")->fetchColumn();
+$count_subcategories = (int)$pdo->query("SELECT COUNT(*) FROM categories WHERE parent_id IS NOT NULL AND parent_id != 0")->fetchColumn();
 $count_hero = (int)$pdo->query("SELECT COUNT(*) FROM site_sections WHERE section_key = 'hero'")->fetchColumn();
 $count_tiles = (int)$pdo->query("SELECT COUNT(*) FROM site_sections WHERE section_key = 'feature_tiles'")->fetchColumn();
 $count_collections = (int)$pdo->query("SELECT COUNT(*) FROM site_sections WHERE section_key = 'collections'")->fetchColumn();
@@ -42,6 +44,14 @@ $recent_enquiries = $pdo->query("SELECT * FROM enquiries ORDER BY id DESC LIMIT 
     <div>
       <div class="admin-stat-val"><?= $count_products ?></div>
       <div class="admin-stat-label">Listed Products</div>
+    </div>
+  </div>
+
+  <div class="admin-stat-card">
+    <div class="admin-stat-icon" style="background:#EEF2FF;color:#4338CA;">📁</div>
+    <div>
+      <div class="admin-stat-val"><?= $count_categories ?> <span style="font-size:12px;font-weight:500;color:var(--admin-gray-500);">(+<?= $count_subcategories ?> sub)</span></div>
+      <div class="admin-stat-label"><a href="categories.php" style="color:inherit;text-decoration:none;">Categories &amp; Sub</a></div>
     </div>
   </div>
 
