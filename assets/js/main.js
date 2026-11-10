@@ -59,9 +59,56 @@ document.addEventListener('DOMContentLoaded', function () {
     var megaTrigger = productsNavItem.querySelector('.nav-bar-link, .nav-link');
 
     if (megaTrigger && megaMenuCard) {
+      var megaCloseTimer = null;
+      var supportsHover = !window.matchMedia || window.matchMedia('(hover: hover)').matches;
+
+      function openMegaMenu() {
+        if (megaCloseTimer) {
+          clearTimeout(megaCloseTimer);
+          megaCloseTimer = null;
+        }
+        productsNavItem.classList.add('is-open');
+        megaTrigger.setAttribute('aria-expanded', 'true');
+      }
+
+      function scheduleCloseMegaMenu() {
+        if (megaCloseTimer) clearTimeout(megaCloseTimer);
+        megaCloseTimer = setTimeout(function () {
+          productsNavItem.classList.remove('is-open');
+          megaTrigger.setAttribute('aria-expanded', 'false');
+        }, 240);
+      }
+
+      // Hover intent keeps menu open across gaps & diagonal mouse paths
+      if (supportsHover) {
+        productsNavItem.addEventListener('mouseenter', function () {
+          if (window.innerWidth > 860) {
+            openMegaMenu();
+          }
+        });
+
+        productsNavItem.addEventListener('mouseleave', function () {
+          if (window.innerWidth > 860) {
+            scheduleCloseMegaMenu();
+          }
+        });
+
+        megaMenuCard.addEventListener('mouseenter', function () {
+          if (window.innerWidth > 860) {
+            openMegaMenu();
+          }
+        });
+
+        megaMenuCard.addEventListener('mouseleave', function () {
+          if (window.innerWidth > 860) {
+            scheduleCloseMegaMenu();
+          }
+        });
+      }
+
       megaTrigger.addEventListener('click', function (e) {
-        // Toggle on mobile/tablet or click
-        if (window.innerWidth <= 1024) {
+        // Toggle on touch devices or mobile viewports
+        if (!supportsHover || window.innerWidth <= 860) {
           e.preventDefault();
           productsNavItem.classList.toggle('is-open');
           var isExpanded = productsNavItem.classList.contains('is-open');
