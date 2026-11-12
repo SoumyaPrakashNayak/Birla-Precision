@@ -21,18 +21,18 @@ include __DIR__ . '/includes/header.php';
     <ol class="breadcrumb-list" style="margin:0;padding:0;list-style:none;display:flex;align-items:center;font-size:0.875rem;">
       <li><a href="index.php" style="color:#64748B;text-decoration:none;">Home</a></li>
       <li class="breadcrumb-separator" style="margin:0 8px;color:#94A3B8;">&rsaquo;</li>
-      <li><a href="products/parallel-shank-twist-drills.php" style="color:#64748B;text-decoration:none;">Jobber Series Drills</a></li>
+      <li><a href="products.php" style="color:#64748B;text-decoration:none;">Products Catalogue</a></li>
       <li class="breadcrumb-separator" style="margin:0 8px;color:#94A3B8;">&rsaquo;</li>
       <li class="breadcrumb-current" aria-current="page" style="color:#DC2626;font-weight:600;">Request Official Quotation</li>
     </ol>
 
     <div>
-      <a href="products/parallel-shank-twist-drills.php" class="btn" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:#FFF;border:1px solid #CBD5E1;color:#1E293B;font-size:0.85rem;font-weight:600;border-radius:6px;text-decoration:none;transition:all 0.2s;">
+      <a href="products.php" class="btn" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:#FFF;border:1px solid #CBD5E1;color:#1E293B;font-size:0.85rem;font-weight:600;border-radius:6px;text-decoration:none;transition:all 0.2s;">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="19" y1="12" x2="5" y2="12"></line>
           <polyline points="12 19 5 12 12 5"></polyline>
         </svg>
-        <span>Back to Product Configurator</span>
+        <span>Back to Products Catalogue</span>
       </a>
     </div>
   </div>
@@ -55,10 +55,10 @@ include __DIR__ . '/includes/header.php';
       </div>
       <h3 style="font-family:var(--font-heading);font-size:1.5rem;color:#0F172A;margin-bottom:8px;">Your Quotation Cart is Empty</h3>
       <p style="color:#64748B;max-width:520px;margin:0 auto 24px;font-size:0.95rem;line-height:1.6;">
-        You have not added any tooling sizes to your cart yet. Please explore our Jobber Series Drills configurator to select diameters and quantities before requesting a quotation.
+        You have not added any tooling sizes to your cart yet. Please explore our Products Catalogue to select sizes and quantities before requesting a quotation.
       </p>
-      <a href="products/parallel-shank-twist-drills.php" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;font-size:0.95rem;border-radius:6px;">
-        <span>Configure Jobber Drills</span>
+      <a href="products.php" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;font-size:0.95rem;border-radius:6px;">
+        <span>Browse Products Catalogue</span>
         <span>&rarr;</span>
       </a>
     </div>
@@ -315,13 +315,14 @@ document.addEventListener('DOMContentLoaded', function () {
     if (enquirySummaryItems) {
       enquirySummaryItems.innerHTML = '';
       cart.forEach(function (it) {
-        var diaLabel = it.diaText || (it.dia ? (it.dia + (it.unit === 'inch' ? '' : ' mm')) : 'Drill');
+        var diaLabel = it.diaText || it.dia || 'Tooling Size';
+        var typeNote = it.sizeTypeLabel ? (' • ' + it.sizeTypeLabel) : '';
         var chip = document.createElement('div');
         chip.className = 'enquiry-summary-chip';
         chip.innerHTML =
           '<div class="chip-main">' +
             '<strong class="chip-dia">' + escapeHtml(diaLabel) + '</strong>' +
-            '<span class="chip-variant">' + escapeHtml(it.title || it.productTitle || 'HSS Jobber Series') + '</span>' +
+            '<span class="chip-variant">' + escapeHtml(it.title || it.productTitle || 'HSS Jobber Series') + escapeHtml(typeNote) + '</span>' +
           '</div>' +
           '<div class="chip-qty-wrap">' +
             '<span class="chip-qty">' + (it.qty || 1) + ' pcs</span>' +
@@ -336,8 +337,9 @@ document.addEventListener('DOMContentLoaded', function () {
       var diaList = cart.map(function (it) {
         var pName = it.title || it.productTitle || 'HSS Jobber Series';
         if (productNames.indexOf(pName) === -1) productNames.push(pName);
-        var label = it.diaText || (it.dia ? (it.dia + (it.unit === 'inch' ? '' : ' mm')) : 'Drill');
-        return label + ' (' + (it.qty || 1) + ' pcs)';
+        var label = it.diaText || it.dia || 'Tooling Size';
+        var stLabel = it.sizeTypeLabel ? (' [' + it.sizeTypeLabel + ']') : '';
+        return label + stLabel + ' (' + (it.qty || 1) + ' pcs)';
       });
       var prodHeader = productNames.join(' / ');
       enquiryDiaInput.value = prodHeader + ' — ' + diaList.join(', ');
@@ -363,6 +365,8 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     } catch (e) {}
   }
+
+  window.refreshQuotationPageFromCart = renderQuotationView;
 
   // Initial render
   renderQuotationView();

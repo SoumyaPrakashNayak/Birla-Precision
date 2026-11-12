@@ -63,7 +63,21 @@ CREATE TABLE IF NOT EXISTS `products` (
   `image` VARCHAR(255) NOT NULL,
   `gallery_json` TEXT DEFAULT NULL,
   `features_json` TEXT DEFAULT NULL,
+  `size_types_json` TEXT DEFAULT NULL,
   `is_active` INT DEFAULT 1,
+  `sort_order` INT DEFAULT 0,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 4b. Size Types Library Table
+CREATE TABLE IF NOT EXISTS `size_types` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `code` VARCHAR(60) NOT NULL UNIQUE,
+  `label` VARCHAR(120) NOT NULL,
+  `unit_suffix` VARCHAR(40) DEFAULT '',
+  `placeholder` VARCHAR(160) DEFAULT '',
+  `presets_text` TEXT DEFAULT NULL,
+  `is_default` INT DEFAULT 0,
   `sort_order` INT DEFAULT 0,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -72,6 +86,8 @@ CREATE TABLE IF NOT EXISTS `products` (
 CREATE TABLE IF NOT EXISTS `product_sizes` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `product_id` INT NOT NULL,
+  `size_type` VARCHAR(60) DEFAULT 'mm',
+  `size_value` VARCHAR(150) DEFAULT NULL,
   `size_mm` VARCHAR(50) NOT NULL,
   `size_inch` VARCHAR(50) DEFAULT NULL,
   `dg` VARCHAR(50) DEFAULT NULL,

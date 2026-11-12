@@ -8,27 +8,81 @@ require_once __DIR__ . '/../includes/upload_helper.php';
 $pdo = get_db();
 $product_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $product = null;
-$existing_sizes_text = '';
-$existing_popular_text = '';
+
+$all_size_types = get_all_size_types();
+$size_types_lib_map = [];
+foreach ($all_size_types as $st) {
+    $size_types_lib_map[$st['code']] = $st;
+}
+
+// Build initial size type blocks for editor
+$editor_size_blocks = [];
 
 if ($product_id > 0) {
     $product = get_product_by_id_or_slug($product_id);
     if ($product) {
-        $lines = [];
-        $popular = [];
-        foreach ($product['sizes'] as $sz) {
-            $line = $sz['size_mm'];
-            if (!empty($sz['size_inch'])) {
-                $line .= ' (' . $sz['size_inch'] . ')';
-            }
-            $lines[] = $line;
-            if ($sz['is_popular']) {
-                $popular[] = $sz['size_mm'];
+        $cfg = get_product_size_config($product);
+
+        // If flagship product has not yet been customized with size_types_json, hydrate full 262 Jobber sizes from JSON so none are lost
+        $jobber_override = [];
+        if ($product['slug'] === 'parallel-shank-twist-drills' && empty($product['size_types_json'])) {
+            $json_path = __DIR__ . '/../jobber_series_data.json';
+            if (file_exists($json_path)) {
+                $jdata = json_decode(file_get_contents($json_path), true);
+                if (is_array($jdata) && !empty($jdata)) {
+                    $mm_vals = [];
+                    $inch_vals = [];
+                    foreach ($jdata as $jrow) {
+                        if (!empty($jrow['mm'])) $mm_vals[] = trim((string)$jrow['mm']);
+                        if (!empty($jrow['inch'])) {
+                            $iv = trim(str_replace("\xef\x82\xab", '', (string)$jrow['inch']));
+                            if ($iv !== '' && !in_array($iv, $inch_vals, true)) $inch_vals[] = $iv;
+                        }
+                    }
+                    $jobber_override['mm'] = $mm_vals;
+                    $jobber_override['inch'] = $inch_vals;
+                }
             }
         }
-        $existing_sizes_text = implode("\n", $lines);
-        $existing_popular_text = implode(', ', $popular);
+
+        foreach ($cfg['size_types'] as $st) {
+            $code = $st['code'];
+            if (isset($jobber_override[$code])) {
+                $vals = $jobber_override[$code];
+            } else {
+                $vals = array_column($cfg['sizes_by_type'][$code] ?? [], 'val');
+            }
+            $editor_size_blocks[] = [
+                'code' => $code,
+                'label' => $st['label'],
+                'unit_suffix' => $st['unit_suffix'] ?? '',
+                'placeholder' => $st['placeholder'] ?? '',
+                'sizes_text' => implode("\n", $vals),
+                'popular_text' => implode(', ', $st['popular'] ?? [])
+            ];
+        }
     }
+}
+
+if (empty($editor_size_blocks)) {
+    $editor_size_blocks = [
+        [
+            'code' => 'mm',
+            'label' => 'Metric (mm)',
+            'unit_suffix' => 'mm',
+            'placeholder' => 'Select or type size (e.g. 3.5)',
+            'sizes_text' => '',
+            'popular_text' => '2.00, 3.00, 4.00, 5.00, 6.00, 8.00, 10.00, 12.00'
+        ],
+        [
+            'code' => 'inch',
+            'label' => 'Inch',
+            'unit_suffix' => '"',
+            'placeholder' => 'Select or type size (e.g. 1/8")',
+            'sizes_text' => '',
+            'popular_text' => '1/16", 1/8", 3/16", 1/4", 5/16", 3/8", 7/16", 1/2"'
+        ]
+    ];
 }
 
 $error = '';
@@ -55,10 +109,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $description   = trim($_POST['description'] ?? '');
     $full_details  = trim($_POST['full_details'] ?? '');
     $features_raw  = trim($_POST['features_raw'] ?? '');
-    $sizes_raw     = trim($_POST['sizes_raw'] ?? '');
-    $popular_raw   = trim($_POST['popular_raw'] ?? '');
     $is_active     = isset($_POST['is_active']) ? 1 : 0;
     $sort_order    = (int)($_POST['sort_order'] ?? 1);
+
+    // Preserve submitted size type blocks in case of validation error
+    if (!empty($_POST['size_type_codes']) && is_array($_POST['size_type_codes'])) {
+        $editor_size_blocks = [];
+        foreach ($_POST['size_type_codes'] as $oc) {
+            $oc = trim((string)$oc);
+            if ($oc === '') continue;
+            $editor_size_blocks[] = [
+                'code' => $oc,
+                'label' => trim((string)($_POST['size_type_labels'][$oc] ?? $oc)),
+                'unit_suffix' => trim((string)($_POST['size_type_suffixes'][$oc] ?? '')),
+                'placeholder' => trim((string)($_POST['size_type_placeholders'][$oc] ?? '')),
+                'sizes_text' => (string)($_POST['sizes_by_type'][$oc] ?? ''),
+                'popular_text' => (string)($_POST['popular_by_type'][$oc] ?? '')
+            ];
+        }
+    }
 
     if (empty($title)) {
         $error = 'Product Title is required.';
@@ -132,6 +201,105 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $features_json = json_encode($features, JSON_UNESCAPED_SLASHES);
                 $gallery_json  = json_encode(array_values(array_unique($gallery)), JSON_UNESCAPED_SLASHES);
 
+                // Collect submitted Size Types & their sizes
+                $submitted_codes        = $_POST['size_type_codes'] ?? [];
+                $submitted_labels       = $_POST['size_type_labels'] ?? [];
+                $submitted_suffixes     = $_POST['size_type_suffixes'] ?? [];
+                $submitted_placeholders = $_POST['size_type_placeholders'] ?? [];
+                $submitted_sizes_map    = $_POST['sizes_by_type'] ?? [];
+                $submitted_pop_map      = $_POST['popular_by_type'] ?? [];
+
+                $size_types_config = [];
+                $sizes_to_insert   = []; // rows of [size_type, size_value, size_mm, size_inch, dg, is_popular]
+
+                foreach ($submitted_codes as $orig_code) {
+                    $orig_code = trim((string)$orig_code);
+                    if ($orig_code === '') continue;
+
+                    $st_label       = trim((string)($submitted_labels[$orig_code] ?? $orig_code));
+                    $st_suffix      = trim((string)($submitted_suffixes[$orig_code] ?? ''));
+                    $st_placeholder = trim((string)($submitted_placeholders[$orig_code] ?? ''));
+
+                    // Ensure size type exists in global size_types library (creates custom ones automatically)
+                    $st_rec = create_or_get_size_type($st_label, $st_suffix, $st_placeholder, $orig_code);
+                    $final_code = $st_rec ? $st_rec['code'] : $orig_code;
+                    if ($st_rec && empty($st_placeholder)) {
+                        $st_placeholder = $st_rec['placeholder'];
+                    }
+
+                    $raw_text = trim((string)($submitted_sizes_map[$orig_code] ?? ''));
+                    $pop_raw  = trim((string)($submitted_pop_map[$orig_code] ?? ''));
+
+                    $pop_list = array_values(array_filter(array_map('trim', explode(',', $pop_raw)), function($v) {
+                        return $v !== '';
+                    }));
+                    $pop_lookup = [];
+                    foreach ($pop_list as $pv) {
+                        $pop_lookup[strtolower($pv)] = true;
+                    }
+
+                    $lines = preg_split('/[\r\n,]+/', $raw_text);
+                    $type_vals = [];
+
+                    foreach ($lines as $sline) {
+                        $sline = trim($sline);
+                        if ($sline === '') continue;
+
+                        // Backward-compatible support for "3.17 (1/8")" in Metric (mm) textarea
+                        $val = $sline;
+                        $mm_col = '';
+                        $inch_col = '';
+                        $dg_col = '';
+
+                        if ($final_code === 'mm' && preg_match('/^([0-9\.]+)\s*\((.*?)\)$/', $sline, $m)) {
+                            $val = trim($m[1]);
+                            $inch_col = trim($m[2]);
+                            $mm_col = $val;
+                        } elseif ($final_code === 'mm') {
+                            $mm_col = $val;
+                        } elseif ($final_code === 'inch') {
+                            $inch_col = $val;
+                        } elseif ($final_code === 'dg') {
+                            $dg_col = $val;
+                        }
+
+                        $is_pop = isset($pop_lookup[strtolower($val)]) || isset($pop_lookup[strtolower($sline)]) ? 1 : 0;
+                        $type_vals[] = $val;
+
+                        $sizes_to_insert[] = [
+                            'size_type' => $final_code,
+                            'size_value' => $val,
+                            'size_mm' => $mm_col !== '' ? $mm_col : $val,
+                            'size_inch' => $inch_col,
+                            'dg' => $dg_col,
+                            'is_popular' => $is_pop
+                        ];
+                    }
+
+                    if (empty($pop_list) && !empty($type_vals)) {
+                        $pop_list = array_slice(array_values(array_unique($type_vals)), 0, 8);
+                    }
+
+                    // Avoid duplicate size type codes on the same product
+                    $already = false;
+                    foreach ($size_types_config as $stc) {
+                        if ($stc['code'] === $final_code) { $already = true; break; }
+                    }
+                    if (!$already) {
+                        $size_types_config[] = [
+                            'code' => $final_code,
+                            'label' => $st_label,
+                            'unit_suffix' => $st_suffix,
+                            'placeholder' => $st_placeholder,
+                            'popular' => $pop_list
+                        ];
+                    }
+                }
+
+                $size_types_json = !empty($size_types_config)
+                    ? json_encode($size_types_config, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
+                    : null;
+
                 if ($product) {
                     // Update product
                     $stmt = $pdo->prepare("
@@ -139,70 +307,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         SET slug = ?, title = ?, standard = ?, hsn_code = ?, brand = ?, 
                             category = ?, category_name = ?, category_id = ?, subcategory_id = ?, badge = ?, badge_class = ?, 
                             description = ?, full_details = ?, image = ?, gallery_json = ?, 
-                            features_json = ?, is_active = ?, sort_order = ?
+                            features_json = ?, size_types_json = ?, is_active = ?, sort_order = ?
                         WHERE id = ?
                     ");
                     $stmt->execute([
                         $slug, $title, $standard, $hsn_code, $brand,
                         $category, $category_name, $category_id, $subcategory_id, $badge, $badge_class,
                         $description, $full_details, $image_path, $gallery_json,
-                        $features_json, $is_active, $sort_order, $product['id']
+                        $features_json, $size_types_json, $is_active, $sort_order, $product['id']
                     ]);
                     $saved_id = $product['id'];
                 } else {
                     // Insert new product
                     $stmt = $pdo->prepare("
                         INSERT INTO products 
-                        (slug, title, standard, hsn_code, brand, category, category_name, category_id, subcategory_id, badge, badge_class, description, full_details, image, gallery_json, features_json, is_active, sort_order) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        (slug, title, standard, hsn_code, brand, category, category_name, category_id, subcategory_id, badge, badge_class, description, full_details, image, gallery_json, features_json, size_types_json, is_active, sort_order) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     ");
                     $stmt->execute([
                         $slug, $title, $standard, $hsn_code, $brand,
                         $category, $category_name, $category_id, $subcategory_id, $badge, $badge_class,
                         $description, $full_details, $image_path, $gallery_json,
-                        $features_json, $is_active, $sort_order
+                        $features_json, $size_types_json, $is_active, $sort_order
                     ]);
                     $saved_id = (int)$pdo->lastInsertId();
                 }
 
             // Save Sizes
-            // Delete old sizes for this product
             $pdo->prepare("DELETE FROM product_sizes WHERE product_id = ?")->execute([$saved_id]);
 
-            // Parse popular sizes
-            $pop_array = array_map('trim', explode(',', $popular_raw));
-            $pop_set = array_flip($pop_array);
-
-            // Parse sizes lines/commas
-            $size_lines = preg_split('/[\r\n,]+/', $sizes_raw);
             $size_insert = $pdo->prepare("
-                INSERT INTO product_sizes (product_id, size_mm, size_inch, dg, is_popular, sort_order) 
-                VALUES (?, ?, ?, ?, ?, ?)
+                INSERT INTO product_sizes (product_id, size_type, size_value, size_mm, size_inch, dg, is_popular, sort_order) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ");
 
             $order = 1;
-            foreach ($size_lines as $sline) {
-                $sline = trim($sline);
-                if (empty($sline)) continue;
-
-                $mm = '';
-                $inch = '';
-
-                // Extract (inch) if present: e.g. "3.17 (1/8")"
-                if (preg_match('/^([0-9\.\/]+)\s*\((.*?)\)$/', $sline, $m)) {
-                    $mm = trim($m[1]);
-                    $inch = trim($m[2]);
-                } elseif (strpos($sline, '"') !== false || strpos($sline, '/') !== false) {
-                    // Raw inch e.g. "1/8""
-                    $inch = $sline;
-                    $mm = $sline;
-                } else {
-                    $mm = $sline;
-                }
-
-                $is_pop = isset($pop_set[$mm]) || isset($pop_set[$sline]) || ($order <= 6 && empty($popular_raw)) ? 1 : 0;
-
-                $size_insert->execute([$saved_id, $mm, $inch, '', $is_pop, $order++]);
+            foreach ($sizes_to_insert as $szRow) {
+                $size_insert->execute([
+                    $saved_id,
+                    $szRow['size_type'],
+                    $szRow['size_value'],
+                    $szRow['size_mm'],
+                    $szRow['size_inch'],
+                    $szRow['dg'],
+                    $szRow['is_popular'],
+                    $order++
+                ]);
             }
 
             header("Location: products.php?msg=" . urlencode($product ? 'Product updated successfully' : 'Product created successfully'));
@@ -349,14 +499,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       </div>
 
-      <!-- Card 2: Available Sizes Manager (Step 1 Configurator) -->
+      <!-- Card 2: Size Types & Available Sizes Manager (Step 1 Configurator) -->
       <div class="admin-card">
-        <div class="admin-card-header">
+        <div class="admin-card-header" style="align-items:flex-start;flex-wrap:wrap;gap:12px;">
           <div>
-            <h2 class="admin-card-title">Available Sizes &amp; Diameters</h2>
-            <p class="admin-help">Enter the sizes available for this product. These populate Step 1 in the live customer configurator.</p>
+            <h2 class="admin-card-title">Size Types &amp; Available Sizes (ITM Price List Spec)</h2>
+            <p class="admin-help">Add one or more size types (Metric mm, Inch, Drill Gauge DG, Morse Taper MT, Thread Pitch, Dimensions, or Custom). Each added size type gets its own textarea and automatically appears in Step 1 ("Add sizes and quantity").</p>
           </div>
-          <div style="display:flex;gap:8px;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button type="button" class="admin-btn admin-btn-secondary admin-btn-sm" id="btnPresetMetric">
               + Load Metric 1-13mm
             </button>
@@ -366,29 +516,111 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </div>
         </div>
 
-        <div class="admin-form-group">
-          <label class="admin-label" for="sizes_raw">Available Sizes (Enter one per line, or comma-separated)</label>
-          <textarea 
-            id="sizes_raw" 
-            name="sizes_raw" 
-            class="admin-textarea" 
-            style="min-height: 180px; font-family: monospace; font-size: 13px;"
-            placeholder="1.00&#10;1.50&#10;2.00&#10;2.50&#10;3.00&#10;3.17 (1/8&quot;)&#10;4.00&#10;5.00&#10;6.00&#10;6.35 (1/4&quot;)&#10;8.00&#10;10.00&#10;12.00&#10;12.70 (1/2&quot;)"
-          ><?= htmlspecialchars($_POST['sizes_raw'] ?? $existing_sizes_text) ?></textarea>
-          <span class="admin-help">Format: Enter metric diameter (e.g. <code>3.50</code>) or include inch equivalent in brackets (e.g. <code>3.17 (1/8")</code>).</span>
+        <!-- Dropdown FIRST: Select or Create a Size Type -->
+        <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:14px 16px;margin-bottom:18px;">
+          <label class="admin-label" for="addSizeTypeSelect" style="margin-bottom:8px;">Add Type of Size (From ITM Price List PDF or Custom)</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <select id="addSizeTypeSelect" class="admin-select" style="flex:1;min-width:220px;">
+              <?php foreach ($all_size_types as $st_opt): ?>
+                <option 
+                  value="<?= htmlspecialchars($st_opt['code']) ?>"
+                  data-label="<?= htmlspecialchars($st_opt['label']) ?>"
+                  data-suffix="<?= htmlspecialchars($st_opt['unit_suffix'] ?? '') ?>"
+                  data-placeholder="<?= htmlspecialchars($st_opt['placeholder'] ?? '') ?>"
+                >
+                  <?= htmlspecialchars($st_opt['label']) ?><?= !empty($st_opt['unit_suffix']) ? ' [' . htmlspecialchars($st_opt['unit_suffix']) . ']' : '' ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+            <button type="button" class="admin-btn admin-btn-primary admin-btn-sm" id="btnAddSelectedSizeType">
+              + Add Size Type to Textarea
+            </button>
+            <button type="button" class="admin-btn admin-btn-secondary admin-btn-sm" id="btnToggleCustomSizeType">
+              + New Custom Type
+            </button>
+          </div>
+
+          <!-- Inline Custom Size Type Creator -->
+          <div id="customSizeTypeBox" style="display:none;margin-top:12px;padding-top:12px;border-top:1px dashed #CBD5E1;">
+            <div style="display:grid;grid-template-columns:2fr 1fr 2fr auto;gap:8px;align-items:end;">
+              <div>
+                <label class="admin-label" for="customTypeName" style="font-size:11.5px;">Custom Size Type Name *</label>
+                <input type="text" id="customTypeName" class="admin-input" placeholder="e.g. Bore Size (mm) or Shank Dia">
+              </div>
+              <div>
+                <label class="admin-label" for="customTypeSuffix" style="font-size:11.5px;">Unit Suffix</label>
+                <input type="text" id="customTypeSuffix" class="admin-input" placeholder="e.g. mm, MT, TPI">
+              </div>
+              <div>
+                <label class="admin-label" for="customTypePlaceholder" style="font-size:11.5px;">Input Hint / Placeholder</label>
+                <input type="text" id="customTypePlaceholder" class="admin-input" placeholder="e.g. Select or type bore size">
+              </div>
+              <button type="button" class="admin-btn admin-btn-primary admin-btn-sm" id="btnCreateCustomSizeType" style="height:38px;">
+                + Add Custom Type
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div class="admin-form-group">
-          <label class="admin-label" for="popular_raw">Popular Quick-Select Sizes (Comma-separated)</label>
-          <input 
-            type="text" 
-            id="popular_raw" 
-            name="popular_raw" 
-            class="admin-input" 
-            placeholder="2.00, 3.00, 4.00, 5.00, 6.00, 8.00, 10.00, 12.00" 
-            value="<?= htmlspecialchars($_POST['popular_raw'] ?? ($existing_popular_text ?: '2.00, 3.00, 4.00, 5.00, 6.00, 8.00, 10.00, 12.00')) ?>"
-          >
-          <span class="admin-help">These appear as quick clickable pills right below Step 1's input box.</span>
+        <!-- Per-Size-Type Textarea Blocks -->
+        <div id="sizeTypeBlocksContainer" style="display:flex;flex-direction:column;gap:16px;">
+          <?php foreach ($editor_size_blocks as $b_idx => $blk): 
+            $b_code = $blk['code'];
+            $b_label = $blk['label'];
+            $b_suffix = $blk['unit_suffix'];
+            $b_ph = $blk['placeholder'];
+            $b_sizes = $_POST['sizes_by_type'][$b_code] ?? $blk['sizes_text'];
+            $b_pop = $_POST['popular_by_type'][$b_code] ?? $blk['popular_text'];
+            $has_presets = !empty($size_types_lib_map[$b_code]['presets_text']);
+          ?>
+            <div class="size-type-editor-block" data-code="<?= htmlspecialchars($b_code) ?>" style="border:1px solid #CBD5E1;border-radius:8px;padding:16px;background:#FFFFFF;">
+              <input type="hidden" name="size_type_codes[]" value="<?= htmlspecialchars($b_code) ?>">
+              <input type="hidden" name="size_type_labels[<?= htmlspecialchars($b_code) ?>]" value="<?= htmlspecialchars($b_label) ?>">
+              <input type="hidden" name="size_type_suffixes[<?= htmlspecialchars($b_code) ?>]" value="<?= htmlspecialchars($b_suffix) ?>">
+              <input type="hidden" name="size_type_placeholders[<?= htmlspecialchars($b_code) ?>]" value="<?= htmlspecialchars($b_ph) ?>">
+
+              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #F1F5F9;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span class="size-type-order-badge admin-badge admin-badge-red">#<?= $b_idx + 1 ?></span>
+                  <strong style="font-size:14px;color:#0F172A;"><?= htmlspecialchars($b_label) ?></strong>
+                  <?php if ($b_suffix !== ''): ?>
+                    <span class="admin-badge admin-badge-gray">Unit: <?= htmlspecialchars($b_suffix) ?></span>
+                  <?php endif; ?>
+                </div>
+                <div style="display:flex;gap:6px;align-items:center;">
+                  <?php if ($has_presets): ?>
+                    <button type="button" class="admin-btn admin-btn-secondary admin-btn-sm btn-load-type-presets" data-code="<?= htmlspecialchars($b_code) ?>">
+                      + Load PDF Presets
+                    </button>
+                  <?php endif; ?>
+                  <button type="button" class="admin-btn admin-btn-secondary admin-btn-sm btn-move-type-up" title="Move Up">&uarr;</button>
+                  <button type="button" class="admin-btn admin-btn-secondary admin-btn-sm btn-move-type-down" title="Move Down">&darr;</button>
+                  <button type="button" class="admin-btn admin-btn-danger admin-btn-sm btn-remove-size-type">Remove</button>
+                </div>
+              </div>
+
+              <div class="admin-form-group" style="margin-bottom:12px;">
+                <label class="admin-label">Available Sizes for <?= htmlspecialchars($b_label) ?> (One per line or comma-separated)</label>
+                <textarea 
+                  name="sizes_by_type[<?= htmlspecialchars($b_code) ?>]" 
+                  class="admin-textarea size-type-textarea" 
+                  style="min-height: 140px; font-family: monospace; font-size: 13px;"
+                  placeholder="<?= htmlspecialchars($b_ph ?: 'Enter sizes one per line...') ?>"
+                ><?= htmlspecialchars($b_sizes) ?></textarea>
+              </div>
+
+              <div class="admin-form-group" style="margin-bottom:0;">
+                <label class="admin-label">Popular Quick-Select Pills for <?= htmlspecialchars($b_label) ?> (Comma-separated)</label>
+                <input 
+                  type="text" 
+                  name="popular_by_type[<?= htmlspecialchars($b_code) ?>]" 
+                  class="admin-input size-type-popular" 
+                  placeholder="Optional comma-separated quick sizes (auto-selects first 8 if empty)"
+                  value="<?= htmlspecialchars($b_pop) ?>"
+                >
+              </div>
+            </div>
+          <?php endforeach; ?>
         </div>
 
       </div>
@@ -569,34 +801,241 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </form>
 
 <script>
-// Quick presets for sizes manager
-document.getElementById('btnPresetMetric').addEventListener('click', function() {
-  var metricPresets = [
-    '1.00', '1.50', '2.00', '2.50', '3.00', '3.17 (1/8")', '3.50', '4.00', '4.50', '5.00',
-    '5.50', '6.00', '6.35 (1/4")', '6.80', '7.00', '7.50', '8.00', '8.50', '9.00', '9.52 (3/8")',
-    '10.00', '10.50', '11.00', '11.50', '12.00', '12.70 (1/2")', '13.00'
-  ];
-  document.getElementById('sizes_raw').value = metricPresets.join('\n');
-});
+(function() {
+  var sizeTypesLib = <?= json_encode($size_types_lib_map, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
+  var container = document.getElementById('sizeTypeBlocksContainer');
+  var addSelect = document.getElementById('addSizeTypeSelect');
+  var btnAddSelected = document.getElementById('btnAddSelectedSizeType');
+  var btnToggleCustom = document.getElementById('btnToggleCustomSizeType');
+  var customBox = document.getElementById('customSizeTypeBox');
+  var btnCreateCustom = document.getElementById('btnCreateCustomSizeType');
 
-document.getElementById('btnPresetAllDrills').addEventListener('click', function() {
-  fetch('../api/get_product_data.php?action=all')
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-      if (data && data.sizes) {
-        var lines = data.sizes.map(function(s) {
-          var str = s.mm;
-          if (s.inch) str += ' (' + s.inch + ')';
-          return str;
-        });
-        document.getElementById('sizes_raw').value = lines.join('\n');
-        alert('Loaded ' + lines.length + ' official IS : 5101 Jobber series diameters!');
-      }
-    })
-    .catch(function(err) {
-      alert('Could not fetch preset sizes from API.');
+  function escHtml(s) {
+    return String(s || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function refreshOrderBadges() {
+    if (!container) return;
+    var blocks = container.querySelectorAll('.size-type-editor-block');
+    blocks.forEach(function(blk, idx) {
+      var badge = blk.querySelector('.size-type-order-badge');
+      if (badge) badge.textContent = '#' + (idx + 1);
     });
-});
+  }
+
+  function wireBlock(blk) {
+    var code = blk.getAttribute('data-code');
+    var btnPreset = blk.querySelector('.btn-load-type-presets');
+    var btnUp = blk.querySelector('.btn-move-type-up');
+    var btnDown = blk.querySelector('.btn-move-type-down');
+    var btnRemove = blk.querySelector('.btn-remove-size-type');
+    var ta = blk.querySelector('.size-type-textarea');
+
+    if (btnPreset) {
+      btnPreset.addEventListener('click', function() {
+        var meta = sizeTypesLib[code];
+        if (meta && meta.presets_text && ta) {
+          ta.value = meta.presets_text;
+        }
+      });
+    }
+    if (btnUp) {
+      btnUp.addEventListener('click', function() {
+        var prev = blk.previousElementSibling;
+        if (prev) {
+          container.insertBefore(blk, prev);
+          refreshOrderBadges();
+        }
+      });
+    }
+    if (btnDown) {
+      btnDown.addEventListener('click', function() {
+        var next = blk.nextElementSibling;
+        if (next) {
+          container.insertBefore(next, blk);
+          refreshOrderBadges();
+        }
+      });
+    }
+    if (btnRemove) {
+      btnRemove.addEventListener('click', function() {
+        if (container.querySelectorAll('.size-type-editor-block').length <= 1) {
+          alert('At least one size type block is required.');
+          return;
+        }
+        blk.remove();
+        refreshOrderBadges();
+      });
+    }
+  }
+
+  function addOrFocusSizeTypeBlock(code, label, suffix, placeholder, initialSizes) {
+    if (!container) return;
+    var existing = container.querySelector('.size-type-editor-block[data-code="' + code.replace(/"/g, '\\"') + '"]');
+    if (existing) {
+      var existingTa = existing.querySelector('.size-type-textarea');
+      if (existingTa) existingTa.focus();
+      existing.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return existing;
+    }
+
+    var meta = sizeTypesLib[code] || {};
+    var hasPresets = Boolean(meta.presets_text);
+    var div = document.createElement('div');
+    div.className = 'size-type-editor-block';
+    div.setAttribute('data-code', code);
+    div.style.cssText = 'border:1px solid #CBD5E1;border-radius:8px;padding:16px;background:#FFFFFF;';
+    div.innerHTML =
+      '<input type="hidden" name="size_type_codes[]" value="' + escHtml(code) + '">' +
+      '<input type="hidden" name="size_type_labels[' + escHtml(code) + ']" value="' + escHtml(label) + '">' +
+      '<input type="hidden" name="size_type_suffixes[' + escHtml(code) + ']" value="' + escHtml(suffix) + '">' +
+      '<input type="hidden" name="size_type_placeholders[' + escHtml(code) + ']" value="' + escHtml(placeholder) + '">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #F1F5F9;">' +
+        '<div style="display:flex;align-items:center;gap:8px;">' +
+          '<span class="size-type-order-badge admin-badge admin-badge-red">#</span>' +
+          '<strong style="font-size:14px;color:#0F172A;">' + escHtml(label) + '</strong>' +
+          (suffix ? '<span class="admin-badge admin-badge-gray">Unit: ' + escHtml(suffix) + '</span>' : '') +
+        '</div>' +
+        '<div style="display:flex;gap:6px;align-items:center;">' +
+          (hasPresets ? '<button type="button" class="admin-btn admin-btn-secondary admin-btn-sm btn-load-type-presets" data-code="' + escHtml(code) + '">+ Load PDF Presets</button>' : '') +
+          '<button type="button" class="admin-btn admin-btn-secondary admin-btn-sm btn-move-type-up" title="Move Up">&uarr;</button>' +
+          '<button type="button" class="admin-btn admin-btn-secondary admin-btn-sm btn-move-type-down" title="Move Down">&darr;</button>' +
+          '<button type="button" class="admin-btn admin-btn-danger admin-btn-sm btn-remove-size-type">Remove</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="admin-form-group" style="margin-bottom:12px;">' +
+        '<label class="admin-label">Available Sizes for ' + escHtml(label) + ' (One per line or comma-separated)</label>' +
+        '<textarea name="sizes_by_type[' + escHtml(code) + ']" class="admin-textarea size-type-textarea" style="min-height: 140px; font-family: monospace; font-size: 13px;" placeholder="' + escHtml(placeholder || 'Enter sizes one per line...') + '">' + escHtml(initialSizes || (meta.presets_text || '')) + '</textarea>' +
+      '</div>' +
+      '<div class="admin-form-group" style="margin-bottom:0;">' +
+        '<label class="admin-label">Popular Quick-Select Pills for ' + escHtml(label) + ' (Comma-separated)</label>' +
+        '<input type="text" name="popular_by_type[' + escHtml(code) + ']" class="admin-input size-type-popular" placeholder="Optional comma-separated quick sizes (auto-selects first 8 if empty)" value="">' +
+      '</div>';
+
+    container.appendChild(div);
+    wireBlock(div);
+    refreshOrderBadges();
+    var newTa = div.querySelector('.size-type-textarea');
+    if (newTa) newTa.focus();
+    return div;
+  }
+
+  if (container) {
+    container.querySelectorAll('.size-type-editor-block').forEach(wireBlock);
+    refreshOrderBadges();
+  }
+
+  if (btnAddSelected && addSelect) {
+    btnAddSelected.addEventListener('click', function() {
+      var opt = addSelect.options[addSelect.selectedIndex];
+      if (!opt) return;
+      var code = opt.value;
+      var label = opt.getAttribute('data-label') || opt.textContent;
+      var suffix = opt.getAttribute('data-suffix') || '';
+      var placeholder = opt.getAttribute('data-placeholder') || '';
+      addOrFocusSizeTypeBlock(code, label, suffix, placeholder);
+    });
+  }
+
+  if (btnToggleCustom && customBox) {
+    btnToggleCustom.addEventListener('click', function() {
+      customBox.style.display = (customBox.style.display === 'none') ? 'block' : 'none';
+    });
+  }
+
+  if (btnCreateCustom) {
+    btnCreateCustom.addEventListener('click', function() {
+      var nameInp = document.getElementById('customTypeName');
+      var sufInp = document.getElementById('customTypeSuffix');
+      var phInp = document.getElementById('customTypePlaceholder');
+      var label = nameInp ? nameInp.value.trim() : '';
+      if (!label) {
+        alert('Please enter a Custom Size Type Name (e.g. Bore Size, Morse Taper).');
+        if (nameInp) nameInp.focus();
+        return;
+      }
+      var suffix = sufInp ? sufInp.value.trim() : '';
+      var placeholder = phInp ? phInp.value.trim() : ('Select or type ' + label);
+      var code = label.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+      if (!code) code = 'custom_' + Date.now();
+
+      // Add to dropdown select too so it's visible
+      if (addSelect && !addSelect.querySelector('option[value="' + code + '"]')) {
+        var newOpt = document.createElement('option');
+        newOpt.value = code;
+        newOpt.setAttribute('data-label', label);
+        newOpt.setAttribute('data-suffix', suffix);
+        newOpt.setAttribute('data-placeholder', placeholder);
+        newOpt.textContent = label + (suffix ? ' [' + suffix + ']' : '');
+        addSelect.appendChild(newOpt);
+        addSelect.value = code;
+      }
+
+      addOrFocusSizeTypeBlock(code, label, suffix, placeholder, '');
+      if (nameInp) nameInp.value = '';
+      if (sufInp) sufInp.value = '';
+      if (phInp) phInp.value = '';
+      if (customBox) customBox.style.display = 'none';
+    });
+  }
+
+  // Quick presets for Metric 1-13mm and 262 Jobber Sizes
+  var btnMetric = document.getElementById('btnPresetMetric');
+  if (btnMetric) {
+    btnMetric.addEventListener('click', function() {
+      var mmBlk = addOrFocusSizeTypeBlock('mm', 'Metric (mm)', 'mm', 'Select or type size (e.g. 3.5)', '');
+      var ta = mmBlk.querySelector('.size-type-textarea');
+      var metricPresets = [
+        '1.00', '1.50', '2.00', '2.50', '3.00', '3.17', '3.50', '4.00', '4.50', '5.00',
+        '5.50', '6.00', '6.35', '6.80', '7.00', '7.50', '8.00', '8.50', '9.00', '9.52',
+        '10.00', '10.50', '11.00', '11.50', '12.00', '12.70', '13.00'
+      ];
+      if (ta) ta.value = metricPresets.join('\n');
+    });
+  }
+
+  var btnAllDrills = document.getElementById('btnPresetAllDrills');
+  if (btnAllDrills) {
+    btnAllDrills.addEventListener('click', function() {
+      fetch('../api/get_product_data.php?action=all')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (data && data.sizes) {
+            var mmVals = [], inchVals = [], dgVals = [];
+            data.sizes.forEach(function(s) {
+              if (s.mm && mmVals.indexOf(s.mm) === -1) mmVals.push(s.mm);
+              if (s.inch) {
+                var iv = String(s.inch).replace(/\uf0ab/g, '').trim();
+                if (iv && inchVals.indexOf(iv) === -1) inchVals.push(iv);
+              }
+              if (s.dg) {
+                var dv = String(s.dg).replace(/\uf0ab/g, '').trim();
+                if (dv && dgVals.indexOf(dv) === -1) dgVals.push(dv);
+              }
+            });
+            var mmBlk = addOrFocusSizeTypeBlock('mm', 'Metric (mm)', 'mm', 'Select or type size (e.g. 3.5)', '');
+            if (mmBlk) mmBlk.querySelector('.size-type-textarea').value = mmVals.join('\n');
+            if (inchVals.length > 0) {
+              var inBlk = addOrFocusSizeTypeBlock('inch', 'Inch', '"', 'Select or type size (e.g. 1/8")', '');
+              if (inBlk) inBlk.querySelector('.size-type-textarea').value = inchVals.join('\n');
+            }
+            if (dgVals.length > 0) {
+              var dgBlk = addOrFocusSizeTypeBlock('dg', 'Drill Gauge (DG / No.)', 'DG', 'Select or type gauge (e.g. 60, A)', '');
+              if (dgBlk) dgBlk.querySelector('.size-type-textarea').value = dgVals.join('\n');
+            }
+            alert('Loaded ' + mmVals.length + ' Metric, ' + inchVals.length + ' Inch, and ' + dgVals.length + ' Drill Gauge sizes from ITM 2026 Price List!');
+          }
+        })
+        .catch(function() {
+          alert('Could not fetch preset sizes from API.');
+        });
+    });
+  }
+})();
 </script>
 
 <?php require_once __DIR__ . '/footer.php'; ?>

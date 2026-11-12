@@ -157,9 +157,9 @@ $base_url = (isset($is_subfolder) && $is_subfolder) ? '../' : './';
           </svg>
         </div>
         <h4>Your Cart is Empty</h4>
-        <p>Explore our HSS Parallel Shank Twist Drills (Jobber Series) catalogue and add required drill sizes to your cart.</p>
-        <a href="<?php echo $base_url; ?>products/parallel-shank-twist-drills.php" class="btn btn-primary" style="margin-top:12px;">
-          Configure Jobber Drills &rarr;
+        <p>Explore our industrial cutting tools catalogue and add required sizes and quantities to your cart.</p>
+        <a href="<?php echo $base_url; ?>products.php" class="btn btn-primary" style="margin-top:12px;">
+          Browse Products Catalogue &rarr;
         </a>
       </div>
 

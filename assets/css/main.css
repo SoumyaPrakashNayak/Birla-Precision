@@ -1989,6 +1989,13 @@ ul, ol {
   font-weight: 700;
   color: #0F172A;
   outline: none;
+  -moz-appearance: textfield;
+}
+
+.cart-step-input::-webkit-outer-spin-button,
+.cart-step-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .pricing-col-total {

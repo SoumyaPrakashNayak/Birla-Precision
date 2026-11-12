@@ -51,38 +51,28 @@ if (empty($gallery_images)) {
     ];
 }
 
-// Format sizes for front-end JS configurator
-$formatted_sizes = [];
-$popular_sizes = [];
-if (!empty($product['sizes'])) {
-    foreach ($product['sizes'] as $sz) {
-        $formatted_sizes[] = [
-            'mm' => $sz['size_mm'],
-            'diameter_float' => (float)$sz['size_mm'],
-            'inch' => !empty($sz['size_inch']) ? $sz['size_inch'] : null,
-            'dg' => !empty($sz['dg']) ? $sz['dg'] : null,
-            'moq' => 1
-        ];
-        if (!empty($sz['is_popular'])) {
-            $popular_sizes[] = $sz['size_mm'];
-        }
-    }
-} else {
-    // Fallback standard metric sizes if none entered
-    $popular_sizes = ['2.00', '3.00', '4.00', '5.00', '6.00', '8.00', '10.00', '12.00'];
-    foreach ($popular_sizes as $ps) {
-        $formatted_sizes[] = [
-            'mm' => $ps,
-            'diameter_float' => (float)$ps,
-            'inch' => null,
-            'dg' => null,
-            'moq' => 1
-        ];
-    }
-}
+// Build dynamic size-type configuration (supports Metric mm, Inch, DG, MT, Thread, Dimensions & Custom admin size types)
+$size_config = get_product_size_config($product);
+$first_size_type = $size_config['size_types'][0] ?? [
+    'code' => 'mm',
+    'label' => 'Metric (mm)',
+    'unit_suffix' => 'mm',
+    'placeholder' => 'Select or type size (e.g. 3.5)',
+    'popular' => ['2.00', '3.00', '4.00', '5.00', '6.00', '8.00', '10.00', '12.00']
+];
+$first_type_code = $first_size_type['code'];
+$popular_sizes = $first_size_type['popular'] ?? [];
 
-if (empty($popular_sizes) && !empty($formatted_sizes)) {
-    $popular_sizes = array_slice(array_column($formatted_sizes, 'mm'), 0, 8);
+// Backward-compatible flat sizes list
+$formatted_sizes = [];
+foreach ($size_config['sizes_by_type'][$first_type_code] ?? [] as $szItem) {
+    $formatted_sizes[] = [
+        'mm' => $szItem['val'],
+        'diameter_float' => (float)$szItem['val'],
+        'inch' => $szItem['inch'] ?? null,
+        'dg' => $szItem['dg'] ?? null,
+        'moq' => 1
+    ];
 }
 
 $main_img_url = '../' . ltrim($gallery_images[0], '/');
@@ -184,12 +174,22 @@ include __DIR__ . '/../includes/header.php';
               <span class="step-num-circle">1</span>
               <div class="step-title-text">
                 <h2 class="step-heading">Add sizes and quantity</h2>
-                <p class="step-subheading" id="stepSubheading">Enter the drill size (in mm) and quantity. You can add multiple sizes.</p>
+                <p class="step-subheading" id="stepSubheading">Enter the size (<?= htmlspecialchars($first_size_type['label']) ?>) and quantity. You can add multiple sizes.</p>
               </div>
             </div>
-            <div class="unit-toggle-segmented" id="unitToggleSegmented" role="group" aria-label="Unit of measure">
-              <button type="button" class="unit-toggle-btn is-active" data-unit="mm" id="unitBtnMm">Metric (mm)</button>
-              <button type="button" class="unit-toggle-btn" data-unit="inch" id="unitBtnInch">Inch</button>
+            <div class="unit-toggle-segmented" id="unitToggleSegmented" role="group" aria-label="Size type">
+              <?php foreach ($size_config['size_types'] as $st_idx => $st_item): ?>
+                <button 
+                  type="button" 
+                  class="unit-toggle-btn <?= $st_idx === 0 ? 'is-active' : '' ?>" 
+                  data-unit="<?= htmlspecialchars($st_item['code']) ?>"
+                  data-label="<?= htmlspecialchars($st_item['label']) ?>"
+                  data-suffix="<?= htmlspecialchars($st_item['unit_suffix'] ?? '') ?>"
+                  data-placeholder="<?= htmlspecialchars($st_item['placeholder'] ?? '') ?>"
+                >
+                  <?= htmlspecialchars($st_item['label']) ?>
+                </button>
+              <?php endforeach; ?>
             </div>
           </div>
 
@@ -198,13 +198,13 @@ include __DIR__ . '/../includes/header.php';
             
             <!-- Col 1: Drill Size -->
             <div class="step-control-col dia-col">
-              <label class="control-label" id="diaControlLabel" for="diaSearchInput">Drill Size (mm)</label>
+              <label class="control-label" id="diaControlLabel" for="diaSearchInput">Size (<?= htmlspecialchars($first_size_type['label']) ?>)</label>
               <div class="dia-combobox-wrapper" id="diaComboboxWrapper">
                 <input 
                   type="text" 
                   id="diaSearchInput" 
                   class="dia-select-input" 
-                  placeholder="Select or type size (e.g. <?= htmlspecialchars($popular_sizes[0] ?? '3.00') ?>)" 
+                  placeholder="<?= htmlspecialchars($first_size_type['placeholder'] ?: ('Select or type size (e.g. ' . ($popular_sizes[0] ?? '3.00') . ')')) ?>" 
                   autocomplete="off"
                 >
                 <button type="button" class="dia-toggle-dropdown-btn" id="diaToggleDropdownBtn" aria-label="Toggle diameter options">
@@ -350,11 +350,14 @@ include __DIR__ . '/../includes/header.php';
   </div>
 </div>
 
-<!-- Dynamic Injection of Product Specific Sizes for product.js -->
+<!-- Dynamic Injection of Product Specific Sizes & Size Types for product.js -->
 <script>
   window.__BPTL_CURRENT_PRODUCT_ID = <?= json_encode((int)$product['id']) ?>;
   window.__BPTL_CURRENT_PRODUCT_TITLE = <?= json_encode($product['title']) ?>;
   window.__BPTL_CURRENT_PRODUCT_IMG = <?= json_encode($product['image'] ?? 'assets/images/collections/jobber_drills.png') ?>;
+  window.__BPTL_CURRENT_PRODUCT_STANDARD = <?= json_encode($product['standard'] ?? 'IS : 5101') ?>;
+  window.__BPTL_CURRENT_PRODUCT_HSN = <?= json_encode($product['hsn_code'] ?? '8207') ?>;
+  window.__BPTL_SIZE_CONFIG = <?= json_encode($size_config, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
   window.__BPTL_CURRENT_PRODUCT_SIZES = <?= json_encode($formatted_sizes) ?>;
   window.__BPTL_CURRENT_POPULAR_SIZES = <?= json_encode($popular_sizes) ?>;
 </script>

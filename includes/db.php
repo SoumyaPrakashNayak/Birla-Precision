@@ -164,13 +164,14 @@ function init_db_schema(PDO $pdo, $driver) {
             image VARCHAR(255) NOT NULL,
             gallery_json TEXT DEFAULT NULL,
             features_json TEXT DEFAULT NULL,
+            size_types_json TEXT DEFAULT NULL,
             is_active INT DEFAULT 1,
             sort_order INT DEFAULT 0,
             created_at {$dt_now}
         )
     ");
 
-    // Ensure category_id and subcategory_id exist on products table if table was created previously
+    // Ensure category_id, subcategory_id, and size_types_json exist on products table if created previously
     if ($is_sqlite) {
         $p_cols = $pdo->query("PRAGMA table_info(products)")->fetchAll(PDO::FETCH_COLUMN, 1);
         if (!in_array('category_id', $p_cols)) {
@@ -179,6 +180,9 @@ function init_db_schema(PDO $pdo, $driver) {
         if (!in_array('subcategory_id', $p_cols)) {
             $pdo->exec("ALTER TABLE products ADD COLUMN subcategory_id INT DEFAULT NULL");
         }
+        if (!in_array('size_types_json', $p_cols)) {
+            $pdo->exec("ALTER TABLE products ADD COLUMN size_types_json TEXT DEFAULT NULL");
+        }
     } else {
         try {
             $pdo->exec("ALTER TABLE products ADD COLUMN category_id INT DEFAULT NULL");
@@ -186,7 +190,25 @@ function init_db_schema(PDO $pdo, $driver) {
         try {
             $pdo->exec("ALTER TABLE products ADD COLUMN subcategory_id INT DEFAULT NULL");
         } catch (Throwable $e) {}
+        try {
+            $pdo->exec("ALTER TABLE products ADD COLUMN size_types_json TEXT DEFAULT NULL");
+        } catch (Throwable $e) {}
     }
+
+    // 4b. Size Types Library Table (Populated from ITM Price List PDF + Custom Admin Types)
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS size_types (
+            id {$auto_id},
+            code VARCHAR(60) NOT NULL UNIQUE,
+            label VARCHAR(120) NOT NULL,
+            unit_suffix VARCHAR(40) DEFAULT '',
+            placeholder VARCHAR(160) DEFAULT '',
+            presets_text TEXT DEFAULT NULL,
+            is_default INT DEFAULT 0,
+            sort_order INT DEFAULT 0,
+            created_at {$dt_now}
+        )
+    ");
 
     // 5. Product Sizes Table
     if ($is_sqlite) {
@@ -200,6 +222,8 @@ function init_db_schema(PDO $pdo, $driver) {
         CREATE TABLE IF NOT EXISTS product_sizes (
             id {$auto_id},
             product_id INT NOT NULL,
+            size_type VARCHAR(60) DEFAULT 'mm',
+            size_value VARCHAR(150) DEFAULT NULL,
             size_mm VARCHAR(50) NOT NULL,
             size_inch VARCHAR(50) DEFAULT NULL,
             dg VARCHAR(50) DEFAULT NULL,
@@ -208,6 +232,26 @@ function init_db_schema(PDO $pdo, $driver) {
             sort_order INT DEFAULT 0
         )
     ");
+
+    // Ensure size_type and size_value columns exist on legacy product_sizes tables
+    if ($is_sqlite) {
+        $ps_cols = $pdo->query("PRAGMA table_info(product_sizes)")->fetchAll(PDO::FETCH_COLUMN, 1);
+        if (!in_array('size_type', $ps_cols)) {
+            $pdo->exec("ALTER TABLE product_sizes ADD COLUMN size_type VARCHAR(60) DEFAULT 'mm'");
+        }
+        if (!in_array('size_value', $ps_cols)) {
+            $pdo->exec("ALTER TABLE product_sizes ADD COLUMN size_value VARCHAR(150) DEFAULT NULL");
+            $pdo->exec("UPDATE product_sizes SET size_value = size_mm WHERE size_value IS NULL");
+        }
+    } else {
+        try {
+            $pdo->exec("ALTER TABLE product_sizes ADD COLUMN size_type VARCHAR(60) DEFAULT 'mm'");
+        } catch (Throwable $e) {}
+        try {
+            $pdo->exec("ALTER TABLE product_sizes ADD COLUMN size_value VARCHAR(150) DEFAULT NULL");
+            $pdo->exec("UPDATE product_sizes SET size_value = size_mm WHERE size_value IS NULL");
+        } catch (Throwable $e) {}
+    }
 
     // 5. Enquiries Table
     $pdo->exec("
@@ -260,6 +304,12 @@ function init_db_schema(PDO $pdo, $driver) {
     $categories_count = (int)$pdo->query("SELECT COUNT(*) FROM categories")->fetchColumn();
     if ($categories_count === 0) {
         seed_default_categories($pdo);
+    }
+
+    // Seed Default Size Types (from ITM Price List 2026 PDF) if none exist
+    $size_types_count = (int)$pdo->query("SELECT COUNT(*) FROM size_types")->fetchColumn();
+    if ($size_types_count === 0) {
+        seed_default_size_types($pdo);
     }
 }
 
@@ -848,4 +898,336 @@ function get_categories_tree($only_active = true) {
         return [];
     }
 }
+
+/**
+ * Seed default Size Types derived from ITM Price List (04-2026) PDF
+ */
+function seed_default_size_types(PDO $pdo) {
+    $types = [
+        [
+            'code' => 'mm',
+            'label' => 'Metric (mm)',
+            'unit_suffix' => 'mm',
+            'placeholder' => 'Select or type size (e.g. 3.5)',
+            'presets_text' => implode("\n", ['1.00', '1.50', '2.00', '2.50', '3.00', '3.17', '3.50', '4.00', '4.50', '5.00', '5.50', '6.00', '6.35', '6.80', '7.00', '7.50', '8.00', '8.50', '9.00', '9.52', '10.00', '10.50', '11.00', '11.50', '12.00', '12.70', '13.00', '14.00', '15.00', '16.00']),
+            'is_default' => 1,
+            'sort_order' => 1
+        ],
+        [
+            'code' => 'inch',
+            'label' => 'Inch',
+            'unit_suffix' => '"',
+            'placeholder' => 'Select or type size (e.g. 1/8")',
+            'presets_text' => implode("\n", ['3/64"', '1/16"', '5/64"', '3/32"', '7/64"', '1/8"', '9/64"', '5/32"', '3/16"', '7/32"', '1/4"', '9/32"', '5/16"', '11/32"', '3/8"', '7/16"', '1/2"', '5/8"', '3/4"', '7/8"', '1"', '1.1/4"', '1.1/2"', '2"']),
+            'is_default' => 1,
+            'sort_order' => 2
+        ],
+        [
+            'code' => 'dg',
+            'label' => 'Drill Gauge (DG / No.)',
+            'unit_suffix' => 'DG',
+            'placeholder' => 'Select or type gauge (e.g. 60, A, BS-1)',
+            'presets_text' => implode("\n", [
+                '60','59','58','57','56','55','54','53','52','51',
+                '50','49','48','47','46','45','44','43','42','41',
+                '40','39','38','37','36','35','34','33','32','31',
+                '30','29','28','27','26','25','24','23','22','21',
+                '20','19','18','17','16','15','14','13','12','11',
+                '10','9','8','7','6','5','4','3','2','1',
+                'A','B','C','D','E','F','G','H','I','J','K','L','M',
+                'N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
+                'BS-1','BS-2','BS-3','BS-4','BS-5','BS-6','BS-7'
+            ]),
+            'is_default' => 0,
+            'sort_order' => 3
+        ],
+        [
+            'code' => 'mt',
+            'label' => 'Morse Taper (MT)',
+            'unit_suffix' => '',
+            'placeholder' => 'Select or type taper (e.g. MT1, MT2)',
+            'presets_text' => implode("\n", ['MT0', 'MT1', 'MT2', 'MT3', 'MT4', 'MT5', 'MT6']),
+            'is_default' => 0,
+            'sort_order' => 4
+        ],
+        [
+            'code' => 'thread',
+            'label' => 'Thread / Pitch (M / BSP / TPI)',
+            'unit_suffix' => '',
+            'placeholder' => 'Select or type thread (e.g. M10 x 1.5)',
+            'presets_text' => implode("\n", [
+                'M2.0 x 0.40', 'M2.5 x 0.45', 'M3 x 0.5', 'M3.5 x 0.6', 'M4 x 0.7',
+                'M5 x 0.8', 'M6 x 1.0', 'M8 x 1.25', 'M10 x 1.5', 'M12 x 1.75',
+                'M14 x 2.00', 'M16 x 2.00', 'M18 x 2.5', 'M20 x 2.5', 'M22 x 2.5', 'M24 x 3.0',
+                '1/8 BSP', '1/4 BSP', '3/8 BSP', '1/2 BSP', '3/4 BSP', '1" BSP', '1/4 NPT', '1/2 NPT'
+            ]),
+            'is_default' => 0,
+            'sort_order' => 5
+        ],
+        [
+            'code' => 'dimensions',
+            'label' => 'Dimensions (Dia x Depth / OAL)',
+            'unit_suffix' => '',
+            'placeholder' => 'Select or type dimension (e.g. 12 x 35MM)',
+            'presets_text' => implode("\n", [
+                '12 x 35MM', '14 x 35MM', '16 x 35MM', '18 x 35MM', '20 x 35MM', '22 x 35MM', '25 x 35MM',
+                '12 x 50MM', '14 x 50MM', '16 x 50MM', '18 x 50MM', '20 x 50MM', '25 x 50MM',
+                '5.00 x 110 MM OAL', '6.00 x 160 MM OAL', '8.00 x 160 MM OAL', '10.00 x 160 MM OAL', '12.00 x 210 MM OAL',
+                '100 x 4 x 16 MM', '100 x 6 x 16 MM', '125 x 6 x 22.23 MM'
+            ]),
+            'is_default' => 0,
+            'sort_order' => 6
+        ],
+        [
+            'code' => 'cut_grade',
+            'label' => 'Length & Cut Grade (Files / Saws)',
+            'unit_suffix' => '',
+            'placeholder' => 'Select or type size & grade (e.g. 150 MM BASTARD)',
+            'presets_text' => implode("\n", [
+                '100 MM BASTARD', '100 MM 2ND CUT', '100 MM SMOOTH',
+                '150 MM BASTARD', '150 MM 2ND CUT', '150 MM SMOOTH',
+                '200 MM BASTARD', '200 MM 2ND CUT', '200 MM SMOOTH',
+                '250 MM BASTARD', '250 MM 2ND CUT', '300 MM BASTARD',
+                '4" x 30T', '7" x 40T', '10" x 60T', '14" x 100T'
+            ]),
+            'is_default' => 0,
+            'sort_order' => 7
+        ]
+    ];
+
+    $stmt = $pdo->prepare("
+        INSERT INTO size_types (code, label, unit_suffix, placeholder, presets_text, is_default, sort_order)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ");
+    foreach ($types as $t) {
+        try {
+            $stmt->execute([
+                $t['code'],
+                $t['label'],
+                $t['unit_suffix'],
+                $t['placeholder'],
+                $t['presets_text'],
+                $t['is_default'],
+                $t['sort_order']
+            ]);
+        } catch (Throwable $e) {}
+    }
+}
+
+/**
+ * Fetch all configured size types from library
+ */
+function get_all_size_types() {
+    try {
+        $pdo = get_db();
+        return $pdo->query("SELECT * FROM size_types ORDER BY sort_order ASC, id ASC")->fetchAll();
+    } catch (Throwable $e) {
+        return [];
+    }
+}
+
+/**
+ * Create a new custom size type or return existing match
+ */
+function create_or_get_size_type($label, $unit_suffix = '', $placeholder = '', $code = '') {
+    $pdo = get_db();
+    $label = trim($label);
+    if (empty($label)) return null;
+
+    $code = trim($code);
+    if (empty($code)) {
+        $code = preg_replace('/[^a-z0-9]+/', '_', strtolower($label));
+        $code = trim($code, '_');
+        if (empty($code)) $code = 'size_' . time();
+    }
+
+    // Check by code first
+    $stmt = $pdo->prepare("SELECT * FROM size_types WHERE code = ?");
+    $stmt->execute([$code]);
+    $existing = $stmt->fetch();
+    if ($existing) {
+        return $existing;
+    }
+
+    // Check by case-insensitive label
+    $stmt2 = $pdo->prepare("SELECT * FROM size_types WHERE LOWER(label) = LOWER(?)");
+    $stmt2->execute([$label]);
+    $existingByLabel = $stmt2->fetch();
+    if ($existingByLabel) {
+        return $existingByLabel;
+    }
+
+    if (empty($placeholder)) {
+        $placeholder = 'Select or type ' . $label;
+    }
+
+    $maxOrder = (int)$pdo->query("SELECT COALESCE(MAX(sort_order), 0) FROM size_types")->fetchColumn();
+    $ins = $pdo->prepare("
+        INSERT INTO size_types (code, label, unit_suffix, placeholder, presets_text, is_default, sort_order)
+        VALUES (?, ?, ?, ?, '', 0, ?)
+    ");
+    $ins->execute([$code, $label, trim($unit_suffix), trim($placeholder), $maxOrder + 1]);
+
+    return [
+        'id' => (int)$pdo->lastInsertId(),
+        'code' => $code,
+        'label' => $label,
+        'unit_suffix' => trim($unit_suffix),
+        'placeholder' => trim($placeholder),
+        'presets_text' => '',
+        'is_default' => 0,
+        'sort_order' => $maxOrder + 1
+    ];
+}
+
+/**
+ * Build unified size configuration for a product (handles custom size types + legacy rows)
+ */
+function get_product_size_config($product) {
+    $all_lib = get_all_size_types();
+    $lib_map = [];
+    foreach ($all_lib as $st) {
+        $lib_map[$st['code']] = $st;
+    }
+
+    $configured_types = [];
+    if (!empty($product['size_types_json'])) {
+        $decoded = json_decode($product['size_types_json'], true);
+        if (is_array($decoded)) {
+            $configured_types = $decoded;
+        }
+    }
+
+    $raw_sizes = $product['sizes'] ?? [];
+    $sizes_by_type = [];
+    $popular_by_type = [];
+
+    foreach ($raw_sizes as $sz) {
+        $stype = !empty($sz['size_type']) ? $sz['size_type'] : 'mm';
+        $sval = isset($sz['size_value']) && $sz['size_value'] !== '' ? $sz['size_value'] : ($sz['size_mm'] ?? '');
+        $sval = trim((string)$sval);
+
+        if ($sval !== '') {
+            if (!isset($sizes_by_type[$stype])) $sizes_by_type[$stype] = [];
+            $exists = false;
+            foreach ($sizes_by_type[$stype] as $existing) {
+                if (strcasecmp($existing['val'], $sval) === 0) {
+                    $exists = true;
+                    break;
+                }
+            }
+            if (!$exists) {
+                $sizes_by_type[$stype][] = [
+                    'val' => $sval,
+                    'inch' => !empty($sz['size_inch']) ? $sz['size_inch'] : null,
+                    'dg' => !empty($sz['dg']) ? $sz['dg'] : null,
+                    'is_popular' => !empty($sz['is_popular']) ? 1 : 0
+                ];
+            }
+            if (!empty($sz['is_popular'])) {
+                if (!isset($popular_by_type[$stype])) $popular_by_type[$stype] = [];
+                if (!in_array($sval, $popular_by_type[$stype], true)) {
+                    $popular_by_type[$stype][] = $sval;
+                }
+            }
+        }
+
+        // Backward-compat: legacy rows stored inch inside size_inch on mm rows
+        if ($stype === 'mm' && !empty($sz['size_inch'])) {
+            $ival = trim((string)$sz['size_inch']);
+            if ($ival !== '') {
+                if (!isset($sizes_by_type['inch'])) $sizes_by_type['inch'] = [];
+                $i_exists = false;
+                foreach ($sizes_by_type['inch'] as $ex) {
+                    if (strcasecmp($ex['val'], $ival) === 0) { $i_exists = true; break; }
+                }
+                if (!$i_exists) {
+                    $sizes_by_type['inch'][] = [
+                        'val' => $ival,
+                        'mm_equiv' => $sval,
+                        'is_popular' => !empty($sz['is_popular']) ? 1 : 0
+                    ];
+                }
+            }
+        }
+
+        // Backward-compat: legacy rows stored dg inside dg column
+        if ($stype === 'mm' && !empty($sz['dg'])) {
+            $dval = trim((string)$sz['dg']);
+            if ($dval !== '') {
+                if (!isset($sizes_by_type['dg'])) $sizes_by_type['dg'] = [];
+                $d_exists = false;
+                foreach ($sizes_by_type['dg'] as $ex) {
+                    if (strcasecmp($ex['val'], $dval) === 0) { $d_exists = true; break; }
+                }
+                if (!$d_exists) {
+                    $sizes_by_type['dg'][] = [
+                        'val' => $dval,
+                        'mm_equiv' => $sval,
+                        'is_popular' => 0
+                    ];
+                }
+            }
+        }
+    }
+
+    // If product has no explicit size_types_json yet, infer cleanly (Metric mm + Inch + any other present types)
+    if (empty($configured_types)) {
+        $default_codes = ['mm', 'inch'];
+        foreach (array_keys($sizes_by_type) as $k) {
+            if (!in_array($k, $default_codes, true)) {
+                $default_codes[] = $k;
+            }
+        }
+        foreach ($default_codes as $code) {
+            $meta = $lib_map[$code] ?? [
+                'code' => $code,
+                'label' => ucwords(str_replace('_', ' ', $code)),
+                'unit_suffix' => '',
+                'placeholder' => 'Select or type size'
+            ];
+            $pop = $popular_by_type[$code] ?? [];
+            if (empty($pop) && $code === 'mm') {
+                $pop = ['2.00', '3.00', '4.00', '5.00', '6.00', '8.00', '10.00', '12.00'];
+            } elseif (empty($pop) && $code === 'inch') {
+                $pop = ['1/16"', '1/8"', '3/16"', '1/4"', '5/16"', '3/8"', '7/16"', '1/2"'];
+            }
+            $configured_types[] = [
+                'code' => $meta['code'],
+                'label' => $meta['label'],
+                'unit_suffix' => $meta['unit_suffix'] ?? '',
+                'placeholder' => $meta['placeholder'] ?? ('Select or type ' . $meta['label']),
+                'popular' => $pop
+            ];
+        }
+    } else {
+        // Hydrate missing metadata and popular fallback
+        foreach ($configured_types as &$ct) {
+            $code = $ct['code'];
+            if (isset($lib_map[$code])) {
+                if (empty($ct['label'])) $ct['label'] = $lib_map[$code]['label'];
+                if (!isset($ct['unit_suffix'])) $ct['unit_suffix'] = $lib_map[$code]['unit_suffix'];
+                if (empty($ct['placeholder'])) $ct['placeholder'] = $lib_map[$code]['placeholder'];
+            }
+            if (empty($ct['popular'])) {
+                if (!empty($popular_by_type[$code])) {
+                    $ct['popular'] = $popular_by_type[$code];
+                } elseif (!empty($sizes_by_type[$code])) {
+                    $ct['popular'] = array_slice(array_column($sizes_by_type[$code], 'val'), 0, 8);
+                } elseif ($code === 'inch') {
+                    $ct['popular'] = ['1/16"', '1/8"', '3/16"', '1/4"', '5/16"', '3/8"', '7/16"', '1/2"'];
+                } else {
+                    $ct['popular'] = [];
+                }
+            }
+        }
+        unset($ct);
+    }
+
+    return [
+        'size_types' => $configured_types,
+        'sizes_by_type' => $sizes_by_type
+    ];
+}
+
 

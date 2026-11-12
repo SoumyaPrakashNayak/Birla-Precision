@@ -12,6 +12,7 @@
  */
 
 require_once __DIR__ . '/../includes/data.php';
+require_once __DIR__ . '/../includes/db.php';
 
 $current_page = 'product';
 $is_subfolder = true;
@@ -22,6 +23,68 @@ $family = get_product_family();
 $variants = get_product_variants();
 $popular_diameters = get_popular_jobber_diameters();
 $all_sizes = get_all_jobber_sizes();
+
+// Fetch DB record for flagship product so Admin Size Types & Sizes edits apply live
+$db_product = get_product_by_id_or_slug('parallel-shank-twist-drills');
+if ($db_product && !empty($db_product['size_types_json'])) {
+    $size_config = get_product_size_config($db_product);
+} else {
+    // Build default Metric (mm) + Inch from official 262-size ITM 2026 Price List data
+    $mm_list = [];
+    $inch_list = [];
+    foreach ($all_sizes as $row) {
+        if (!empty($row['mm'])) {
+            $mm_list[] = [
+                'val' => trim((string)$row['mm']),
+                'inch' => !empty($row['inch']) ? trim(str_replace("\xef\x82\xab", '', (string)$row['inch'])) : null,
+                'dg' => !empty($row['dg']) ? trim(str_replace("\xef\x82\xab", '', (string)$row['dg'])) : null,
+                'is_popular' => in_array((string)$row['mm'], ['2.00','3.00','4.00','5.00','6.00','8.00','10.00','12.00'], true) ? 1 : 0
+            ];
+        }
+        if (!empty($row['inch'])) {
+            $iv = trim(str_replace("\xef\x82\xab", '', (string)$row['inch']));
+            if ($iv !== '') {
+                $exists = false;
+                foreach ($inch_list as $il) {
+                    if ($il['val'] === $iv) { $exists = true; break; }
+                }
+                if (!$exists) {
+                    $inch_list[] = ['val' => $iv, 'mm_equiv' => $row['mm']];
+                }
+            }
+        }
+    }
+    $size_config = [
+        'size_types' => [
+            [
+                'code' => 'mm',
+                'label' => 'Metric (mm)',
+                'unit_suffix' => 'mm',
+                'placeholder' => 'Select or type size (e.g. 3.5)',
+                'popular' => ['2.00', '3.00', '4.00', '5.00', '6.00', '8.00', '10.00', '12.00']
+            ],
+            [
+                'code' => 'inch',
+                'label' => 'Inch',
+                'unit_suffix' => '"',
+                'placeholder' => 'Select or type size (e.g. 1/8")',
+                'popular' => ['1/16"', '1/8"', '3/16"', '1/4"', '5/16"', '3/8"', '7/16"', '1/2"']
+            ]
+        ],
+        'sizes_by_type' => [
+            'mm' => $mm_list,
+            'inch' => $inch_list
+        ]
+    ];
+}
+
+$first_size_type = $size_config['size_types'][0] ?? [
+    'code' => 'mm',
+    'label' => 'Metric (mm)',
+    'unit_suffix' => 'mm',
+    'placeholder' => 'Select or type size (e.g. 3.5)',
+    'popular' => ['2.00', '3.00', '4.00', '5.00', '6.00', '8.00', '10.00', '12.00']
+];
 
 // Initial selected diameter (default to 3.17 mm / 1/8" as shown in reference or GET param)
 $initial_dia = isset($_GET['dia']) ? trim($_GET['dia']) : '3.17';
@@ -165,12 +228,22 @@ include __DIR__ . '/../includes/header.php';
               <span class="step-num-circle">1</span>
               <div class="step-title-text">
                 <h2 class="step-heading">Add sizes and quantity</h2>
-                <p class="step-subheading" id="stepSubheading">Enter the drill size (in mm) and quantity. You can add multiple sizes.</p>
+                <p class="step-subheading" id="stepSubheading">Enter the size (<?= htmlspecialchars($first_size_type['label']) ?>) and quantity. You can add multiple sizes.</p>
               </div>
             </div>
-            <div class="unit-toggle-segmented" id="unitToggleSegmented" role="group" aria-label="Unit of measure">
-              <button type="button" class="unit-toggle-btn is-active" data-unit="mm" id="unitBtnMm">Metric (mm)</button>
-              <button type="button" class="unit-toggle-btn" data-unit="inch" id="unitBtnInch">Inch</button>
+            <div class="unit-toggle-segmented" id="unitToggleSegmented" role="group" aria-label="Size type">
+              <?php foreach ($size_config['size_types'] as $st_idx => $st_item): ?>
+                <button 
+                  type="button" 
+                  class="unit-toggle-btn <?= $st_idx === 0 ? 'is-active' : '' ?>" 
+                  data-unit="<?= htmlspecialchars($st_item['code']) ?>"
+                  data-label="<?= htmlspecialchars($st_item['label']) ?>"
+                  data-suffix="<?= htmlspecialchars($st_item['unit_suffix'] ?? '') ?>"
+                  data-placeholder="<?= htmlspecialchars($st_item['placeholder'] ?? '') ?>"
+                >
+                  <?= htmlspecialchars($st_item['label']) ?>
+                </button>
+              <?php endforeach; ?>
             </div>
           </div>
 
@@ -179,13 +252,13 @@ include __DIR__ . '/../includes/header.php';
             
             <!-- Col 1: Drill Size -->
             <div class="step-control-col dia-col">
-              <label class="control-label" id="diaControlLabel" for="diaSearchInput">Drill Size (mm)</label>
+              <label class="control-label" id="diaControlLabel" for="diaSearchInput">Size (<?= htmlspecialchars($first_size_type['label']) ?>)</label>
               <div class="dia-combobox-wrapper" id="diaComboboxWrapper">
                 <input 
                   type="text" 
                   id="diaSearchInput" 
                   class="dia-select-input" 
-                  placeholder="Select or type size (e.g. 3.5)" 
+                  placeholder="<?= htmlspecialchars($first_size_type['placeholder'] ?: 'Select or type size (e.g. 3.5)') ?>" 
                   autocomplete="off"
                 >
                 <button type="button" class="dia-toggle-dropdown-btn" id="diaToggleDropdownBtn" aria-label="Toggle diameter options">
@@ -327,6 +400,16 @@ include __DIR__ . '/../includes/header.php';
   </div>
 </div>
 
+
+<!-- Dynamic Injection of Flagship Product Specific Sizes & Size Types for product.js -->
+<script>
+  window.__BPTL_CURRENT_PRODUCT_ID = <?= json_encode((int)($db_product['id'] ?? 1)) ?>;
+  window.__BPTL_CURRENT_PRODUCT_TITLE = <?= json_encode($db_product['title'] ?? 'HSS Parallel Shank Twist Drills (Jobber Series)') ?>;
+  window.__BPTL_CURRENT_PRODUCT_IMG = <?= json_encode($db_product['image'] ?? 'assets/images/products/gallery_thumb_1.jpg') ?>;
+  window.__BPTL_CURRENT_PRODUCT_STANDARD = <?= json_encode($db_product['standard'] ?? 'IS : 5101 / ISO 235') ?>;
+  window.__BPTL_CURRENT_PRODUCT_HSN = <?= json_encode($db_product['hsn_code'] ?? '8207') ?>;
+  window.__BPTL_SIZE_CONFIG = <?= json_encode($size_config, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
+</script>
 
 <?php
 include __DIR__ . '/../includes/footer.php';

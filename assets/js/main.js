@@ -329,6 +329,12 @@ document.addEventListener('DOMContentLoaded', function () {
       localStorage.setItem('birla_cart', JSON.stringify(cart));
     } catch (e) {}
     updateCartUI();
+    if (typeof window.syncCartToProductList === 'function') {
+      window.syncCartToProductList(cart);
+    }
+    if (typeof window.refreshQuotationPageFromCart === 'function') {
+      window.refreshQuotationPageFromCart();
+    }
   }
 
   // Expose global BirlaCart API for product pages & batch additions
@@ -337,8 +343,12 @@ document.addEventListener('DOMContentLoaded', function () {
     save: saveCart,
     add: function (item) {
       var cart = getCart();
+      var itemUnit = item.unit || 'mm';
       var existing = cart.find(function (it) {
-        return it.dia === item.dia && it.variant === item.variant;
+        var sameProd = (it.productId !== undefined && it.productId !== null && item.productId !== undefined && item.productId !== null)
+          ? (String(it.productId) === String(item.productId))
+          : (it.title === item.title);
+        return sameProd && String(it.dia || '').toLowerCase() === String(item.dia || '').toLowerCase() && (it.unit || 'mm') === itemUnit && (it.variant || 'itm_std') === (item.variant || 'itm_std');
       });
       var itemQty = parseInt(item.qty, 10) || 1;
       if (itemQty < 1) itemQty = 1;
@@ -354,7 +364,8 @@ document.addEventListener('DOMContentLoaded', function () {
       openCartDrawer();
     },
     open: openCartDrawer,
-    close: closeCartDrawer
+    close: closeCartDrawer,
+    updateUI: updateCartUI
   };
 
   function formatPriceINR(num) {
@@ -476,9 +487,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         cartItemsList.innerHTML = '';
         cart.forEach(function (item, index) {
-          var moq = parseInt(item.moq, 10) || 100;
           item.unitPrice = 0;
           item.total = 0;
+          var sizeTypeDisplay = item.sizeTypeLabel || (item.unit === 'inch' ? 'Inch' : (item.unit === 'mm' ? 'Metric (mm)' : (item.unit || 'Standard')));
+          var stdBadge = item.standard || 'IS : 5101';
+          var hsnBadge = item.hsn || '8207';
 
           var card = document.createElement('div');
           card.className = 'cart-item-card';
@@ -497,11 +510,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     '</svg>' +
                   '</button>' +
                 '</div>' +
-                '<div class="cart-card-subtitle">' + escapeHtml(item.variantName) + ' &bull; ' + escapeHtml(item.diaText) + '</div>' +
+                '<div class="cart-card-subtitle">' + escapeHtml(sizeTypeDisplay) + ' &bull; <strong>' + escapeHtml(item.diaText || item.dia) + '</strong></div>' +
                 '<div class="cart-card-badges">' +
                   '<span class="cart-badge-dagger">DAGGER BRAND</span>' +
-                  '<span class="cart-badge-gray">IS : 5101</span>' +
-                  '<span class="cart-badge-gray">HSN 8207</span>' +
+                  '<span class="cart-badge-gray">' + escapeHtml(stdBadge) + '</span>' +
+                  '<span class="cart-badge-gray">HSN ' + escapeHtml(hsnBadge) + '</span>' +
                 '</div>' +
               '</div>' +
             '</div>' +
@@ -510,13 +523,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 '<span class="cart-qty-ctrl-label">Quantity to Quote:</span>' +
                 '<div class="cart-stepper-box">' +
                   '<button type="button" class="cart-step-btn cart-step-minus" data-index="' + index + '" aria-label="Decrease quantity"' + (item.qty <= 1 ? ' disabled aria-disabled="true"' : '') + '>&minus;</button>' +
-                  '<input type="text" class="cart-step-input" data-index="' + index + '" value="' + item.qty + '">' +
+                  '<input type="number" class="cart-step-input" data-index="' + index + '" value="' + item.qty + '" min="1" step="1">' +
                   '<button type="button" class="cart-step-btn cart-step-plus" data-index="' + index + '" aria-label="Increase quantity">&plus;</button>' +
                 '</div>' +
                 '<span class="cart-pcs-unit">pcs</span>' +
               '</div>' +
               '<div class="cart-quote-tag">' +
-                '<span class="cart-quote-badge">Official Quote on Request</span>' +
+                '<span class="cart-quote-badge">In Stock &bull; Ready to Quote</span>' +
               '</div>' +
             '</div>' +
             '<div class="cart-order-info-section">' +
@@ -526,25 +539,17 @@ document.addEventListener('DOMContentLoaded', function () {
                   '<polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>' +
                   '<line x1="12" y1="22.08" x2="12" y2="12"></line>' +
                 '</svg>' +
-                '<span>Order Information</span>' +
+                '<span>Specification Summary</span>' +
               '</div>' +
               '<div class="order-info-grid">' +
                 '<div class="order-info-col">' +
-                  '<span class="info-label">Order Unit</span>' +
-                  '<span class="info-val">Precision Drill (Pieces)</span>' +
+                  '<span class="info-label">Size Type</span>' +
+                  '<span class="info-val">' + escapeHtml(sizeTypeDisplay) + '</span>' +
                 '</div>' +
                 '<div class="order-info-col">' +
-                  '<span class="info-label">Order Multiple</span>' +
-                  '<span class="info-val">10 pcs only</span>' +
+                  '<span class="info-label">Selected Size</span>' +
+                  '<span class="info-val">' + escapeHtml(item.diaText || item.dia) + '</span>' +
                 '</div>' +
-              '</div>' +
-              '<div class="order-info-alert-banner">' +
-                '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">' +
-                  '<circle cx="12" cy="12" r="10"></circle>' +
-                  '<line x1="12" y1="16" x2="12" y2="12"></line>' +
-                  '<line x1="12" y1="8" x2="12.01" y2="8"></line>' +
-                '</svg>' +
-                '<span>Orders must be in multiples of 10 pieces as per catalogue.</span>' +
               '</div>' +
             '</div>';
           cartItemsList.appendChild(card);
@@ -561,15 +566,16 @@ document.addEventListener('DOMContentLoaded', function () {
           });
         });
 
-        // Add interactive handlers for - and + steppers inside cart
+        // Add interactive handlers for - and + steppers inside cart (identical to Add to List steppers)
         var minusBtns = cartItemsList.querySelectorAll('.cart-step-minus');
         minusBtns.forEach(function (btn) {
           btn.addEventListener('click', function () {
             var idx = parseInt(btn.getAttribute('data-index'), 10);
             var currentCart = getCart();
             if (!currentCart[idx]) return;
-            if (currentCart[idx].qty > 1) {
-              var newQty = Math.max(1, currentCart[idx].qty - (currentCart[idx].qty > 10 ? 10 : 1));
+            var cur = parseInt(currentCart[idx].qty, 10) || 1;
+            if (cur > 1) {
+              var newQty = Math.max(1, cur - (cur > 10 ? 10 : 1));
               currentCart[idx].qty = newQty;
               currentCart[idx].total = (currentCart[idx].unitPrice || 0) * newQty;
               saveCart(currentCart);
@@ -583,7 +589,8 @@ document.addEventListener('DOMContentLoaded', function () {
             var idx = parseInt(btn.getAttribute('data-index'), 10);
             var currentCart = getCart();
             if (!currentCart[idx]) return;
-            var newQty = currentCart[idx].qty + 10;
+            var cur = parseInt(currentCart[idx].qty, 10) || 0;
+            var newQty = cur + (cur < 10 ? 1 : 10);
             currentCart[idx].qty = newQty;
             currentCart[idx].total = (currentCart[idx].unitPrice || 0) * newQty;
             saveCart(currentCart);
@@ -592,18 +599,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
         var qtyInputs = cartItemsList.querySelectorAll('.cart-step-input');
         qtyInputs.forEach(function (input) {
-          input.addEventListener('change', function () {
-            var idx = parseInt(this.getAttribute('data-index'), 10);
+          function commitCartQty() {
+            var idx = parseInt(input.getAttribute('data-index'), 10);
             var currentCart = getCart();
             if (!currentCart[idx]) return;
-            var val = parseInt(this.value, 10);
+            var val = parseInt(input.value, 10);
             if (isNaN(val) || val < 1) val = 1;
-            var rem = val % 10;
-            if (rem !== 0) val = Math.ceil(val / 10) * 10;
             currentCart[idx].qty = val;
             currentCart[idx].total = (currentCart[idx].unitPrice || 0) * val;
             saveCart(currentCart);
-          });
+          }
+          input.addEventListener('change', commitCartQty);
+          input.addEventListener('blur', commitCartQty);
         });
 
       }
@@ -693,7 +700,17 @@ document.addEventListener('DOMContentLoaded', function () {
       appliedCoupon = null;
       if (couponFeedback) couponFeedback.style.display = 'none';
       if (couponCodeInput) couponCodeInput.value = '';
+      try {
+        localStorage.removeItem('birla_cart');
+        localStorage.removeItem('birla_quotation_items');
+        Object.keys(localStorage).forEach(function (k) {
+          if (k.indexOf('birla_quotation_items_') === 0) localStorage.removeItem(k);
+        });
+      } catch (err) {}
       saveCart([]);
+      if (typeof window.syncQuotationOnCartClear === 'function') {
+        window.syncQuotationOnCartClear();
+      }
     });
   }
 
@@ -1133,35 +1150,6 @@ document.addEventListener('DOMContentLoaded', function () {
       closeCheckoutModal();
     }
   });
-
-  // Expose BirlaCart globally
-  window.BirlaCart = {
-    get: getCart,
-    save: saveCart,
-    add: function (item) {
-      var cart = getCart();
-      var found = false;
-      for (var i = 0; i < cart.length; i++) {
-        if (cart[i].dia === item.dia && cart[i].variant === item.variant) {
-          // Set to the newly configured order quantity!
-          cart[i].qty = item.qty;
-          cart[i].unitPrice = item.unitPrice;
-          cart[i].total = (cart[i].unitPrice || 0) * cart[i].qty;
-          if (item.img) cart[i].img = item.img;
-          found = true;
-          break;
-        }
-      }
-      if (!found) {
-        cart.push(item);
-      }
-      saveCart(cart);
-      openCartDrawer();
-    },
-    open: openCartDrawer,
-    close: closeCartDrawer,
-    updateUI: updateCartUI
-  };
 
   // Initial Cart UI sync on load
   updateCartUI();
